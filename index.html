@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#ffffff" />
+    <meta
+      name="description"
+      content="半日，一个记散步、旧物、食物和普通日子的地方。住在杭州，慢慢写。"
+    />
+    <meta property="og:title" content="半日 · 把日子写成一页" />
+    <meta
+      property="og:description"
+      content="一半用来忙，一半用来浪费。记一些不着急的事。"
+    />
+    <meta property="og:type" content="website" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link
+      rel="preload"
+      href="/fonts/noto-serif-sc.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link
+      rel="preload"
+      href="/fonts/noto-sans-sc.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <title>半日 · 把日子写成一页</title>
+    <script>
+      try {
+        const saved = JSON.parse(localStorage.getItem('halfday.theme.v1') || 'null')
+        if (saved === 'dark') document.documentElement.dataset.theme = 'dark'
+      } catch {}
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <noscript>半日需要 JavaScript 才能翻开。请在浏览器设置里打开它。</noscript>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

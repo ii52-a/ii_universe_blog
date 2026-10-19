@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+  <channel>
+    <title>半日</title>
+    <link>https://halfday.club/</link>
+    <description>一半用来忙，一半用来浪费。记一些不着急的事。</description>
+    <language>zh-CN</language>
+    <lastBuildDate>Sun, 12 Oct 2026 01:32:00 +0800</lastBuildDate>
+    <item>
+      <title>在便利店门口站了十分钟</title>
+      <link>https://halfday.club/articles/ten-minutes-at-the-convenience-store</link>
+      <description>凌晨一点半，关东煮的汤还在冒泡。我站在玻璃门外，看店员把最后一排饭团摆正。</description>
+      <pubDate>Sun, 12 Oct 2026 01:32:00 +0800</pubDate>
+    </item>
+    <item>
+      <title>给一把旧椅子换了条腿</title>
+      <link>https://halfday.club/articles/a-new-leg-for-an-old-chair</link>
+      <description>这把椅子跟了我六年，搬过三次家。断掉的那条腿，是母亲第一次来杭州时帮我拧紧的。</description>
+      <pubDate>Mon, 28 Sep 2026 16:10:00 +0800</pubDate>
+    </item>
+    <item>
+      <title>雨天散步：从馒头山到凤山门</title>
+      <link>https://halfday.club/articles/a-rainy-walk-from-mantoushan</link>
+      <description>雨不大，伞可以收起来。沿着凤凰山脚走，经过菜地、铁路宿舍和一家只在上午开门的裁缝铺。</description>
+      <pubDate>Thu, 17 Sep 2026 09:20:00 +0800</pubDate>
+    </item>
+  </channel>
+</rss>

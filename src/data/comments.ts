@@ -1,0 +1,160 @@
+export interface Comment {
+  id: string
+  postId: string
+  authorName: string
+  authorId?: string
+  authorAvatar?: string
+  authorColor: string
+  body: string
+  createdAt: string
+  likes: number
+  own?: boolean
+}
+
+export const seedComments: Comment[] = [
+  {
+    id: 'c-01',
+    postId: 'ten-minutes-at-the-convenience-store',
+    authorName: '小野',
+    authorColor: '#E9D5FF',
+    body: '我也喜欢凌晨的便利店。上次坐在窗边吃关东煮，店员把音乐调小了一点，不知道是不是怕吵到我。',
+    createdAt: '2026-10-12T09:18:00+08:00',
+    likes: 8,
+  },
+  {
+    id: 'c-02',
+    postId: 'ten-minutes-at-the-convenience-store',
+    authorName: '阿宽',
+    authorColor: '#BFDBFE',
+    body: '“剩下的人终于不赶时间”这句太准确了。凌晨两点在便利店遇到的人，好像都默认彼此不需要解释。',
+    createdAt: '2026-10-12T14:02:00+08:00',
+    likes: 5,
+  },
+  {
+    id: 'c-03',
+    postId: 'a-new-leg-for-an-old-chair',
+    authorName: '木木',
+    authorColor: '#FDE68A',
+    body: '我家也有一把会响的椅子，看完决定不扔了。五金店老板一般都很会修东西。',
+    createdAt: '2026-09-29T11:36:00+08:00',
+    likes: 4,
+  },
+  {
+    id: 'c-04',
+    postId: 'a-rainy-walk-from-mantoushan',
+    authorName: 'Nana',
+    authorColor: '#FBCFE8',
+    body: '上周照着这条路线走了一遍，菜地旁边那只橘猫还在。葱包桧没吃到，两点去已经关门了。',
+    createdAt: '2026-09-21T16:20:00+08:00',
+    likes: 12,
+  },
+  {
+    id: 'c-05',
+    postId: 'a-rainy-walk-from-mantoushan',
+    authorName: '陈皮',
+    authorColor: '#BBF7D0',
+    body: '铁路宿舍那一段很安静。建议傍晚去，能看见很多家亮灯，但不要靠得太近。',
+    createdAt: '2026-09-22T19:05:00+08:00',
+    likes: 6,
+  },
+  {
+    id: 'c-06',
+    postId: 'twenty-seven-grocery-receipts',
+    authorName: '小野',
+    authorColor: '#E9D5FF',
+    body: '我也有留小票的习惯，不过都塞在书里，经常翻到的时候已经想不起买了什么。',
+    createdAt: '2026-08-31T10:12:00+08:00',
+    likes: 3,
+  },
+  {
+    id: 'c-07',
+    postId: 'after-clearing-the-desk',
+    authorName: '阿宽',
+    authorColor: '#BFDBFE',
+    body: '“用杂乱来推迟开始”被说中了。今晚回去清桌子。',
+    createdAt: '2026-08-22T08:48:00+08:00',
+    likes: 9,
+  },
+  {
+    id: 'c-08',
+    postId: 'a-book-with-a-typo',
+    authorName: '木木',
+    authorColor: '#FDE68A',
+    body: '二手书里的批注是意外收获。前一个读者留下的铅笔线，有时候比正文还让人分心。',
+    createdAt: '2026-08-10T21:04:00+08:00',
+    likes: 7,
+  },
+  {
+    id: 'c-09',
+    postId: 'the-last-green-bean-ice-pop',
+    authorName: '陈皮',
+    authorColor: '#BBF7D0',
+    body: '我们小区门口的小卖部也关了。看完有点想吃绿豆棒冰。',
+    createdAt: '2026-07-31T13:50:00+08:00',
+    likes: 5,
+  },
+  {
+    id: 'c-10',
+    postId: 'back-seat-of-the-bus',
+    authorName: 'Nana',
+    authorColor: '#FBCFE8',
+    body: '42 路我也坐过，最后一排靠窗的位置最好。终点站那片空地傍晚会有很多人遛狗。',
+    createdAt: '2026-07-19T17:22:00+08:00',
+    likes: 4,
+  },
+  {
+    id: 'c-11',
+    postId: 'a-new-leg-for-an-old-chair',
+    authorName: '迟迟',
+    authorId: 'demo-chichi',
+    authorColor: '#FFD84D',
+    body: '椅子现在放在窗边。偶尔还是会响，但已经不影响坐着发呆了。',
+    createdAt: '2026-09-29T20:14:00+08:00',
+    likes: 11,
+  },
+  {
+    id: 'g-01',
+    postId: '__guestbook__',
+    authorName: '小野',
+    authorColor: '#E9D5FF',
+    body: '从“雨天散步”那篇找过来的。写得很慢，但读起来很舒服。',
+    createdAt: '2026-10-15T20:11:00+08:00',
+    likes: 6,
+  },
+  {
+    id: 'g-02',
+    postId: '__guestbook__',
+    authorName: '阿宽',
+    authorColor: '#BFDBFE',
+    body: '今天杭州降温了，记得加件外套。下次想看你写菜市场。',
+    createdAt: '2026-10-17T08:42:00+08:00',
+    likes: 4,
+  },
+  {
+    id: 'g-03',
+    postId: '__guestbook__',
+    authorName: '木木',
+    authorColor: '#FDE68A',
+    body: '在工位上偷偷看完一篇，心情好了一点。谢谢你还在写。',
+    createdAt: '2026-10-18T14:07:00+08:00',
+    likes: 9,
+  },
+  {
+    id: 'g-04',
+    postId: '__guestbook__',
+    authorName: '迟迟',
+    authorId: 'demo-chichi',
+    authorColor: '#FFD84D',
+    body: '谢谢你们来。茶在桌上，自己倒。最近降温，记得添件衣服。',
+    createdAt: '2026-10-18T22:30:00+08:00',
+    likes: 14,
+  },
+]
+
+export const onlinePeople = [
+  { name: '小野', color: '#E9D5FF', initial: '野' },
+  { name: '阿宽', color: '#BFDBFE', initial: '宽' },
+  { name: 'Nana', color: '#FBCFE8', initial: 'N' },
+  { name: '木木', color: '#FDE68A', initial: '木' },
+  { name: '陈皮', color: '#BBF7D0', initial: '陈' },
+]
