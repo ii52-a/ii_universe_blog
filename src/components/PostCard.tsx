@@ -1,7 +1,6 @@
 import { Link } from 'react-router-dom'
 import { ArrowUpRight } from 'lucide-react'
-import type { Post } from '../data/posts'
-import { formatShortDate } from '../data/posts'
+import { formatShortDate, postAuthor, type Post } from '../data/posts'
 import { CoverArt } from './CoverArt'
 
 interface PostCardProps {
@@ -18,6 +17,7 @@ export function PostCard({ post, variant = 'standard' }: PostCardProps) {
       </span>
       <span className="post-card__body">
         <span className="post-card__meta">
+          <span className="post-card__author">{postAuthor(post).name}</span>
           <span>{formatShortDate(post.publishedAt)}</span>
           <span>{post.readMinutes} 分钟</span>
         </span>
@@ -44,8 +44,10 @@ export function PostRow({ post }: { post: Post }) {
         <span>{post.excerpt}</span>
       </span>
       <span className="post-row__meta">
-        {post.category}
-        <small>{post.readMinutes} 分钟</small>
+        {postAuthor(post).name}
+        <small>
+          {post.category} · {post.readMinutes} 分钟
+        </small>
       </span>
       <ArrowUpRight className="post-row__arrow" size={17} aria-hidden="true" />
     </Link>
@@ -57,16 +59,18 @@ export function SectionHead({
   description,
   link,
   linkLabel = '全部文章',
+  id,
 }: {
   title: string
   description?: string
   link?: string
   linkLabel?: string
+  id?: string
 }) {
   return (
     <div className="section-head">
       <div>
-        <h2>{title}</h2>
+        <h2 id={id}>{title}</h2>
         {description && <p>{description}</p>}
       </div>
       {link && (

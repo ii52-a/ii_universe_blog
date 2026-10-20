@@ -1,9 +1,11 @@
 import { Link } from 'react-router-dom'
 import { ArrowUp } from 'lucide-react'
 import { Brand } from './Brand'
-import { posts } from '../data/posts'
+import { usePosts } from '../lib/postsStore'
 
 export function Footer() {
+  const allPosts = usePosts()
+  const latest = allPosts[0]
   const backToTop = () => {
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
     window.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' })
@@ -25,7 +27,7 @@ export function Footer() {
         <div className="site-footer__column">
           <h2>慢慢看</h2>
           <Link to="/articles">全部文章</Link>
-          <Link to={`/articles/${posts[0].slug}`}>最新一篇</Link>
+          {latest && <Link to={`/articles/${latest.slug}`}>最新一篇</Link>}
           <Link to="/articles?category=散步">散步路线</Link>
           <Link to="/sunset">日落与版本</Link>
           <Link to="/about">关于半日</Link>
@@ -61,7 +63,7 @@ export function Footer() {
       <div className="site-footer__word" aria-hidden="true" />
 
       <div className="site-footer__bottom">
-        <span>© 2026 半日 · v1.1.0</span>
+        <span>© 2026 半日 · v1.2.0</span>
         <span>文字采用 CC BY-NC-SA 4.0</span>
         <span>用纸、茶和一点耐心做的</span>
       </div>

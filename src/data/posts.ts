@@ -26,7 +26,35 @@ export interface Post {
   readMinutes: number
   cover: CoverVariant
   featured?: boolean
+  authorId?: string
+  authorName?: string
+  authorHandle?: string
+  authorColor?: string
+  authorAvatar?: string
+  authorLocation?: string
+  userGenerated?: boolean
   content: ContentBlock[]
+}
+
+export const siteAuthor = {
+  id: 'demo-chichi',
+  name: '迟迟',
+  handle: 'chichi',
+  color: '#FFD84D',
+  location: '杭州',
+  bio: '住在杭州，写一些不着急的事。',
+}
+
+export function postAuthor(post: Post) {
+  return {
+    id: post.authorId ?? siteAuthor.id,
+    name: post.authorName ?? siteAuthor.name,
+    handle: post.authorHandle ?? siteAuthor.handle,
+    color: post.authorColor ?? siteAuthor.color,
+    avatar: post.authorAvatar,
+    location: post.authorLocation ?? siteAuthor.location,
+    bio: post.authorId && post.authorId !== siteAuthor.id ? '' : siteAuthor.bio,
+  }
 }
 
 export const categories = ['城市', '旧物', '散步', '收集', '日常', '阅读', '饮食'] as const

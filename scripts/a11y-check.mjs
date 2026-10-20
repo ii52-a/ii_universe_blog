@@ -43,6 +43,26 @@ for (const theme of themes) {
       })),
     })
   }
+
+  await page.goto(`${base}/login`, { waitUntil: 'networkidle' })
+  await page.getByRole('button', { name: '填入演示账号' }).click()
+  await page.getByRole('button', { name: /进去坐坐/ }).click()
+  await page.waitForURL('**/me')
+  await page.goto(`${base}/write`, { waitUntil: 'networkidle' })
+  const writeResults = await new AxeBuilder({ page })
+    .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
+    .analyze()
+  report.push({
+    theme,
+    path: '/write',
+    violations: writeResults.violations.map((violation) => ({
+      id: violation.id,
+      impact: violation.impact,
+      help: violation.help,
+      nodes: violation.nodes.length,
+      targets: violation.nodes.slice(0, 6).map((node) => node.target.join(' ')),
+    })),
+  })
   await context.close()
 }
 

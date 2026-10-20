@@ -1,7 +1,8 @@
 import { useDeferredValue, useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { ArrowUpRight, Search } from 'lucide-react'
-import { posts } from '../data/posts'
+import { postAuthor } from '../data/posts'
+import { usePosts } from '../lib/postsStore'
 import { CoverArt } from './CoverArt'
 
 interface SearchDialogProps {
@@ -17,6 +18,7 @@ export function SearchDialog({ open, onClose }: SearchDialogProps) {
   const [query, setQuery] = useState('')
   const deferredQuery = useDeferredValue(query)
   const normalized = deferredQuery.trim().toLowerCase()
+  const allPosts = usePosts()
 
   useEffect(() => {
     const dialog = dialogRef.current
@@ -42,15 +44,15 @@ export function SearchDialog({ open, onClose }: SearchDialogProps) {
   )
 
   const results = normalized
-    ? posts
+    ? allPosts
         .filter((post) =>
-          [post.title, post.excerpt, post.category, ...post.tags]
+          [post.title, post.excerpt, post.category, postAuthor(post).name, ...post.tags]
             .join(' ')
             .toLowerCase()
             .includes(normalized),
         )
         .slice(0, 5)
-    : posts.slice(0, 4)
+    : allPosts.slice(0, 4)
 
   const close = () => {
     dialogRef.current?.close()
@@ -117,7 +119,8 @@ export function SearchDialog({ open, onClose }: SearchDialogProps) {
                     <span className="search-results__copy">
                       <strong>{post.title}</strong>
                       <small>
-                        {post.category} · {new Date(post.publishedAt).getMonth() + 1} 月{' '}
+                        {postAuthor(post).name} · {post.category} ·{' '}
+                        {new Date(post.publishedAt).getMonth() + 1} 月{' '}
                         {new Date(post.publishedAt).getDate()} 日
                       </small>
                     </span>

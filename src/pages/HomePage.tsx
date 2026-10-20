@@ -1,8 +1,8 @@
 import { Link } from 'react-router-dom'
 import { ArrowUpRight } from 'lucide-react'
-import { posts } from '../data/posts'
 import { usePageTitle } from '../hooks/usePageTitle'
 import { useClock } from '../hooks/useClock'
+import { usePosts } from '../lib/postsStore'
 import { Ticker } from '../components/Ticker'
 import { CoverArt } from '../components/CoverArt'
 import { PostCard, SectionHead } from '../components/PostCard'
@@ -21,8 +21,9 @@ import { GuestbookSection } from '../components/GuestbookSection'
 export function HomePage() {
   usePageTitle('')
   const clock = useClock()
-  const latest = posts[0]
-  const recent = posts.slice(0, 5)
+  const allPosts = usePosts()
+  const latest = allPosts[0]
+  const recent = allPosts.slice(0, 5)
 
   return (
     <>
@@ -104,6 +105,7 @@ export function HomePage() {
               title="最近写的"
               description="有些是刚发生的事，有些是过了很久才写下来的。"
               link="/articles"
+              id="recent-title"
             />
             <div className="recent-grid">
               <PostCard post={recent[0]} variant="featured" />
@@ -113,7 +115,7 @@ export function HomePage() {
             </div>
             <Link className="all-posts-strip" to="/articles">
               <span>
-                <strong>还有 {posts.length - recent.length} 篇旧文</strong>
+                <strong>还有 {allPosts.length - recent.length} 篇旧文</strong>
                 <small>从 2024 年开始，按时间排在那边。</small>
               </span>
               <span className="all-posts-strip__arrow">

@@ -1,14 +1,19 @@
 import { Link, useParams } from 'react-router-dom'
 import { ArrowLeft } from 'lucide-react'
-import { posts } from '../data/posts'
+import { postAuthor } from '../data/posts'
+import { usePosts } from '../lib/postsStore'
 import { usePageTitle } from '../hooks/usePageTitle'
 import { PostRow } from '../components/PostCard'
 
 export function TopicPage() {
   const { topic = '' } = useParams()
   usePageTitle(`话题：${topic}`)
-  const matched = posts.filter(
-    (post) => post.category === topic || post.tags.includes(topic),
+  const allPosts = usePosts()
+  const matched = allPosts.filter(
+    (post) =>
+      post.category === topic ||
+      post.tags.includes(topic) ||
+      postAuthor(post).name === topic,
   )
 
   return (

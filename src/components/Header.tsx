@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { NavLink, useLocation, useNavigate, Link } from 'react-router-dom'
-import { ChevronDown, LogOut, Menu, Search, Settings, UserRound, X } from 'lucide-react'
+import { ChevronDown, LogOut, Menu, PenLine, Search, Settings, UserRound, X } from 'lucide-react'
 import { Brand } from './Brand'
 import { Avatar } from './Avatar'
 import { useAuth } from '../context/AuthContext'
@@ -9,7 +9,7 @@ import { SearchDialog } from './SearchDialog'
 
 const navItems = [
   { to: '/', label: '首页', end: true },
-  { to: '/articles', label: '文章', end: false },
+  { to: '/articles', label: '风吹散的页', end: false },
   { to: '/sunset', label: '日落', end: false, small: true },
   { to: '/about', label: '关于', end: false },
 ]
@@ -72,6 +72,10 @@ export function Header() {
               <span>搜一搜</span>
               <kbd aria-hidden="true">⌘ K</kbd>
             </button>
+            <Link className="write-link" to="/write">
+              <PenLine size={14} aria-hidden="true" />
+              <span>写一页</span>
+            </Link>
             <span className="site-header__divider" aria-hidden="true" />
             <AuthMenu />
             <button
@@ -118,6 +122,10 @@ export function Header() {
             <Search size={17} aria-hidden="true" />
             搜索文章
           </button>
+          <Link className="mobile-menu__write" to="/write" onClick={() => setMobileOpen(false)}>
+            <PenLine size={16} aria-hidden="true" />
+            写一页
+          </Link>
         </div>
       )}
 
@@ -188,6 +196,10 @@ function AuthMenu() {
           <Link to={`/u/${user.handle}`} className="auth-menu__item" role="menuitem">
             <UserRound size={15} aria-hidden="true" />
             我的主页
+          </Link>
+          <Link to="/write" className="auth-menu__item" role="menuitem">
+            <PenLine size={15} aria-hidden="true" />
+            写一页
           </Link>
           <Link to="/me#settings" className="auth-menu__item" role="menuitem">
             <Settings size={15} aria-hidden="true" />

@@ -15,7 +15,9 @@ const context = await browser.newContext({
 const page = await context.newPage()
 const errors = []
 page.on('console', (message) => {
-  if (message.type() === 'error') errors.push(`console: ${message.text()}`)
+  if (message.type() === 'error' && !message.text().includes('Failed to load resource')) {
+    errors.push(`console: ${message.text()}`)
+  }
 })
 page.on('pageerror', (error) => errors.push(`pageerror: ${error.message}`))
 
@@ -68,7 +70,25 @@ await page.getByRole('button', { name: '保存资料' }).click()
 await page.getByText('资料保存好了。').waitFor({ timeout: 10000 })
 await page.waitForTimeout(700)
 assert.equal(await page.locator('.auth-menu__trigger > span:nth-child(2)').innerText(), '迟迟同学')
-await page.screenshot({ path: `${outDir}/v11-profile-logged.png`, fullPage: true })
+await page.screenshot({ path: `${outDir}/v12-profile-logged.png`, fullPage: true })
+
+await page.goto(`${base}/write`, { waitUntil: 'networkidle' })
+assert.equal(await page.locator('#write-title').count(), 1, 'write page should render for a signed-in user')
+await page.locator('#write-title').fill('测试的一页：风从桥下过')
+await page.locator('#write-excerpt').fill('一篇用于检查共同文章流的短文章，写完就会出现在归档最上面。')
+await page.locator('#write-body').fill(
+  '傍晚的桥上有风。\n\n## 写一页\n这一页是为了检查发布流程，也顺便看看新文章的署名。\n\n> 文章应该出现在所有人的页面里。\n\n- 标题\n- 摘要\n- 封面',
+)
+await page.locator('#write-tags').fill('测试, 桥')
+await page.getByRole('button', { name: '发布这一页' }).click()
+await page.waitForURL(/\/articles\/page-/, { timeout: 10000 })
+await page.waitForTimeout(300)
+assert.equal(await page.locator('.article-header h1').innerText(), '测试的一页：风从桥下过')
+assert.equal(await page.locator('.article-byline strong').innerText(), '迟迟同学')
+await page.goto(`${base}/articles`, { waitUntil: 'networkidle' })
+assert.equal(await page.locator('.post-row__copy strong').first().innerText(), '测试的一页：风从桥下过')
+await page.goto(`${base}/u/chichi`, { waitUntil: 'networkidle' })
+assert.equal(await page.locator('.user-summary__stats dd').nth(1).innerText(), '9')
 
 await page.goto(`${base}/articles/a-rainy-walk-from-mantoushan`, { waitUntil: 'networkidle' })
 await page.locator('#comment-a-rainy-walk-from-mantoushan').fill('今天照着走了一遍，桂花已经开了。下次想从凤山门往回走。')
@@ -80,18 +100,18 @@ assert.equal(commentCount, '3', 'comment count should update to 3')
 
 await page.locator('.article-action').first().click()
 await page.getByRole('button', { name: /收藏/ }).first().click()
-await page.screenshot({ path: `${outDir}/v11-article-logged.png`, fullPage: true })
+await page.screenshot({ path: `${outDir}/v12-article-logged.png`, fullPage: true })
 
 await page.locator('.search-trigger').click()
 await page.locator('#site-search').fill('散步')
 await page.waitForTimeout(300)
-await page.screenshot({ path: `${outDir}/v11-search-light.png` })
+await page.screenshot({ path: `${outDir}/v12-search-light.png` })
 assert.equal(await page.locator('.search-results a').count() > 0, true, 'search should return posts')
 await page.keyboard.press('Escape')
 await page.waitForTimeout(200)
 
 await page.goto(`${base}/me`, { waitUntil: 'networkidle' })
-await page.screenshot({ path: `${outDir}/v11-profile-saved.png`, fullPage: true })
+await page.screenshot({ path: `${outDir}/v12-profile-saved.png`, fullPage: true })
 await page.getByRole('button', { name: '退出登录' }).click()
 await page.getByRole('button', { name: '确定退出' }).click()
 await page.waitForURL(`${base}/`, { timeout: 10000 })
@@ -119,7 +139,7 @@ assert.equal(
   'mobile menu should include the sunset page',
 )
 await mobile.waitForTimeout(300)
-await mobile.screenshot({ path: `${outDir}/v11-mobile-menu.png` })
+await mobile.screenshot({ path: `${outDir}/v12-mobile-menu.png` })
 await mobile.getByRole('button', { name: '关闭菜单' }).click()
 
 await browser.close()

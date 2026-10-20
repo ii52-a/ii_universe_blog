@@ -16,7 +16,8 @@ import { usePageTitle } from '../hooks/usePageTitle'
 import { useAuth } from '../context/AuthContext'
 import { useToast } from '../context/ToastContext'
 import { reactionsApi } from '../lib/api'
-import { posts, formatDate } from '../data/posts'
+import { formatDate } from '../data/posts'
+import { usePosts } from '../lib/postsStore'
 import { Avatar } from '../components/Avatar'
 import { CoverArt } from '../components/CoverArt'
 import { PostRow } from '../components/PostCard'
@@ -39,6 +40,7 @@ export function ProfilePage() {
   const { user, updateUser, logout } = useAuth()
   const { showToast } = useToast()
   const navigate = useNavigate()
+  const allPosts = usePosts()
   const fileRef = useRef<HTMLInputElement>(null)
   const [form, setForm] = useState<FormState>({
     name: user?.name ?? '',
@@ -69,7 +71,7 @@ export function ProfilePage() {
 
   if (!user) return <Navigate to="/login?from=/me" replace />
 
-  const savedPosts = posts.filter((post) => savedSlugs.includes(post.slug))
+  const savedPosts = allPosts.filter((post) => savedSlugs.includes(post.slug))
   const dirty =
     form.name !== user.name ||
     form.bio !== user.bio ||

@@ -1,12 +1,14 @@
 import { useDeferredValue, useEffect, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
-import { Search, X } from 'lucide-react'
-import { categories, posts } from '../data/posts'
+import { PenLine, Search, X } from 'lucide-react'
+import { categories, postAuthor } from '../data/posts'
+import { usePosts } from '../lib/postsStore'
 import { usePageTitle } from '../hooks/usePageTitle'
 import { PostRow } from '../components/PostCard'
 
 export function ArticlesPage() {
-  usePageTitle('文章')
+  usePageTitle('风吹散的页')
+  const allPosts = usePosts()
   const [params, setParams] = useSearchParams()
   const category = params.get('category') ?? '全部'
   const [query, setQuery] = useState(() => params.get('q') ?? '')
@@ -17,9 +19,11 @@ export function ArticlesPage() {
     setQuery((current) => (current === nextQuery ? current : nextQuery))
   }, [params])
 
-  const filtered = posts.filter((post) => {
+  const filtered = allPosts.filter((post) => {
     const matchCategory = category === '全部' || post.category === category
-    const haystack = [post.title, post.excerpt, post.category, ...post.tags].join(' ').toLowerCase()
+    const haystack = [post.title, post.excerpt, post.category, postAuthor(post).name, ...post.tags]
+      .join(' ')
+      .toLowerCase()
     const matchQuery = !deferredQuery || haystack.includes(deferredQuery)
     return matchCategory && matchQuery
   })
@@ -46,8 +50,12 @@ export function ArticlesPage() {
           <span className="page-hero__note">按时间倒着排，最近的在上面</span>
           <h1>翻到哪页算哪页。</h1>
           <p>
-            散步时记下的路线、修过的旧东西、吃过以后才想起来拍照的食物。没有固定的主题，想到什么写什么。
+            散步时记下的路线、修过的旧东西、吃过以后才想起来拍照的食物。没有固定的主题，想到什么写什么。现在也收着别人被风吹来的页。
           </p>
+          <Link className="button button--ink page-hero__write" to="/write">
+            <PenLine size={15} aria-hidden="true" />
+            写一页
+          </Link>
         </div>
         <div className="page-hero__aside" aria-hidden="true">
           <span className="page-hero__stamp">半日</span>
@@ -137,7 +145,7 @@ export function ArticlesPage() {
         )}
 
         <div className="archive-foot">
-          <p>从 2024 年 11 月写到现在，一共 {posts.length} 篇。</p>
+          <p>从 2024 年 11 月写到现在，一共 {allPosts.length} 篇。</p>
           <Link className="text-link" to="/about">
             为什么写这些 <span aria-hidden="true">↗</span>
           </Link>

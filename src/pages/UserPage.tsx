@@ -12,14 +12,15 @@ import {
 } from 'lucide-react'
 import { commentsApi } from '../lib/api'
 import { readStorage } from '../lib/storage'
-import { posts } from '../data/posts'
+import { usePosts } from '../lib/postsStore'
+import { postAuthor } from '../data/posts'
 import type { Comment } from '../data/comments'
 import { useAuth, demoUser } from '../context/AuthContext'
 import { usePageTitle } from '../hooks/usePageTitle'
 import { useToast } from '../context/ToastContext'
 import { Avatar } from '../components/Avatar'
 import { CoverArt } from '../components/CoverArt'
-import { SectionHead } from '../components/PostCard'
+import { PostRow, SectionHead } from '../components/PostCard'
 import { NotFoundPage } from './NotFoundPage'
 
 const guestbookLabel = '留言簿'
@@ -28,8 +29,31 @@ export function UserPage() {
   const { handle = '' } = useParams()
   const { user } = useAuth()
   const { showToast } = useToast()
+  const allPosts = usePosts()
   const isMe = Boolean(user && user.handle === handle)
-  const profile = isMe ? user : handle === demoUser.handle ? demoUser : null
+  const publicAuthor = allPosts
+    .map((post) => ({ author: postAuthor(post), post }))
+    .find((entry) => entry.author.handle === handle)
+  const profile = isMe
+    ? user
+    : handle === demoUser.handle
+      ? demoUser
+      : publicAuthor
+        ? {
+            id: publicAuthor.author.id,
+            name: publicAuthor.author.name,
+            email: '',
+            handle: publicAuthor.author.handle,
+            bio: publicAuthor.author.bio || '在半日写过几页，偶尔也留一句话。',
+            location: publicAuthor.author.location,
+            website: '',
+            avatar: publicAuthor.author.avatar,
+            avatarColor: publicAuthor.author.color,
+            joinedAt: [...allPosts]
+              .reverse()
+              .find((post) => postAuthor(post).handle === handle)?.publishedAt ?? publicAuthor.post.publishedAt,
+          }
+        : null
   usePageTitle(profile ? `${profile.name}的主页` : '没有这位岛民')
 
   const [comments, setComments] = useState<Comment[]>([])
@@ -51,7 +75,7 @@ export function UserPage() {
     return () => {
       cancelled = true
     }
-  }, [profile])
+  }, [profile?.id, profile?.name])
 
   if (!profile) return <NotFoundPage />
 
@@ -60,10 +84,11 @@ export function UserPage() {
   )
   const days = Math.max(1, Math.floor((Date.now() - +new Date(profile.joinedAt)) / 86400000))
   const saved = readStorage<string[]>('post-bookmarks.v1', [])
+  const authored = allPosts.filter((post) => postAuthor(post).id === profile.id)
   const visitedPlaces = Array.from(
     new Set(
       comments
-        .map((comment) => posts.find((post) => post.slug === comment.postId)?.category)
+        .map((comment) => allPosts.find((post) => post.slug === comment.postId)?.category)
         .filter((value): value is string => Boolean(value)),
     ),
   ).slice(0, 4)
@@ -172,72 +197,90 @@ export function UserPage() {
                 <dd>{comments.length}</dd>
               </div>
               <div>
-                <dt>在岛上</dt>
-                <dd>{days} 天</dd>
+                <dt>写的页</dt>
+                <dd>{authored.length}</dd>
               </div>
               <div>
-                <dt>{isMe ? '收藏' : '常去'}</dt>
-                <dd>{isMe ? `${saved.length} 篇` : visitedPlaces.length || '—'}</dd>
+                <dt>在岛上</dt>
+                <dd>{days} 天</dd>
               </div>
             </dl>
           </aside>
         </header>
 
         <div className="user-content">
-          <section className="user-traces" aria-labelledby="traces-title">
-            <SectionHead
-              title="留下的句子"
-              description={loading ? '正在翻找…' : comments.length > 0 ? `一共 ${comments.length} 条，按时间排着。` : '还没留下什么。'}
-            />
-            {loading ? (
-              <div className="user-traces__loading" role="status" aria-label="正在加载留言">
-                <span />
-                <span />
-              </div>
-            ) : comments.length > 0 ? (
-              <div className="user-traces__list">
-                {comments.map((comment) => {
-                  const post = posts.find((item) => item.slug === comment.postId)
-                  const to = post ? `/articles/${post.slug}` : '/#guestbook'
-                  const title = post ? post.title : guestbookLabel
-                  return (
-                    <Link className="user-trace" to={to} key={comment.id}>
-                      <span className="user-trace__cover">
-                        <CoverArt variant={post?.cover ?? 'desk'} decorative />
-                      </span>
-                      <span className="user-trace__body">
-                        <span className="user-trace__meta">
-                          <span>{title}</span>
-                          <time dateTime={comment.createdAt}>
-                            {new Intl.DateTimeFormat('zh-CN', { month: '2-digit', day: '2-digit' })
-                              .format(new Date(comment.createdAt))
-                              .replace('/', '.')}
-                          </time>
-                        </span>
-                        <strong>“{comment.body}”</strong>
-                        <span className="user-trace__more">
-                          去看看 <ArrowUpRight size={12} aria-hidden="true" />
-                        </span>
-                      </span>
-                    </Link>
-                  )
-                })}
-              </div>
-            ) : (
-              <div className="user-traces__empty">
-                <span aria-hidden="true">✳</span>
-                <h3>这一页还很空。</h3>
-                <p>
-                  {isMe
-                    ? '去文章底下或者留言簿写一句，它会出现在这里。'
-                    : '也许下次来，会多几句话。'}
-                </p>
-                <Link className="text-link" to={isMe ? '/articles' : '/#guestbook'}>
-                  {isMe ? '去翻文章' : '去留言簿看看'} <span aria-hidden="true">↗</span>
-                </Link>
-              </div>
+          <div className="user-main">
+            {authored.length > 0 && (
+              <section className="user-posts" aria-labelledby="user-posts-title">
+                <SectionHead
+                  title="写过的页"
+                  description={`${authored.length} 篇，和其他人的页放在一起。`}
+                  id="user-posts-title"
+                />
+                <div className="user-posts__list">
+                  {authored.slice(0, 4).map((post) => (
+                    <PostRow key={post.slug} post={post} />
+                  ))}
+                </div>
+              </section>
             )}
-          </section>
+
+            <section className="user-traces" aria-labelledby="traces-title">
+              <SectionHead
+                title="留下的句子"
+                description={loading ? '正在翻找…' : comments.length > 0 ? `一共 ${comments.length} 条，按时间排着。` : '还没留下什么。'}
+                id="traces-title"
+              />
+              {loading ? (
+                <div className="user-traces__loading" role="status" aria-label="正在加载留言">
+                  <span />
+                  <span />
+                </div>
+              ) : comments.length > 0 ? (
+                <div className="user-traces__list">
+                  {comments.map((comment) => {
+                    const post = allPosts.find((item) => item.slug === comment.postId)
+                    const to = post ? `/articles/${post.slug}` : '/#guestbook'
+                    const title = post ? post.title : guestbookLabel
+                    return (
+                      <Link className="user-trace" to={to} key={comment.id}>
+                        <span className="user-trace__cover">
+                          <CoverArt variant={post?.cover ?? 'desk'} decorative />
+                        </span>
+                        <span className="user-trace__body">
+                          <span className="user-trace__meta">
+                            <span>{title}</span>
+                            <time dateTime={comment.createdAt}>
+                              {new Intl.DateTimeFormat('zh-CN', { month: '2-digit', day: '2-digit' })
+                                .format(new Date(comment.createdAt))
+                                .replace('/', '.')}
+                            </time>
+                          </span>
+                          <strong>“{comment.body}”</strong>
+                          <span className="user-trace__more">
+                            去看看 <ArrowUpRight size={12} aria-hidden="true" />
+                          </span>
+                        </span>
+                      </Link>
+                    )
+                  })}
+                </div>
+              ) : (
+                <div className="user-traces__empty">
+                  <span aria-hidden="true">✳</span>
+                  <h3>这一页还很空。</h3>
+                  <p>
+                    {isMe
+                      ? '去文章底下或者留言簿写一句，它会出现在这里。'
+                      : '也许下次来，会多几句话。'}
+                  </p>
+                  <Link className="text-link" to={isMe ? '/articles' : '/#guestbook'}>
+                    {isMe ? '去翻文章' : '去留言簿看看'} <span aria-hidden="true">↗</span>
+                  </Link>
+                </div>
+              )}
+            </section>
+          </div>
 
           <aside className="user-side">
             <div className="user-side__card">
@@ -274,7 +317,7 @@ export function UserPage() {
               <div className="user-side__card">
                 <h2>收着的几页</h2>
                 <div className="user-side__saved">
-                  {posts
+                  {allPosts
                     .filter((post) => saved.includes(post.slug))
                     .slice(0, 3)
                     .map((post) => (

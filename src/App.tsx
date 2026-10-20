@@ -12,6 +12,7 @@ import { ProfilePage } from './pages/ProfilePage'
 import { TopicPage } from './pages/TopicPage'
 import { UserPage } from './pages/UserPage'
 import { SunsetPage } from './pages/SunsetPage'
+import { WritePage } from './pages/WritePage'
 import { NotFoundPage } from './pages/NotFoundPage'
 
 export default function App() {
@@ -25,6 +26,7 @@ export default function App() {
                 <Route path="/" element={<HomePage />} />
                 <Route path="/articles" element={<ArticlesPage />} />
                 <Route path="/articles/:slug" element={<ArticlePage />} />
+                <Route path="/write" element={<WritePage />} />
                 <Route path="/topics/:topic" element={<TopicPage />} />
                 <Route path="/about" element={<AboutPage />} />
                 <Route path="/sunset" element={<SunsetPage />} />

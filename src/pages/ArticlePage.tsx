@@ -8,9 +8,10 @@ import {
   Link2,
   MessageCircle,
 } from 'lucide-react'
-import { getPost, posts, type ContentBlock, type Post } from '../data/posts'
+import { type ContentBlock, type Post, postAuthor } from '../data/posts'
 import { usePageTitle } from '../hooks/usePageTitle'
 import { reactionsApi, commentsApi } from '../lib/api'
+import { usePosts } from '../lib/postsStore'
 import { useToast } from '../context/ToastContext'
 import { CoverArt } from '../components/CoverArt'
 import { Avatar } from '../components/Avatar'
@@ -26,7 +27,8 @@ function getHeadings(post: Post) {
 
 export function ArticlePage() {
   const { slug } = useParams()
-  const post = getPost(slug)
+  const allPosts = usePosts()
+  const post = allPosts.find((item) => item.slug === slug)
   usePageTitle(post?.title ?? '没有这篇')
   const { showToast } = useToast()
   const [reaction, setReaction] = useState(() =>
@@ -92,7 +94,8 @@ export function ArticlePage() {
 
   if (!post) return <NotFoundPage />
 
-  const related = posts
+  const author = postAuthor(post)
+  const related = allPosts
     .filter(
       (item) =>
         item.slug !== post.slug &&
@@ -102,7 +105,7 @@ export function ArticlePage() {
   const relatedSlugs = new Set(related.map((item) => item.slug))
   const fallbackRelated = [
     ...related,
-    ...posts.filter((item) => item.slug !== post.slug && !relatedSlugs.has(item.slug)),
+    ...allPosts.filter((item) => item.slug !== post.slug && !relatedSlugs.has(item.slug)),
   ].slice(0, 2)
 
   const handleLike = () => {
@@ -166,11 +169,11 @@ export function ArticlePage() {
           <h1>{post.title}</h1>
           <p className="article-header__dek">{post.excerpt}</p>
           <div className="article-byline">
-            <Avatar name="迟迟" color="#FFD84D" size="md" />
+            <Avatar name={author.name} color={author.color} src={author.avatar} size="md" />
             <div>
-              <strong>迟迟</strong>
+              <strong>{author.name}</strong>
               <span>
-                <i className="online-dot" aria-hidden="true" /> 在杭州，慢慢写
+                <i className="online-dot" aria-hidden="true" /> 在{author.location}，慢慢写
               </span>
             </div>
             <div className="article-actions">
@@ -202,7 +205,7 @@ export function ArticlePage() {
         <figure className="article-cover">
           <CoverArt variant={post.cover} />
           <figcaption>
-            {post.category === '散步' ? '杭州 · 凤凰山脚' : '杭州 · 十月'} / 插图：迟迟
+            {post.category === '散步' ? '杭州 · 凤凰山脚' : '杭州 · 十月'} / 插图：半日
           </figcaption>
         </figure>
 
@@ -247,7 +250,7 @@ export function ArticlePage() {
               <span className="article-end__mark" aria-hidden="true">
                 ✳
               </span>
-              <p>写于杭州，{new Intl.DateTimeFormat('zh-CN', { month: 'long', day: 'numeric' }).format(new Date(post.publishedAt))}</p>
+              <p>写于{author.location}，{new Intl.DateTimeFormat('zh-CN', { month: 'long', day: 'numeric' }).format(new Date(post.publishedAt))}</p>
               <span>如果这篇让你想起什么，留言告诉我。</span>
             </div>
 
@@ -280,14 +283,14 @@ export function ArticlePage() {
             )}
 
             <div className="author-card">
-              <Avatar name="迟迟" color="#FFD84D" size="lg" />
+              <Avatar name={author.name} color={author.color} src={author.avatar} size="lg" />
               <div>
-                <strong>迟迟</strong>
-                <span>写作者，住在杭州</span>
+                <strong>{author.name}</strong>
+                <span>{author.id === 'demo-chichi' ? '写作者，住在杭州' : '岛民，偶尔写一页'}</span>
               </div>
-              <p>记一些不着急的事。偶尔修东西，常常散步，尽量自己做饭。</p>
-              <Link to="/about" className="text-link">
-                再多认识一点 <ArrowUpRight size={13} aria-hidden="true" />
+              <p>{author.bio || '在半日留下一篇文章，也留下一小段时间。'}</p>
+              <Link to={`/u/${author.handle}`} className="text-link">
+                去{author.name}的主页 <ArrowUpRight size={13} aria-hidden="true" />
               </Link>
             </div>
 

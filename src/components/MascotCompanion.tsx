@@ -113,7 +113,11 @@ export function MascotCompanion() {
     bubbleTimer.current = window.setTimeout(() => setBubble(false), 4200)
   }
 
-  if (pathname.startsWith('/login') || pathname.startsWith('/me')) {
+  if (
+    pathname.startsWith('/login') ||
+    pathname.startsWith('/me') ||
+    pathname.startsWith('/write')
+  ) {
     return null
   }
 
