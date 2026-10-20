@@ -6,3 +6,5 @@ dist/
 .vite/
 *.tsbuildinfo
 .references/astro-bento-portfolio/
+server/.data/
+server/.next/

@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
-import { Link, Navigate, useNavigate } from 'react-router-dom'
+import { Link, Navigate, useNavigate, useSearchParams } from 'react-router-dom'
 import { ArrowLeft, Check, Eye, Image, PenLine, Plus } from 'lucide-react'
 import type { CoverVariant } from '../data/posts'
-import { parseArticleBody, countCharacters } from '../lib/markdown'
-import { publishPost } from '../lib/postsStore'
+import { parseArticleBody, countCharacters, stringifyArticleBody } from '../lib/markdown'
+import { publishPost, updatePost } from '../lib/postsStore'
+import { postsApi, BackendError } from '../lib/backend'
 import { readStorage, removeStorage, writeStorage } from '../lib/storage'
 import { useAuth } from '../context/AuthContext'
 import { useToast } from '../context/ToastContext'
@@ -46,13 +47,17 @@ const emptyDraft: Draft = {
 type Errors = Partial<Record<'title' | 'excerpt' | 'body', string>>
 
 export function WritePage() {
-  usePageTitle('写一页')
-  const { user } = useAuth()
+  const [params] = useSearchParams()
+  const editingSlug = params.get('edit')
+  usePageTitle(editingSlug ? '改一页' : '写一页')
+  const { user, ready } = useAuth()
   const { showToast } = useToast()
   const navigate = useNavigate()
   const [form, setForm] = useState<Draft>(() => readStorage<Draft>('write-draft.v1', emptyDraft))
   const [errors, setErrors] = useState<Errors>({})
   const [saving, setSaving] = useState(false)
+  const [loadingEdit, setLoadingEdit] = useState(Boolean(editingSlug))
+  const [editError, setEditError] = useState('')
   const [draftState, setDraftState] = useState<'idle' | 'saved'>('idle')
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
@@ -64,6 +69,7 @@ export function WritePage() {
     .filter(Boolean)
 
   useEffect(() => {
+    if (editingSlug) return
     if (form === emptyDraft) return
     const timer = window.setTimeout(() => {
       writeStorage('write-draft.v1', form)
@@ -71,9 +77,78 @@ export function WritePage() {
       window.setTimeout(() => setDraftState('idle'), 1800)
     }, 500)
     return () => window.clearTimeout(timer)
-  }, [form])
+  }, [form, editingSlug])
 
-  if (!user) return <Navigate to="/login?from=/write" replace />
+  useEffect(() => {
+    if (!editingSlug || !ready || !user) return
+    let cancelled = false
+    setLoadingEdit(true)
+    postsApi
+      .get(editingSlug)
+      .then(({ post }) => {
+        if (cancelled) return
+        if (post.authorId !== user.id) {
+          setEditError('这一页不是你写的，只能看，不能改。')
+          return
+        }
+        setForm({
+          title: post.title,
+          excerpt: post.excerpt,
+          category: post.category,
+          tags: post.tags.join(', '),
+          cover: post.cover as CoverVariant,
+          body: post.body || stringifyArticleBody(post.content),
+        })
+      })
+      .catch((error) => {
+        if (!cancelled) {
+          setEditError(error instanceof BackendError ? error.message : '这一页没有加载出来。')
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setLoadingEdit(false)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [editingSlug, ready, user])
+
+  if (!ready) {
+    return (
+      <div className="write-page">
+        <div className="page-container write-loading">
+          <span className="spinner" aria-hidden="true" />
+          正在确认你的登录状态…
+        </div>
+      </div>
+    )
+  }
+
+  if (!user) return <Navigate to={`/login?from=${encodeURIComponent(editingSlug ? `/write?edit=${editingSlug}` : '/write')}`} replace />
+
+  if (loadingEdit) {
+    return (
+      <div className="write-page">
+        <div className="page-container write-loading">
+          <span className="spinner" aria-hidden="true" />
+          正在把这一页翻出来…
+        </div>
+      </div>
+    )
+  }
+
+  if (editError) {
+    return (
+      <div className="write-page">
+        <div className="page-container write-loading">
+          <p>{editError}</p>
+          <Link className="text-link" to="/articles">
+            回到风吹散的页
+          </Link>
+        </div>
+      </div>
+    )
+  }
 
   const update = <Key extends keyof Draft>(key: Key, value: Draft[Key]) => {
     setForm((current) => ({ ...current, [key]: value }))
@@ -108,28 +183,28 @@ export function WritePage() {
     return Object.keys(next).length === 0
   }
 
-  const handleSubmit = (event: FormEvent) => {
+  const handleSubmit = async (event: FormEvent) => {
     event.preventDefault()
     if (!validate()) return
     setSaving(true)
     try {
-      const post = publishPost(
-        {
-          title: form.title,
-          excerpt: form.excerpt,
-          category: form.category,
-          tags,
-          cover: form.cover,
-          content: blocks,
-          body: form.body,
-        },
-        user,
-      )
+      const input = {
+        title: form.title,
+        excerpt: form.excerpt,
+        category: form.category,
+        tags,
+        cover: form.cover,
+        content: blocks,
+        body: form.body,
+      }
+      const post = editingSlug
+        ? await updatePost(editingSlug, input)
+        : await publishPost(input)
       removeStorage('write-draft.v1')
-      showToast('这一页写好了，已经放进风里。')
+      showToast(editingSlug ? '这一页改好了。' : '这一页写好了，已经放进风里。')
       navigate(`/articles/${post.slug}`)
-    } catch {
-      showToast('没有发出去，再试一次。', 'error')
+    } catch (error) {
+      showToast(error instanceof BackendError ? error.message : '没有发出去，再试一次。', 'error')
     } finally {
       setSaving(false)
     }
@@ -140,10 +215,12 @@ export function WritePage() {
       <div className="page-container">
         <header className="write-head">
           <div>
-            <span className="page-hero__note">共同文章 · 写一页</span>
-            <h1>把今天写下来。</h1>
+            <span className="page-hero__note">{editingSlug ? '共同文章 · 改一页' : '共同文章 · 写一页'}</span>
+            <h1>{editingSlug ? '把这一页再理一理。' : '把今天写下来。'}</h1>
             <p>
-              这一页会放进「风吹散的页」，署你的名字。没有主题要求，散步、饭、旧东西，或者一件没做成的小事，都可以。
+              {editingSlug
+                ? '改完以后会保留原来的地址，评论和收藏不会丢。'
+                : '这一页会放进「风吹散的页」，署你的名字。没有主题要求，散步、饭、旧东西，或者一件没做成的小事，都可以。'}
             </p>
           </div>
           <Link className="text-link" to="/articles">
@@ -301,10 +378,16 @@ export function WritePage() {
             <div className="write-actions">
               <button type="submit" className="button button--ink" disabled={saving}>
                 {saving ? <span className="spinner" aria-hidden="true" /> : <Check size={16} aria-hidden="true" />}
-                {saving ? '正在放进风里…' : '发布这一页'}
+                {saving ? '正在保存…' : editingSlug ? '保存修改' : '发布这一页'}
               </button>
               <span className="write-draft-state" role="status">
-                {draftState === 'saved' ? '草稿已存' : form.title || form.body ? '草稿会自动留在本机' : ''}
+                {editingSlug
+                  ? '保存后文章地址不变'
+                  : draftState === 'saved'
+                    ? '草稿已存'
+                    : form.title || form.body
+                      ? '草稿会自动留在本机'
+                      : ''}
               </span>
             </div>
           </form>

@@ -1,46 +1,103 @@
-import { useState, type FormEvent } from 'react'
+import { useEffect, useState, type FormEvent } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
-import { ArrowLeft, ArrowUpRight, Check, Eye, EyeOff, KeyRound, Mail, UserRound } from 'lucide-react'
+import {
+  ArrowLeft,
+  ArrowUpRight,
+  Check,
+  Eye,
+  EyeOff,
+  KeyRound,
+  Mail,
+  ShieldCheck,
+  UserRound,
+} from 'lucide-react'
 import { usePageTitle } from '../hooks/usePageTitle'
-import { useAuth } from '../context/AuthContext'
+import { useAuth, rememberedEmail, type AuthMode } from '../context/AuthContext'
 import { useToast } from '../context/ToastContext'
+import { authApi, BackendError } from '../lib/backend'
 import { Avatar } from '../components/Avatar'
 import { CoverArt } from '../components/CoverArt'
 
 type Mode = 'login' | 'register'
-type Errors = Partial<Record<'name' | 'email' | 'password' | 'form', string>>
+type Errors = Record<string, string | undefined>
 
 export function LoginPage() {
   const [mode, setMode] = useState<Mode>('login')
   usePageTitle(mode === 'login' ? '登录' : '注册')
-  const { user, login, register, logout } = useAuth()
+  const { user, login, register, logout, ready } = useAuth()
   const { showToast } = useToast()
   const navigate = useNavigate()
   const [params] = useSearchParams()
-  const [name, setName] = useState('')
+  const [identifier, setIdentifier] = useState('')
+  const [username, setUsername] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [code, setCode] = useState('')
+  const [devCode, setDevCode] = useState('')
+  const [authMode, setAuthMode] = useState<AuthMode>('session')
+  const [remember, setRemember] = useState(true)
   const [showPassword, setShowPassword] = useState(false)
   const [submitting, setSubmitting] = useState(false)
+  const [sendingCode, setSendingCode] = useState(false)
+  const [cooldown, setCooldown] = useState(0)
   const [errors, setErrors] = useState<Errors>({})
 
   const fromParam = params.get('from')
-  const from = fromParam && fromParam.startsWith('/') ? fromParam : '/me'
+  const from = fromParam && fromParam.startsWith('/') ? fromParam : '/space'
+
+  useEffect(() => {
+    const remembered = rememberedEmail()
+    if (remembered) {
+      setIdentifier(remembered)
+      setEmail(remembered)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (cooldown <= 0) return
+    const timer = window.setInterval(() => setCooldown((value) => Math.max(0, value - 1)), 1000)
+    return () => window.clearInterval(timer)
+  }, [cooldown])
 
   const validate = () => {
     const next: Errors = {}
     if (mode === 'register') {
-      if (name.trim().length < 2) next.name = '名字至少写两个字。'
-      if (name.trim().length > 16) next.name = '名字最多 16 个字。'
+      if (username.trim().length < 2) next.username = '用户名至少 2 个字。'
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) next.email = '这个邮箱看起来不太对。'
+      if (!/^\d{6}$/.test(code)) next.code = '验证码是 6 位数字。'
+      if (password.length < 8) next.password = '密码至少 8 位。'
+      if (!/[A-Za-z]/.test(password) || !/\d/.test(password)) next.password = '密码要同时包含字母和数字。'
+    } else {
+      if (!identifier.trim()) next.identifier = '请输入邮箱或用户名。'
+      if (!password) next.password = '请输入密码。'
     }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) next.email = '这个邮箱看起来不太对。'
-    if (password.length < 6) next.password = '密码至少需要 6 位。'
     setErrors(next)
-    const firstError = next.name ? 'auth-name' : next.email ? 'auth-email' : next.password ? 'auth-password' : null
-    if (firstError) {
-      window.requestAnimationFrame(() => document.getElementById(firstError)?.focus())
-    }
     return Object.keys(next).length === 0
+  }
+
+  const sendCode = async () => {
+    setErrors((current) => ({ ...current, email: undefined, code: undefined }))
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+      setErrors((current) => ({ ...current, email: '先写一个有效的邮箱。' }))
+      return
+    }
+    setSendingCode(true)
+    try {
+      const result = await authApi.requestCode(email.trim(), 'register')
+      if (result.devCode) {
+        setDevCode(result.devCode)
+        setCode(result.devCode)
+        showToast(`演示验证码：${result.devCode}`)
+      } else {
+        showToast('验证码已经发出，请查收邮箱。')
+      }
+      setCooldown(60)
+    } catch (error) {
+      const message = error instanceof BackendError ? error.message : '验证码没有发出去。'
+      setErrors((current) => ({ ...current, email: message, form: message }))
+    } finally {
+      setSendingCode(false)
+    }
   }
 
   const handleSubmit = async (event: FormEvent) => {
@@ -51,16 +108,32 @@ export function LoginPage() {
     try {
       const nextUser =
         mode === 'login'
-          ? await login(email, password)
-          : await register(name, email, password)
+          ? await login(identifier, password, { mode: authMode, remember })
+          : await register({ username, email, password, code })
       showToast(mode === 'login' ? `欢迎回来，${nextUser.name}。` : `账号建好了，${nextUser.name}。`)
       navigate(from, { replace: true })
-    } catch (caught) {
-      const message = caught instanceof Error ? caught.message : '出了点问题，再试一次。'
-      setErrors({ form: message })
+    } catch (error) {
+      if (error instanceof BackendError) {
+        setErrors({ ...(error.fields ?? {}), form: error.message })
+      } else {
+        setErrors({ form: '出了点问题，再试一次。' })
+      }
     } finally {
       setSubmitting(false)
     }
+  }
+
+  if (!ready) {
+    return (
+      <div className="login-page">
+        <div className="page-container login-page__inner login-page__inner--signed">
+          <div className="signed-card">
+            <span className="signed-card__eyebrow">正在确认登录状态</span>
+            <h1>稍等一下。</h1>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   if (user) {
@@ -71,17 +144,17 @@ export function LoginPage() {
             <Avatar name={user.name} color={user.avatarColor} src={user.avatar} size="xl" />
             <span className="signed-card__eyebrow">已经登录</span>
             <h1>{user.name}，你在这里。</h1>
-            <p>资料和留言都还在原来的地方。</p>
+            <p>资料和文章都还在原来的地方。</p>
             <div className="signed-card__actions">
-              <Link className="button button--ink" to="/me">
-                去个人主页
+              <Link className="button button--ink" to="/space">
+                去个人空间
                 <ArrowUpRight size={16} aria-hidden="true" />
               </Link>
               <button
                 type="button"
                 className="button button--ghost"
                 onClick={() => {
-                  logout()
+                  void logout()
                   showToast('已退出，可以换个账号。', 'info')
                 }}
               >
@@ -103,7 +176,7 @@ export function LoginPage() {
               <ArrowLeft size={15} aria-hidden="true" />
               回到半日
             </Link>
-            <span>第 26 次更新</span>
+            <span>v1.3 · 后端已接通</span>
           </div>
           <div className="login-art__card">
             <span className="tape" />
@@ -115,7 +188,7 @@ export function LoginPage() {
             <br />
             一半用来浪费。
           </blockquote>
-          <p>登录以后，可以收藏文章、留下评论，也可以只把头像换成一只有点困的电视。</p>
+          <p>登录以后，可以保存自己的文章、头像和留言。会话与 JWT 两种登录方式都可以选。</p>
           <div className="login-art__toys" aria-hidden="true">
             <span className="toy-dot toy-dot--yellow" />
             <span className="toy-dot toy-dot--blue" />
@@ -132,8 +205,8 @@ export function LoginPage() {
             <h1 id="auth-title">{mode === 'login' ? '回来坐坐。' : '给自己留个位置。'}</h1>
             <p>
               {mode === 'login'
-                ? '不用记太多，邮箱和密码就行。'
-                : '资料都保存在这台设备上，随时可以改。'}
+                ? '邮箱或用户名都可以。'
+                : '邮箱注册，验证码只在这一次使用。'}
             </p>
           </div>
 
@@ -165,60 +238,98 @@ export function LoginPage() {
           </div>
 
           <form className="auth-form" onSubmit={handleSubmit} noValidate>
-            {mode === 'register' && (
+            {mode === 'register' ? (
+              <>
+                <div className="field">
+                  <label htmlFor="auth-name">用户名</label>
+                  <div className={`field__control${errors.username ? ' has-error' : ''}`}>
+                    <UserRound size={16} aria-hidden="true" />
+                    <input
+                      id="auth-name"
+                      name="username"
+                      type="text"
+                      autoComplete="username"
+                      placeholder="比如：DeepS先生"
+                      value={username}
+                      onChange={(event) => setUsername(event.target.value)}
+                      aria-invalid={Boolean(errors.username)}
+                    />
+                  </div>
+                  {errors.username && <span className="field-error">{errors.username}</span>}
+                </div>
+
+                <div className="field">
+                  <label htmlFor="auth-email">邮箱</label>
+                  <div className={`field__control${errors.email ? ' has-error' : ''}`}>
+                    <Mail size={16} aria-hidden="true" />
+                    <input
+                      id="auth-email"
+                      name="email"
+                      type="email"
+                      autoComplete="email"
+                      placeholder="you@example.com"
+                      value={email}
+                      onChange={(event) => setEmail(event.target.value)}
+                      aria-invalid={Boolean(errors.email)}
+                    />
+                  </div>
+                  {errors.email && <span className="field-error">{errors.email}</span>}
+                </div>
+
+                <div className="field">
+                  <label htmlFor="auth-code">邮箱验证码</label>
+                  <div className="auth-code-row">
+                    <div className={`field__control${errors.code ? ' has-error' : ''}`}>
+                      <ShieldCheck size={16} aria-hidden="true" />
+                      <input
+                        id="auth-code"
+                        name="code"
+                        type="text"
+                        inputMode="numeric"
+                        maxLength={6}
+                        autoComplete="one-time-code"
+                        placeholder="6 位数字"
+                        value={code}
+                        onChange={(event) => setCode(event.target.value.replace(/\D/g, '').slice(0, 6))}
+                        aria-invalid={Boolean(errors.code)}
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      className="button button--ghost button--small auth-code-button"
+                      onClick={sendCode}
+                      disabled={sendingCode || cooldown > 0}
+                    >
+                      {sendingCode ? '发送中…' : cooldown > 0 ? `${cooldown}s` : '获取验证码'}
+                    </button>
+                  </div>
+                  {errors.code && <span className="field-error">{errors.code}</span>}
+                  {devCode && (
+                    <span className="field-hint">
+                      演示验证码：<code>{devCode}</code>，真实项目里会通过邮件发送。
+                    </span>
+                  )}
+                </div>
+              </>
+            ) : (
               <div className="field">
-                <label htmlFor="auth-name">怎么称呼你</label>
-                <div className={`field__control${errors.name ? ' has-error' : ''}`}>
-                  <UserRound size={16} aria-hidden="true" />
+                <label htmlFor="auth-identifier">邮箱或用户名</label>
+                <div className={`field__control${errors.identifier ? ' has-error' : ''}`}>
+                  <Mail size={16} aria-hidden="true" />
                   <input
-                    id="auth-name"
-                    name="name"
+                    id="auth-identifier"
+                    name="identifier"
                     type="text"
-                    autoComplete="nickname"
-                    placeholder="比如：迟迟"
-                    value={name}
-                    onChange={(event) => {
-                      setName(event.target.value)
-                      if (errors.name) setErrors((current) => ({ ...current, name: undefined }))
-                    }}
-                    aria-invalid={Boolean(errors.name)}
-                    aria-describedby={errors.name ? 'auth-name-error' : undefined}
+                    autoComplete="username"
+                    placeholder="hello@halfday.club"
+                    value={identifier}
+                    onChange={(event) => setIdentifier(event.target.value)}
+                    aria-invalid={Boolean(errors.identifier)}
                   />
                 </div>
-                {errors.name && (
-                  <span className="field-error" id="auth-name-error">
-                    {errors.name}
-                  </span>
-                )}
+                {errors.identifier && <span className="field-error">{errors.identifier}</span>}
               </div>
             )}
-
-            <div className="field">
-              <label htmlFor="auth-email">邮箱</label>
-              <div className={`field__control${errors.email ? ' has-error' : ''}`}>
-                <Mail size={16} aria-hidden="true" />
-                <input
-                  id="auth-email"
-                  name="email"
-                  type="email"
-                  inputMode="email"
-                  autoComplete="email"
-                  placeholder="you@example.com"
-                  value={email}
-                  onChange={(event) => {
-                    setEmail(event.target.value)
-                    if (errors.email) setErrors((current) => ({ ...current, email: undefined }))
-                  }}
-                  aria-invalid={Boolean(errors.email)}
-                  aria-describedby={errors.email ? 'auth-email-error' : undefined}
-                />
-              </div>
-              {errors.email && (
-                <span className="field-error" id="auth-email-error">
-                  {errors.email}
-                </span>
-              )}
-            </div>
 
             <div className="field">
               <label htmlFor="auth-password">密码</label>
@@ -229,14 +340,10 @@ export function LoginPage() {
                   name="password"
                   type={showPassword ? 'text' : 'password'}
                   autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
-                  placeholder="至少 6 位"
+                  placeholder={mode === 'login' ? '输入密码' : '至少 8 位，含字母和数字'}
                   value={password}
-                  onChange={(event) => {
-                    setPassword(event.target.value)
-                    if (errors.password) setErrors((current) => ({ ...current, password: undefined }))
-                  }}
+                  onChange={(event) => setPassword(event.target.value)}
                   aria-invalid={Boolean(errors.password)}
-                  aria-describedby={errors.password ? 'auth-password-error' : 'auth-password-hint'}
                 />
                 <button
                   type="button"
@@ -248,15 +355,56 @@ export function LoginPage() {
                 </button>
               </div>
               {errors.password ? (
-                <span className="field-error" id="auth-password-error">
-                  {errors.password}
-                </span>
+                <span className="field-error">{errors.password}</span>
               ) : (
-                <span className="field-hint" id="auth-password-hint">
-                  演示站点，密码只会用来确认是你。
+                <span className="field-hint">
+                  {mode === 'login' ? '不会保存明文密码。' : '8–72 位，至少一个字母和一个数字。'}
                 </span>
               )}
             </div>
+
+            {mode === 'login' && (
+              <>
+                <fieldset className="auth-mode">
+                  <legend>登录方式</legend>
+                  <label className={authMode === 'session' ? 'is-active' : ''}>
+                    <input
+                      type="radio"
+                      name="auth-mode"
+                      value="session"
+                      checked={authMode === 'session'}
+                      onChange={() => setAuthMode('session')}
+                    />
+                    <span>会话 Cookie</span>
+                    <small>可撤销</small>
+                  </label>
+                  <label className={authMode === 'jwt' ? 'is-active' : ''}>
+                    <input
+                      type="radio"
+                      name="auth-mode"
+                      value="jwt"
+                      checked={authMode === 'jwt'}
+                      onChange={() => setAuthMode('jwt')}
+                    />
+                    <span>JWT</span>
+                    <small>无状态</small>
+                  </label>
+                </fieldset>
+                <div className="auth-options">
+                  <label className="remember-check">
+                    <input
+                      type="checkbox"
+                      checked={remember}
+                      onChange={(event) => setRemember(event.target.checked)}
+                    />
+                    <span>记住我 · 30 天</span>
+                  </label>
+                  <Link className="text-button" to="/forgot">
+                    忘记密码？
+                  </Link>
+                </div>
+              </>
+            )}
 
             {errors.form && (
               <div className="form-alert" role="alert">
@@ -266,11 +414,17 @@ export function LoginPage() {
 
             <button type="submit" className="button button--ink button--wide" disabled={submitting}>
               {submitting ? <span className="spinner" aria-hidden="true" /> : <Check size={16} aria-hidden="true" />}
-              {submitting ? (mode === 'login' ? '正在进去…' : '正在留位置…') : mode === 'login' ? '进去坐坐' : '建好账号'}
+              {submitting
+                ? mode === 'login'
+                  ? '正在进去…'
+                  : '正在留位置…'
+                : mode === 'login'
+                  ? '进去坐坐'
+                  : '建好账号'}
             </button>
 
             <p className="auth-form__terms">
-              继续即表示你同意把昵称、邮箱和头像保存在本机浏览器里。
+              密码会加密保存在 PostgreSQL。登录方式、是否记住我都可以随时改。
             </p>
           </form>
 
@@ -284,7 +438,7 @@ export function LoginPage() {
               className="text-button"
               onClick={() => {
                 setMode('login')
-                setEmail('hello@halfday.club')
+                setIdentifier('hello@halfday.club')
                 setPassword('halfday')
                 setErrors({})
               }}

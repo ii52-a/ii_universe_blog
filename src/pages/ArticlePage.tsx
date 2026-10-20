@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import {
   ArrowLeft,
   ArrowUpRight,
@@ -7,12 +7,15 @@ import {
   Heart,
   Link2,
   MessageCircle,
+  PencilLine,
+  Trash2,
 } from 'lucide-react'
 import { type ContentBlock, type Post, postAuthor } from '../data/posts'
 import { usePageTitle } from '../hooks/usePageTitle'
 import { reactionsApi, commentsApi } from '../lib/api'
-import { usePosts } from '../lib/postsStore'
+import { deletePost, usePosts } from '../lib/postsStore'
 import { useToast } from '../context/ToastContext'
+import { useAuth } from '../context/AuthContext'
 import { CoverArt } from '../components/CoverArt'
 import { Avatar } from '../components/Avatar'
 import { CommentSection } from '../components/CommentSection'
@@ -27,8 +30,10 @@ function getHeadings(post: Post) {
 
 export function ArticlePage() {
   const { slug } = useParams()
+  const navigate = useNavigate()
   const allPosts = usePosts()
   const post = allPosts.find((item) => item.slug === slug)
+  const { user } = useAuth()
   usePageTitle(post?.title ?? '没有这篇')
   const { showToast } = useToast()
   const [reaction, setReaction] = useState(() =>
@@ -95,6 +100,17 @@ export function ArticlePage() {
   if (!post) return <NotFoundPage />
 
   const author = postAuthor(post)
+  const canManage = Boolean(user && user.id === author.id)
+  const handleDelete = async () => {
+    if (!window.confirm('删除这一页？删除以后地址会失效，评论也不会再显示。')) return
+    try {
+      await deletePost(post.slug)
+      showToast('这一页已经收走了。', 'info')
+      navigate('/articles')
+    } catch {
+      showToast('没有删掉，再试一次。', 'error')
+    }
+  }
   const related = allPosts
     .filter(
       (item) =>
@@ -198,6 +214,18 @@ export function ArticlePage() {
               <button type="button" className="article-action article-action--icon" onClick={handleShare} aria-label="分享这篇文章">
                 <Link2 size={16} aria-hidden="true" />
               </button>
+              {canManage && (
+                <>
+                  <Link className="article-action" to={`/write?edit=${post.slug}`}>
+                    <PencilLine size={15} aria-hidden="true" />
+                    编辑
+                  </Link>
+                  <button type="button" className="article-action article-action--danger" onClick={handleDelete}>
+                    <Trash2 size={15} aria-hidden="true" />
+                    删除
+                  </button>
+                </>
+              )}
             </div>
           </div>
         </header>
@@ -286,7 +314,7 @@ export function ArticlePage() {
               <Avatar name={author.name} color={author.color} src={author.avatar} size="lg" />
               <div>
                 <strong>{author.name}</strong>
-                <span>{author.id === 'demo-chichi' ? '写作者，住在杭州' : '岛民，偶尔写一页'}</span>
+                <span>{author.handle === 'deepseek' ? '写作者，住在杭州' : '岛民，偶尔写一页'}</span>
               </div>
               <p>{author.bio || '在半日留下一篇文章，也留下一小段时间。'}</p>
               <Link to={`/u/${author.handle}`} className="text-link">

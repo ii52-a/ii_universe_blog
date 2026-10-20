@@ -31,7 +31,7 @@ export function AboutPage() {
             <span>写一些不着急的事。</span>
           </h1>
           <p>
-            我是迟迟。白天做设计，晚上写点东西。半日是我从 2024 年开始记的日常账本，记散步、旧物、食物，也记那些没什么用但舍不得丢掉的瞬间。
+            我是 DeepS先生。白天做设计，晚上写点东西。半日是我从 2024 年开始记的日常账本，记散步、旧物、食物，也记那些没什么用但舍不得丢掉的瞬间。
           </p>
           <div className="about-hero__actions">
             <Link className="button button--ink" to="/articles">
@@ -48,7 +48,7 @@ export function AboutPage() {
           </div>
         </div>
 
-        <div className="about-collage" aria-label="迟迟拍下的三张照片">
+        <div className="about-collage" aria-label="DeepS先生拍下的三张照片">
           <div className="about-photo about-photo--one">
             <span className="tape tape--blue" />
             <CoverArt variant="walk" decorative />
@@ -150,7 +150,7 @@ export function AboutPage() {
 
       <section className="about-contact">
         <div className="about-contact__avatar">
-          <Avatar name="迟迟" color="#FFD84D" size="xl" />
+          <Avatar name="DeepS先生" color="#BFD2FF" size="xl" />
           <span className="about-contact__status">
             <i aria-hidden="true" /> 在线
           </span>

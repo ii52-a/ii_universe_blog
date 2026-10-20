@@ -2,10 +2,13 @@
 
 一个以白色、纸张感和玩具感为基调的个人博客前端。内容围绕散步、旧物、食物和普通的日常，页面以紧凑的 bento 网格组织，日期、天气、时钟、在线状态、跟屏玩偶小满等小组件填满边角。
 
-当前版本：**v1.2.0**  
+当前版本：**v1.3.0**
+
 仓库：**https://github.com/ii52-a/ii_universe_blog**
 
 ## 运行
+
+前端：
 
 ```bash
 npm install
@@ -14,20 +17,37 @@ npm run dev
 
 默认地址：`http://127.0.0.1:4173`
 
+后端（另开一个终端）：
+
+```bash
+npm install --prefix server
+npm run dev --prefix server
+```
+
+接口地址：`http://127.0.0.1:3001/api`。Vite 会把 `/api` 代理到后端，所以前端请求保持同源 Cookie。
+
+本地开发默认使用 PGlite（真实 PostgreSQL 内核的 WASM 版本），设置 `DATABASE_URL` 后会切换到标准 PostgreSQL，连接池由 `pg` 管理。
+
+```bash
+cp server/.env.example server/.env
+# DATABASE_URL=postgres://user:password@localhost:5432/halfday
+```
+
 生产构建：
 
 ```bash
 npm run build
-npm run preview
+npm run build --prefix server
 ```
 
 检查：
 
 ```bash
 npm run check      # TypeScript
-npm run test:ui    # Playwright：登录、改资料、写文章、评论、收藏、搜索、退出
+npm run test:ui    # Playwright：注册、登录、写文章、编辑、评论、退出
 npm run test:a11y  # axe WCAG 2 A/AA（明暗两套主题）
 npm run shots      # 重新生成 screenshots/
+node scripts/backend-test.mjs  # 后端 API 集成测试（先启动 server）
 ```
 
 ## 演示账号
@@ -35,63 +55,78 @@ npm run shots      # 重新生成 screenshots/
 - 邮箱：`hello@halfday.club`
 - 密码：`halfday`
 
-登录页也可以直接点「填入演示账号」。所有账号资料只保存在当前浏览器的 `localStorage`，没有真实后端。
+登录页也可以直接点「填入演示账号」。账号、文章、会话和验证码由 Next.js API 写入 PostgreSQL / PGlite；头像和草稿仍保存在本机。
 
 ## 已实现
 
 ### 首页
 
 - 12 栏 bento 布局：主视觉、窗边座位、日历、时钟、天气、在线状态
-- 实时杭州时间与中文日期
-- Open-Meteo 实时天气（无 Key），失败时回退到本地估算
-- 「窗边的座位」：未登录时是空头像占位，登录后显示头像、姓名、收藏数与主页入口
+- 时间、地点、天气由 `/api/widgets` 提供（杭州 / 西湖区 / Open-Meteo），失败时回退
+- 「窗边的座位」：未登录时是空头像占位，登录后显示头像、姓名、收藏数与空间入口
 - 跟屏玩偶「小满」：不再嵌在卡片里，跟随视窗移动；眼睛跟随鼠标，滚动时天线晃动、身体倾斜，点一下跳起来换台词；可随时让它休息
 - 文章推荐、随手短句、床头书单、慢信订阅
 - 首页留言簿，支持点赞、删除自己的留言
-- 滚动 ticker、纸张胶带与贴纸等细节
 
 ### 文章与评论
 
 - 顶栏的「文章」改叫「风吹散的页」，所有用户的文章放在同一处
+- 作者默认 **DeepS先生（@deepseek）**；新注册用户写的页署自己的名字
 - 文章归档页：分类筛选、关键词搜索，筛选状态写入 URL
 - 文章详情：阅读进度、目录跟随、点赞、收藏、分享、标签话题页，并署名实际作者
 - 撰写页 `/write`：标题、摘要、分类、标签、封面、正文、实时预览、自动草稿
-- 正文支持 `## 小标题`、`> 引用`、`- 列表`；发布后进入共同文章流
+- 作者可以编辑、删除自己的文章；地址在编辑后保持不变
 - 评论：发表、点赞、删除自己的评论；空状态、加载骨架、错误反馈
 - 作者卡、上下篇推荐、RSS
 
-### 账号与岛民主页
+### 账号
 
-- 登录、注册、退出
+- 邮箱注册：6 位验证码、用户名 / 密码校验、60 秒发送冷却
+- 登录：邮箱或用户名 + 密码，可选**会话 Cookie 或 JWT**
+- 记住我（30 天）、忘记密码、重置密码
 - 页头展示用户姓名与头像
 - 个人资料编辑：昵称、简介、城市、网站、头像上传、头像底色
-- 收藏文章列表、账号信息、退出确认
-- 头像图片支持 JPG / PNG / WebP，限制 1.2 MB，并保存为 Data URL
 - 公开主页 `/u/:handle`：岛民证、加入时间、写过的页、留言轨迹、常去分类、复制主页地址
-- 演示账号的公开主页：`/u/chichi`
+- 演示账号的公开主页：`/u/deepseek`
+
+### 个人空间
+
+- 新增 `/space`：登录后的个人页
+- 头像漂浮、轨道环旋转、统计数字递增、文章行依次进入
+- 在空间里直接写文章、编辑文章、删除文章
+- 右侧保留今日提示与公开主页入口
+
+### 后端
+
+- Next.js 15 App Router Route Handlers，位于 `server/`
+- PostgreSQL：生产通过 `DATABASE_URL` + `pg`，本地 / 测试通过 PGlite
+- Argon 之外使用 bcrypt 哈希密码；会话 token 只存 SHA-256 摘要
+- 统一错误格式、Zod 校验、验证码限流、接口限流
+- 文章 CRUD、作者权限校验、cursor 分页、分类 / 搜索
+- `/api/widgets` 聚合服务端时间、杭州地点、天气，并做 10 分钟内存缓存
 
 ### 日落与版本
 
 - 顶栏小标题「日落」进入 `/sunset`
 - 页面只做版本迭代记录，已移除日落时间卡片
-- 本次更新单、v1.1.0 旧版本、版本索引与更早改动
+- v1.3.0 后端更新单、v1.2.0 / v1.1.0 旧版本、版本索引
 - 下一次改版继续追加在这里
 
 ### 夜间模式
 
 - 点半日左侧圆标：半黑圆补成整颗黑圆，页面从图标位置扩散到夜间色
-- 覆盖首页、文章、归档、关于、登录、用户主页、日落页、搜索、移动菜单
+- 覆盖首页、文章、归档、关于、登录、个人空间、日落页、搜索、移动菜单
 - 主题写入 `localStorage`，刷新和跳转保持
 
 ### 全局
 
 - 全局搜索（`⌘/Ctrl + K`），原生 `<dialog>` 焦点管理
-- 响应式：360 / 390 / 768 / 1024 / 1440 / 1920 均无横向滚动
+- 响应式：360 / 390 / 768 / 1024 / 1440 / 1920 关键页无横向滚动
 - 移动端抽屉菜单
 - 键盘可达、可见焦点、跳过正文链接
 - `prefers-reduced-motion` 降级
 - 通过 axe WCAG 2 A / AA 自动检查（首页、归档、文章、关于、登录、日落、岛民主页、撰写页，明暗两套主题）
-- 自定义 Noto Serif / Noto Sans 子集字体，首屏约 680 KB 字体文件
+- 自定义 Noto Serif / Noto Sans 子集字体
 
 ## 路由
 
@@ -104,32 +139,55 @@ npm run shots      # 重新生成 screenshots/
 | `/topics/:topic` | 标签 / 分类话题页 |
 | `/sunset` | 日落与版本更新 |
 | `/u/:handle` | 公开岛民主页 |
+| `/space` | 登录后的个人空间 |
+| `/forgot` | 找回密码 |
 | `/about` | 关于 |
 | `/login` | 登录 / 注册 |
 | `/me` | 个人资料、收藏与账号设置 |
 | `*` | 404 |
 
-路由集中在 `src/App.tsx`，页面级组件在 `src/pages/`，新增页面只需注册一条路由并在导航中接入。话题页、日落页和岛民主页都是路由扩展的示例。
+路由集中在 `src/App.tsx`，页面级组件在 `src/pages/`，新增页面只需注册一条路由并在导航中接入。
+
+## 后端接口
+
+后端目录：`server/`，使用 Next.js 15 App Router：
+
+| 方法 | 路径 | 说明 |
+| --- | --- | --- |
+| GET | `/api/health` | 数据库健康检查 |
+| POST | `/api/auth/code` | 生成注册 / 重置验证码 |
+| POST | `/api/auth/register` | 邮箱验证码注册 |
+| POST | `/api/auth/login` | 会话或 JWT 登录 |
+| GET | `/api/auth/me` | 当前用户 |
+| POST | `/api/auth/logout` | 退出并清理会话 |
+| POST | `/api/auth/reset-password` | 验证码重置密码 |
+| GET / PATCH | `/api/users/me` | 当前用户资料 |
+| GET | `/api/users/:handle` | 公开用户与文章 |
+| GET / POST | `/api/posts` | 文章列表 / 新建 |
+| GET / PATCH / DELETE | `/api/posts/:slug` | 详情 / 修改 / 删除（作者权限） |
+| GET | `/api/widgets` | 时间、地点、天气 |
+
+数据库表：`users`、`verification_codes`、`sessions`、`posts`。索引覆盖登录查询、验证码查询、文章 feed、作者与分类。开发环境 `server/.data/halfday` 是 PGlite 数据目录，生产环境设置 `DATABASE_URL` 即可。
 
 ## 前端数据接口
 
-没有后端，但所有数据操作都经过 `src/lib/api.ts` 的异步接口封装，替换成真实 `fetch` 时不需要改 UI：
+浏览器端：
 
-- `commentsApi.list / byAuthor / add / remove / toggleLike / counts`
-- `reactionsApi.state / toggleLike / toggleSave / savedSlugs`
-- `newsletterApi.subscribe`
-- `postsStore`：共同文章快照、发布新文章、跨标签页同步
+- `src/lib/backend.ts`：`authApi`、`postsApi`、`widgetsApi`，统一 `credentials: include`
+- `src/context/AuthContext.tsx`：会话恢复、登录、注册、资料更新
+- `src/context/WidgetsContext.tsx`：服务端时间偏移、地点、天气
+- `src/lib/postsStore.ts`：列表缓存、发布 / 更新 / 删除后刷新
+- `commentsApi` / `reactionsApi` / `newsletterApi` 仍是本地前端接口，后续可平移到后端
 
-认证与用户资料在 `src/context/AuthContext.tsx`，模拟了 520–760 ms 网络延迟。主题在 `src/context/ThemeContext.tsx`。共同文章由 `src/lib/postsStore.ts` 合并静态种子文章与本机发布的文章；在当前前端演示中，同一浏览器内的所有账号共享这些文章，接入真实 API 后即可跨设备共享。数据落在以下键：
+浏览器本地键：
 
-- `halfday.user.v1`
 - `halfday.comments.v1`
 - `halfday.comment-likes.v1`
 - `halfday.post-likes.v1`
 - `halfday.post-bookmarks.v1`
 - `halfday.subscribers.v1`
-- `halfday.custom-posts.v1`
 - `halfday.write-draft.v1`
+- `halfday.remember-email.v1`
 - `halfday.theme.v1`
 - `halfday.mascot-hidden.v1`
 
@@ -154,16 +212,23 @@ npm run shots      # 重新生成 screenshots/
 
 ## 截图
 
-- `screenshots/v12-home-light.png`
-- `screenshots/v12-home-dark.png`
-- `screenshots/v12-home-light-full.png`
-- `screenshots/v12-home-mobile.png`
-- `screenshots/v12-write-light.png`
-- `screenshots/v12-write-mobile.png`
-- `screenshots/v12-articles-light.png`
-- `screenshots/v12-sunset-light.png`
-- `screenshots/v12-sunset-dark.png`
-- `screenshots/v12-user-light.png`
-- `screenshots/v12-user-dark.png`
+- `screenshots/v13-home-light.png`
+- `screenshots/v13-home-dark.png`
+- `screenshots/v13-home-light-full.png`
+- `screenshots/v13-home-mobile.png`
+- `screenshots/v13-space-light.png`
+- `screenshots/v13-login-light.png`
+- `screenshots/v13-login-dark.png`
+- `screenshots/v13-forgot-light.png`
+- `screenshots/v13-write-light.png`
+- `screenshots/v13-write-mobile.png`
+- `screenshots/v13-articles-light.png`
+- `screenshots/v13-article-light.png`
+- `screenshots/v13-article-dark.png`
+- `screenshots/v13-sunset-light.png`
+- `screenshots/v13-sunset-dark.png`
+- `screenshots/v13-user-light.png`
+- `screenshots/v13-user-dark.png`
+- `screenshots/v13-mobile-menu.png`
 - `screenshots/v12-article-dark.png`
 - `screenshots/v12-login-dark.png`

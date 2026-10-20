@@ -17,15 +17,18 @@ export type ContentBlock =
   | { type: 'figure'; variant: CoverVariant; caption: string }
 
 export interface Post {
+  id?: string
   slug: string
   title: string
   excerpt: string
+  body?: string
   category: string
   tags: string[]
   publishedAt: string
   readMinutes: number
   cover: CoverVariant
   featured?: boolean
+  status?: 'draft' | 'published'
   authorId?: string
   authorName?: string
   authorHandle?: string
@@ -37,12 +40,12 @@ export interface Post {
 }
 
 export const siteAuthor = {
-  id: 'demo-chichi',
-  name: '迟迟',
-  handle: 'chichi',
-  color: '#FFD84D',
+  id: '00000000-0000-4000-8000-000000000001',
+  name: 'DeepS先生',
+  handle: 'deepseek',
+  color: '#BFD2FF',
   location: '杭州',
-  bio: '住在杭州，写一些不着急的事。',
+  bio: 'DeepS先生，在杭州写一些不着急的事。',
 }
 
 export function postAuthor(post: Post) {

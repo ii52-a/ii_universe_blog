@@ -7,11 +7,13 @@ import {
   useState,
   type ReactNode,
 } from 'react'
-import { readStorage, sleep, writeStorage, removeStorage } from '../lib/storage'
+import { authApi, type ApiUser } from '../lib/backend'
+import { readStorage, removeStorage, writeStorage } from '../lib/storage'
 
 export interface User {
   id: string
   name: string
+  username: string
   email: string
   handle: string
   bio: string
@@ -22,165 +24,138 @@ export interface User {
   joinedAt: string
 }
 
+export type AuthMode = 'session' | 'jwt'
+
 interface AuthContextValue {
   user: User | null
   ready: boolean
-  login: (email: string, password: string) => Promise<User>
-  register: (name: string, email: string, password: string) => Promise<User>
-  logout: () => void
+  login: (
+    identifier: string,
+    password: string,
+    options?: { mode?: AuthMode; remember?: boolean },
+  ) => Promise<User>
+  register: (input: {
+    username: string
+    email: string
+    password: string
+    code: string
+  }) => Promise<User>
+  logout: () => Promise<void>
   updateUser: (patch: Partial<Omit<User, 'id' | 'email' | 'joinedAt'>>) => Promise<User>
 }
 
-const USER_KEY = 'user.v1'
+const REMEMBER_KEY = 'remember-email.v1'
 const AuthContext = createContext<AuthContextValue | null>(null)
 
-const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-
 export const demoUser: User = {
-  id: 'demo-chichi',
-  name: '迟迟',
+  id: '00000000-0000-4000-8000-000000000001',
+  name: 'DeepS先生',
+  username: 'DeepS先生',
   email: 'hello@halfday.club',
-  handle: 'chichi',
-  bio: '住在杭州，写一些不着急的事。',
+  handle: 'deepseek',
+  bio: 'DeepS先生，在杭州写一些不着急的事。',
   location: '杭州',
   website: 'halfday.club',
-  avatarColor: '#FFD84D',
+  avatarColor: '#BFD2FF',
   joinedAt: '2024-11-02T10:00:00+08:00',
 }
 
-const colors = ['#FFD84D', '#FFB4A2', '#BFDBFE', '#BBF7D0', '#E9D5FF', '#FBCFE8']
-
-export function handleFromEmail(email: string) {
-  const local = email.split('@')[0] ?? ''
-  const cleaned = local
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '')
-    .slice(0, 20)
-  return cleaned || 'islander'
+export function rememberedEmail() {
+  return readStorage<string>(REMEMBER_KEY, '')
 }
 
-function normalizeUser(user: User): User {
-  if (user.handle) return user
-  return { ...user, handle: handleFromEmail(user.email) }
-}
-
-function nameFromEmail(email: string) {
-  const local = email.split('@')[0] ?? ''
-  const cleaned = local.replace(/[._-]+/g, ' ').trim()
-  if (!cleaned) return '无名岛民'
-  return cleaned.slice(0, 12)
+function mapUser(apiUser: ApiUser): User {
+  return {
+    id: apiUser.id,
+    name: apiUser.name || apiUser.username,
+    username: apiUser.username,
+    email: apiUser.email,
+    handle: apiUser.handle,
+    bio: apiUser.bio,
+    location: apiUser.location,
+    website: apiUser.website,
+    avatar: apiUser.avatar,
+    avatarColor: apiUser.avatarColor,
+    joinedAt: apiUser.joinedAt,
+  }
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(() => {
-    const stored = readStorage<User | null>(USER_KEY, null)
-    if (!stored) return null
-    return normalizeUser(stored)
-  })
+  const [user, setUser] = useState<User | null>(null)
   const [ready, setReady] = useState(false)
 
   useEffect(() => {
-    setReady(true)
-    const onStorage = (event: StorageEvent) => {
-      if (event.key === `halfday.${USER_KEY}`) {
-        const next = readStorage<User | null>(USER_KEY, null)
-        setUser(next ? normalizeUser(next) : null)
-      }
+    let cancelled = false
+    authApi
+      .me()
+      .then(({ user: apiUser }) => {
+        if (!cancelled) setUser(mapUser(apiUser))
+      })
+      .catch((error: unknown) => {
+        if (!cancelled && typeof error === 'object' && error && 'status' in error && error.status !== 401) {
+          console.warn('[auth] session check failed', error)
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setReady(true)
+      })
+    return () => {
+      cancelled = true
     }
-    window.addEventListener('storage', onStorage)
-    return () => window.removeEventListener('storage', onStorage)
-  }, [])
-
-  const persist = useCallback((next: User | null) => {
-    setUser(next)
-    if (next) writeStorage(USER_KEY, next)
-    else removeStorage(USER_KEY)
   }, [])
 
   const login = useCallback(
-    async (email: string, password: string) => {
-      await sleep(680)
-      const normalized = email.trim().toLowerCase()
-      if (!emailPattern.test(normalized)) throw new Error('请输入有效的邮箱地址。')
-      if (password.length < 6) throw new Error('密码至少需要 6 位。')
-
-      const stored = readStorage<User | null>(USER_KEY, null)
-      if (stored && stored.email.toLowerCase() === normalized) {
-        const existing = normalizeUser(stored)
-        persist(existing)
-        return existing
-      }
-
-      if (normalized === demoUser.email) {
-        persist(demoUser)
-        return demoUser
-      }
-
-      const now = new Date()
-      const created: User = {
-        id: `user-${now.getTime().toString(36)}`,
-        name: nameFromEmail(normalized),
-        email: normalized,
-        handle: handleFromEmail(normalized),
-        bio: '',
-        location: '',
-        website: '',
-        avatarColor: colors[Math.floor(Math.random() * colors.length)],
-        joinedAt: now.toISOString(),
-      }
-      persist(created)
-      return created
+    async (
+      identifier: string,
+      password: string,
+      options: { mode?: AuthMode; remember?: boolean } = {},
+    ) => {
+      const mode = options.mode ?? 'session'
+      const remember = options.remember ?? false
+      const result = await authApi.login({ identifier, password, mode, remember })
+      const next = mapUser(result.user)
+      setUser(next)
+      if (remember) writeStorage(REMEMBER_KEY, next.email)
+      else removeStorage(REMEMBER_KEY)
+      return next
     },
-    [persist],
+    [],
   )
 
   const register = useCallback(
-    async (name: string, email: string, password: string) => {
-      await sleep(760)
-      const normalized = email.trim().toLowerCase()
-      const cleanName = name.trim()
-      if (cleanName.length < 2) throw new Error('名字至少写两个字。')
-      if (cleanName.length > 16) throw new Error('名字最多 16 个字。')
-      if (!emailPattern.test(normalized)) throw new Error('请输入有效的邮箱地址。')
-      if (password.length < 6) throw new Error('密码至少需要 6 位。')
-
-      const now = new Date()
-      const created: User = {
-        id: `user-${now.getTime().toString(36)}`,
-        name: cleanName,
-        email: normalized,
-        handle: handleFromEmail(normalized),
-        bio: '',
-        location: '',
-        website: '',
-        avatarColor: colors[Math.floor(Math.random() * colors.length)],
-        joinedAt: now.toISOString(),
-      }
-      persist(created)
-      return created
+    async (input: { username: string; email: string; password: string; code: string }) => {
+      const result = await authApi.register(input)
+      const next = mapUser(result.user)
+      setUser(next)
+      return next
     },
-    [persist],
+    [],
   )
 
-  const logout = useCallback(() => {
-    persist(null)
-  }, [persist])
+  const logout = useCallback(async () => {
+    try {
+      await authApi.logout()
+    } finally {
+      setUser(null)
+    }
+  }, [])
 
   const updateUser = useCallback(
     async (patch: Partial<Omit<User, 'id' | 'email' | 'joinedAt'>>) => {
-      await sleep(520)
-      if (!user) throw new Error('请先登录。')
-      if (patch.name !== undefined) {
-        const clean = patch.name.trim()
-        if (clean.length < 2) throw new Error('名字至少写两个字。')
-        if (clean.length > 16) throw new Error('名字最多 16 个字。')
-      }
-      const next = { ...user, ...patch }
-      persist(next)
+      if (!user) throw new Error('请先登录')
+      const result = await authApi.updateProfile({
+        username: patch.username ?? patch.name,
+        bio: patch.bio,
+        location: patch.location,
+        website: patch.website,
+        avatarColor: patch.avatarColor,
+        avatarUrl: patch.avatar === null ? null : patch.avatar,
+      })
+      const next = mapUser(result.user)
+      setUser(next)
       return next
     },
-    [persist, user],
+    [user],
   )
 
   const value = useMemo(

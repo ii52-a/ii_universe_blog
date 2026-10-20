@@ -63,7 +63,7 @@ export function Footer() {
       <div className="site-footer__word" aria-hidden="true" />
 
       <div className="site-footer__bottom">
-        <span>© 2026 半日 · v1.2.0</span>
+        <span>© 2026 半日 · v1.3.0</span>
         <span>文字采用 CC BY-NC-SA 4.0</span>
         <span>用纸、茶和一点耐心做的</span>
       </div>

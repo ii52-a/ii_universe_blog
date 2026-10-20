@@ -34,12 +34,12 @@ export function SeatCard() {
             <p>{user.bio || '这里还差一句自我介绍。'}</p>
           </div>
           <div className="seat-card__actions">
-            <Link className="button button--ink button--small" to={`/u/${user.handle}`}>
-              我的主页
+            <Link className="button button--ink button--small" to="/space">
+              我的空间
               <ArrowUpRight size={14} aria-hidden="true" />
             </Link>
-            <Link className="text-link" to="/me">
-              编辑资料
+            <Link className="text-link" to={`/u/${user.handle}`}>
+              公开主页
             </Link>
           </div>
           <div className="seat-card__foot">

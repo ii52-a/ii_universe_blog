@@ -37,7 +37,7 @@ type FormErrors = Partial<Record<keyof FormState, string>>
 
 export function ProfilePage() {
   usePageTitle('我的半日')
-  const { user, updateUser, logout } = useAuth()
+  const { user, updateUser, logout, ready } = useAuth()
   const { showToast } = useToast()
   const navigate = useNavigate()
   const allPosts = usePosts()
@@ -48,7 +48,7 @@ export function ProfilePage() {
     location: user?.location ?? '',
     website: user?.website ?? '',
     avatar: user?.avatar,
-    avatarColor: user?.avatarColor ?? '#FFD84D',
+    avatarColor: user?.avatarColor ?? '#BFD2FF',
   })
   const [errors, setErrors] = useState<FormErrors>({})
   const [saving, setSaving] = useState(false)
@@ -68,6 +68,17 @@ export function ProfilePage() {
       avatarColor: user.avatarColor,
     })
   }, [user])
+
+  if (!ready) {
+    return (
+      <div className="profile-page">
+        <div className="page-container write-loading">
+          <span className="spinner" aria-hidden="true" />
+          正在确认登录状态…
+        </div>
+      </div>
+    )
+  }
 
   if (!user) return <Navigate to="/login?from=/me" replace />
 
@@ -154,8 +165,8 @@ export function ProfilePage() {
           <h1>我的半日</h1>
           <p>头像、名字、几句话。都可以慢慢改。</p>
         </div>
-        <Link className="text-link" to={`/u/${user.handle}`}>
-          我的主页 <ArrowUpRight size={14} aria-hidden="true" />
+        <Link className="text-link" to="/space">
+          我的空间 <ArrowUpRight size={14} aria-hidden="true" />
         </Link>
       </header>
 

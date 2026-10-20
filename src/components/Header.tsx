@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { NavLink, useLocation, useNavigate, Link } from 'react-router-dom'
-import { ChevronDown, LogOut, Menu, PenLine, Search, Settings, UserRound, X } from 'lucide-react'
+import { ChevronDown, LogOut, Menu, PenLine, Search, Settings, Sparkles, UserRound, X } from 'lucide-react'
 import { Brand } from './Brand'
 import { Avatar } from './Avatar'
 import { useAuth } from '../context/AuthContext'
@@ -193,9 +193,13 @@ function AuthMenu() {
               <span>{user.email}</span>
             </div>
           </div>
+          <Link to="/space" className="auth-menu__item" role="menuitem">
+            <Sparkles size={15} aria-hidden="true" />
+            我的空间
+          </Link>
           <Link to={`/u/${user.handle}`} className="auth-menu__item" role="menuitem">
             <UserRound size={15} aria-hidden="true" />
-            我的主页
+            公开主页
           </Link>
           <Link to="/write" className="auth-menu__item" role="menuitem">
             <PenLine size={15} aria-hidden="true" />
@@ -211,7 +215,7 @@ function AuthMenu() {
             className="auth-menu__item auth-menu__item--danger"
             role="menuitem"
             onClick={() => {
-              logout()
+              void logout()
               setOpen(false)
               showToast('已退出，下次见。', 'info')
               navigate('/')
@@ -249,9 +253,12 @@ function MobileAccount({ onNavigate }: { onNavigate: () => void }) {
   return (
     <div className="mobile-menu__account">
       <Avatar name={user.name} color={user.avatarColor} src={user.avatar} size="md" />
-      <Link className="mobile-menu__person" to={`/u/${user.handle}`} onClick={onNavigate}>
+      <Link className="mobile-menu__person" to="/space" onClick={onNavigate}>
         <strong>{user.name}</strong>
-        <small>@{user.handle}</small>
+        <small>我的空间 · @{user.handle}</small>
+      </Link>
+      <Link className="text-button" to={`/u/${user.handle}`} onClick={onNavigate}>
+        主页
       </Link>
       <Link className="text-button" to="/me" onClick={onNavigate}>
         资料
@@ -260,7 +267,7 @@ function MobileAccount({ onNavigate }: { onNavigate: () => void }) {
         type="button"
         className="text-button text-button--danger"
         onClick={() => {
-          logout()
+          void logout()
           onNavigate()
           showToast('已退出，下次见。', 'info')
           navigate('/')

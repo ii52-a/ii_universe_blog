@@ -9,8 +9,9 @@ const pages = [
   '/articles/a-rainy-walk-from-mantoushan',
   '/about',
   '/login',
+  '/forgot',
   '/sunset',
-  '/u/chichi',
+  '/u/deepseek',
 ]
 const themes = ['light', 'dark']
 const report = []
@@ -47,7 +48,7 @@ for (const theme of themes) {
   await page.goto(`${base}/login`, { waitUntil: 'networkidle' })
   await page.getByRole('button', { name: '填入演示账号' }).click()
   await page.getByRole('button', { name: /进去坐坐/ }).click()
-  await page.waitForURL('**/me')
+  await page.waitForURL('**/space')
   await page.goto(`${base}/write`, { waitUntil: 'networkidle' })
   const writeResults = await new AxeBuilder({ page })
     .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
@@ -56,6 +57,23 @@ for (const theme of themes) {
     theme,
     path: '/write',
     violations: writeResults.violations.map((violation) => ({
+      id: violation.id,
+      impact: violation.impact,
+      help: violation.help,
+      nodes: violation.nodes.length,
+      targets: violation.nodes.slice(0, 6).map((node) => node.target.join(' ')),
+    })),
+  })
+
+  await page.goto(`${base}/space`, { waitUntil: 'networkidle' })
+  await page.waitForTimeout(1100)
+  const spaceResults = await new AxeBuilder({ page })
+    .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
+    .analyze()
+  report.push({
+    theme,
+    path: '/space',
+    violations: spaceResults.violations.map((violation) => ({
       id: violation.id,
       impact: violation.impact,
       help: violation.help,

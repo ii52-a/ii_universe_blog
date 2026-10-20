@@ -1,8 +1,57 @@
 import { Link } from 'react-router-dom'
-import { ArrowUpRight, Feather, Moon, PenLine, Sparkles } from 'lucide-react'
+import {
+  ArrowUpRight,
+  Database,
+  Feather,
+  KeyRound,
+  MapPin,
+  PenLine,
+  Server,
+  Sparkles,
+  UserRound,
+} from 'lucide-react'
 import { usePageTitle } from '../hooks/usePageTitle'
 
-const latestChanges = [
+const backendChanges = [
+  {
+    tag: '后端',
+    title: 'Next.js 接上了 PostgreSQL',
+    text: '后端放在 server/ 里，用 Next.js Route Handlers 写接口。生产环境走 PostgreSQL，本地和测试用 PGlite，同一套 SQL 和迁移。',
+    icon: Server,
+  },
+  {
+    tag: '注册',
+    title: '邮箱验证码真的会过期',
+    text: '注册要先拿 6 位验证码，10 分钟内有效，60 秒内不能重复发送。密码至少 8 位，同时有字母和数字。',
+    icon: KeyRound,
+  },
+  {
+    tag: '登录',
+    title: '会话和 JWT 都可以选',
+    text: '登录时可选会话 Cookie 或 JWT。记住我会把有效期延长到 30 天，忘记密码则走另一套验证码。',
+    icon: UserRound,
+  },
+  {
+    tag: '文章',
+    title: '写完还能改，也能删',
+    text: '文章进了数据库，作者可以修改和删除自己的页。首页、归档、搜索、作者主页和 RSS 都读同一批数据。',
+    icon: Database,
+  },
+  {
+    tag: '现在',
+    title: '时间、天气、地点从后端来',
+    text: '右上角的时钟、天气和在线卡片不再写死。后端统一返回服务端时间、杭州坐标和天气，前端只负责把它们放进卡片。',
+    icon: MapPin,
+  },
+  {
+    tag: '空间',
+    title: '登录以后有自己的房间',
+    text: '新增 /space：头像会轻轻浮动，统计数字会自己长出来，文章可以就地编辑和删除。小满在这里不出现，留一点安静。',
+    icon: Sparkles,
+  },
+]
+
+const frontendChanges = [
   {
     tag: '文章',
     title: '「文章」改叫「风吹散的页」',
@@ -18,7 +67,7 @@ const latestChanges = [
   {
     tag: '共同',
     title: '文章是大家的',
-    text: '新写的页会出现在「风吹散的页」、首页和作者主页里。每一页都带着写它的人的名字和头像，不再默认是迟迟写的。',
+    text: '新写的页会出现在「风吹散的页」、首页和作者主页里。每一页都带着写它的人的名字和头像。',
     icon: Sparkles,
   },
   {
@@ -26,12 +75,6 @@ const latestChanges = [
     title: '右边那叠纸往下挪了',
     text: '短句、床头书和慢信原来和「最近写的」齐平，现在和左边第一张文章卡对齐。看起来终于像放在同一张桌上。',
     icon: Feather,
-  },
-  {
-    tag: '这一页',
-    title: '日落只留版本记录',
-    text: '去掉了右上角的日落时间卡片。这里不再报今天的天气，只记半日每次改了什么，以及为什么改。',
-    icon: Moon,
   },
 ]
 
@@ -76,14 +119,14 @@ export function SunsetPage() {
               这一页不再看天色，只记半日改过什么。每次更新放在最上面，旧版本留在下面。没有发布会，也没有倒计时海报，只有一张手写的更新单。
             </p>
             <div className="sunset-hero__meta">
-              <span>当前版本 v1.2.0</span>
+              <span>当前版本 v1.3.0</span>
               <span>2026 年 10 月 20 日</span>
               <span>杭州</span>
             </div>
           </div>
           <div className="sunset-seal" aria-hidden="true">
             <span>version</span>
-            <strong>1.2</strong>
+            <strong>1.3</strong>
             <span>oct. 2026</span>
           </div>
         </header>
@@ -92,13 +135,13 @@ export function SunsetPage() {
           <div className="sunset-log__head">
             <div>
               <span className="page-hero__note">本次更新 · 2026.10.20</span>
-              <h2 id="release-title">风吹散的页，和几张自己的页。</h2>
+              <h2 id="release-title">后端接上了，房间也开了灯。</h2>
             </div>
-            <span className="sunset-log__version">v1.2.0</span>
+            <span className="sunset-log__version">v1.3.0</span>
           </div>
 
           <div className="release-list">
-            {latestChanges.map((change) => {
+            {backendChanges.map((change) => {
               const Icon = change.icon
               return (
                 <article className="release-item" key={change.title}>
@@ -114,11 +157,37 @@ export function SunsetPage() {
                     <p>{change.text}</p>
                   </div>
                   <span className="release-item__doodle" aria-hidden="true">
-                    {change.tag === '夜里' ? '☾' : change.tag === '对齐' ? '⌑' : '✳'}
+                    {change.tag === '空间' ? '⌑' : '✳'}
                   </span>
                 </article>
               )
             })}
+          </div>
+        </section>
+
+        <section className="release-block release-block--older" aria-labelledby="v12-title">
+          <div className="release-block__head">
+            <div>
+              <span className="page-hero__note">更早一点</span>
+              <h2 id="v12-title">v1.2.0 · 风吹散的页</h2>
+            </div>
+            <time dateTime="2026-10-20">2026.10.20</time>
+          </div>
+          <div className="release-list release-list--quiet">
+            {frontendChanges.map((change) => (
+              <article className="release-item release-item--quiet" key={change.title}>
+                <span className="release-item__mark" aria-hidden="true">
+                  ✳
+                </span>
+                <div className="release-item__copy">
+                  <div className="release-item__meta">
+                    <span>{change.tag}</span>
+                  </div>
+                  <h3>{change.title}</h3>
+                  <p>{change.text}</p>
+                </div>
+              </article>
+            ))}
           </div>
         </section>
 
@@ -156,6 +225,11 @@ export function SunsetPage() {
             </div>
             <ul>
               <li>
+                <span>v1.3.0</span>
+                <strong>Next.js 后端、登录注册与个人空间</strong>
+                <time dateTime="2026-10-20">10.20</time>
+              </li>
+              <li>
                 <span>v1.2.0</span>
                 <strong>风吹散的页与共同文章</strong>
                 <time dateTime="2026-10-20">10.20</time>
@@ -179,7 +253,7 @@ export function SunsetPage() {
           </div>
 
           <aside className="sunset-note">
-            <span className="sunset-note__stamp">v1.2</span>
+            <span className="sunset-note__stamp">v1.3</span>
             <h2>为什么放在日落</h2>
             <p>
               白天大家都忙。日落前后有一点空，适合把一天里没来得及看的字翻一翻。更新也放在这里，不打扰别的时间。

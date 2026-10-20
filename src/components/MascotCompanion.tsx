@@ -116,7 +116,8 @@ export function MascotCompanion() {
   if (
     pathname.startsWith('/login') ||
     pathname.startsWith('/me') ||
-    pathname.startsWith('/write')
+    pathname.startsWith('/write') ||
+    pathname.startsWith('/space')
   ) {
     return null
   }

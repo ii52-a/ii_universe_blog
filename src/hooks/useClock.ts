@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useWidgets } from '../context/WidgetsContext'
 
 const timeZone = 'Asia/Shanghai'
 
@@ -56,13 +57,15 @@ function getClock(date: Date) {
 }
 
 export function useClock() {
-  const [clock, setClock] = useState(() => getClock(new Date()))
+  const { serverOffsetMs } = useWidgets()
+  const [clock, setClock] = useState(() => getClock(new Date(Date.now() + serverOffsetMs)))
 
   useEffect(() => {
-    const tick = () => setClock(getClock(new Date()))
+    const tick = () => setClock(getClock(new Date(Date.now() + serverOffsetMs)))
+    tick()
     const timer = window.setInterval(tick, 1000)
     return () => window.clearInterval(timer)
-  }, [])
+  }, [serverOffsetMs])
 
   return clock
 }

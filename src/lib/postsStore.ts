@@ -1,33 +1,41 @@
-import { useSyncExternalStore } from 'react'
+import { useEffect, useSyncExternalStore } from 'react'
 import { posts as seedPosts, type ContentBlock, type CoverVariant, type Post } from '../data/posts'
-import type { User } from '../context/AuthContext'
-import { readStorage, writeStorage } from './storage'
+import { postsApi, type ApiPost, type PostInput } from './backend'
 
-const CUSTOM_POSTS_KEY = 'custom-posts.v1'
 const listeners = new Set<() => void>()
+let snapshot: Post[] = [...seedPosts].sort(
+  (a, b) => +new Date(b.publishedAt) - +new Date(a.publishedAt),
+)
+let loadPromise: Promise<Post[]> | null = null
+let loadError: Error | null = null
 
-let customPosts = readStorage<Post[]>(CUSTOM_POSTS_KEY, [])
-
-function buildSnapshot() {
-  return [...customPosts, ...seedPosts].sort(
-    (a, b) => +new Date(b.publishedAt) - +new Date(a.publishedAt),
-  )
-}
-
-let snapshot = buildSnapshot()
-
-function emit() {
-  snapshot = buildSnapshot()
+function emit(next: Post[]) {
+  snapshot = next
   listeners.forEach((listener) => listener())
 }
 
-if (typeof window !== 'undefined') {
-  window.addEventListener('storage', (event) => {
-    if (event.key === `halfday.${CUSTOM_POSTS_KEY}`) {
-      customPosts = readStorage<Post[]>(CUSTOM_POSTS_KEY, [])
-      emit()
-    }
-  })
+function mapApiPost(post: ApiPost): Post {
+  return {
+    id: post.id,
+    slug: post.slug,
+    title: post.title,
+    excerpt: post.excerpt,
+    body: post.body,
+    category: post.category,
+    tags: post.tags,
+    publishedAt: post.publishedAt,
+    readMinutes: post.readMinutes,
+    cover: post.cover as CoverVariant,
+    status: post.status,
+    authorId: post.authorId,
+    authorName: post.authorName,
+    authorHandle: post.authorHandle,
+    authorColor: post.authorColor,
+    authorAvatar: post.authorAvatar ?? post.avatar,
+    authorLocation: post.authorLocation,
+    userGenerated: post.userGenerated,
+    content: post.content,
+  }
 }
 
 export function subscribePosts(listener: () => void) {
@@ -39,8 +47,33 @@ export function getPostsSnapshot() {
   return snapshot
 }
 
+export function getPostsError() {
+  return loadError
+}
+
 export function getPostBySlug(slug?: string) {
   return snapshot.find((post) => post.slug === slug)
+}
+
+export async function refreshPosts() {
+  const result = await postsApi.list({ limit: 50 })
+  const next = result.posts.map(mapApiPost)
+  loadError = null
+  emit(next)
+  return next
+}
+
+export async function loadPosts() {
+  if (loadPromise) return loadPromise
+  loadPromise = refreshPosts()
+    .catch((error) => {
+      loadError = error instanceof Error ? error : new Error('文章加载失败')
+      return snapshot
+    })
+    .finally(() => {
+      loadPromise = null
+    })
+  return loadPromise
 }
 
 export interface NewPostInput {
@@ -53,34 +86,39 @@ export interface NewPostInput {
   body: string
 }
 
-export function publishPost(input: NewPostInput, user: User) {
-  const now = new Date()
-  const slug = `page-${now.getTime().toString(36)}-${Math.random().toString(36).slice(2, 5)}`
-  const characters = input.body.replace(/\s/g, '').length
-  const post: Post = {
-    slug,
-    title: input.title.trim(),
-    excerpt: input.excerpt.trim(),
-    category: input.category,
-    tags: input.tags.map((tag) => tag.replace(/^#/, '').trim()).filter(Boolean).slice(0, 4),
-    publishedAt: now.toISOString(),
-    readMinutes: Math.max(2, Math.ceil(characters / 380)),
-    cover: input.cover,
-    authorId: user.id,
-    authorName: user.name,
-    authorHandle: user.handle,
-    authorColor: user.avatarColor,
-    authorAvatar: user.avatar,
-    authorLocation: user.location || undefined,
-    userGenerated: true,
+function toApiInput(input: NewPostInput): PostInput {
+  return {
+    title: input.title,
+    excerpt: input.excerpt,
+    body: input.body,
     content: input.content,
+    category: input.category,
+    tags: input.tags,
+    cover: input.cover,
+    status: 'published',
   }
-  customPosts = [post, ...customPosts]
-  writeStorage(CUSTOM_POSTS_KEY, customPosts)
-  emit()
-  return post
+}
+
+export async function publishPost(input: NewPostInput) {
+  const result = await postsApi.create(toApiInput(input))
+  await refreshPosts()
+  return mapApiPost(result.post)
+}
+
+export async function updatePost(slug: string, input: NewPostInput) {
+  const result = await postsApi.update(slug, toApiInput(input))
+  await refreshPosts()
+  return mapApiPost(result.post)
+}
+
+export async function deletePost(slug: string) {
+  await postsApi.remove(slug)
+  await refreshPosts()
 }
 
 export function usePosts() {
+  useEffect(() => {
+    void loadPosts()
+  }, [])
   return useSyncExternalStore(subscribePosts, getPostsSnapshot, getPostsSnapshot)
 }

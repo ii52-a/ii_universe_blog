@@ -1,9 +1,9 @@
 import { useState, type FormEvent } from 'react'
 import { ArrowUpRight, Headphones, Mail, MapPin, Send } from 'lucide-react'
 import { useClock } from '../hooks/useClock'
-import { useWeather } from '../hooks/useWeather'
 import { usePresence } from '../hooks/usePresence'
 import { useAuth } from '../context/AuthContext'
+import { useWidgets } from '../context/WidgetsContext'
 import { useToast } from '../context/ToastContext'
 import { newsletterApi } from '../lib/api'
 import { Avatar, AvatarStack } from './Avatar'
@@ -51,13 +51,14 @@ export function CalendarWidget() {
 
 export function ClockWidget() {
   const clock = useClock()
+  const { location } = useWidgets()
 
   return (
-    <article className="widget clock-widget" aria-label={`杭州时间 ${clock.hour}:${clock.minute}:${clock.second}`}>
+    <article className="widget clock-widget" aria-label={`${location.city}时间 ${clock.hour}:${clock.minute}:${clock.second}`}>
       <div className="widget__head">
         <span className="clock-widget__place">
           <MapPin size={12} aria-hidden="true" />
-          杭州
+          {location.city}
         </span>
         <span className="clock-widget__greeting">{clock.greeting}</span>
       </div>
@@ -82,14 +83,14 @@ export function ClockWidget() {
 }
 
 export function WeatherWidget() {
-  const weather = useWeather()
+  const { weather, location } = useWidgets()
 
   return (
-    <article className={`widget weather-widget weather-widget--${weather.kind}`} aria-label={`杭州天气，${weather.label}，${weather.temperature} 度`}>
+    <article className={`widget weather-widget weather-widget--${weather.kind}`} aria-label={`${location.city}天气，${weather.label}，${weather.temperature} 度`}>
       <div className="weather-widget__copy">
         <div className="widget__head">
           <span className="weather-widget__label">{weather.label}</span>
-          <span className="weather-widget__live">{weather.live ? '刚刚更新' : '本地估算'}</span>
+          <span className="weather-widget__live">{weather.source === 'open-meteo' ? '实时' : '估算'}</span>
         </div>
         <div className="weather-widget__temperature">
           {weather.temperature}
@@ -116,6 +117,7 @@ export function WeatherWidget() {
 
 export function PresenceWidget() {
   const { user } = useAuth()
+  const { location, weather } = useWidgets()
   const presence = usePresence(user)
   const people = presence.current
     ? [presence.current, ...presence.people].slice(0, 5)
@@ -136,7 +138,7 @@ export function PresenceWidget() {
         </span>
         <div>
           <span className="presence-widget__eyebrow">正在听</span>
-          <strong>雨落在遮阳棚上</strong>
+          <strong>{weather.kind === 'rain' ? '雨落在遮阳棚上' : '风穿过窗缝'}</strong>
         </div>
         <div className="equalizer" aria-hidden="true">
           <i />
@@ -146,8 +148,10 @@ export function PresenceWidget() {
         </div>
       </div>
       <div className="presence-widget__foot">
-        <span>杭州 · 西湖区</span>
-        <span>晚间频道</span>
+        <span>
+          {location.city} · {location.district}
+        </span>
+        <span>{weather.source === 'open-meteo' ? '实时天气' : '本地频道'}</span>
       </div>
     </article>
   )
@@ -167,7 +171,7 @@ export function QuoteCard() {
         <br />
         秋天就开始收拾行李。
       </blockquote>
-      <span className="quote-card__from">迟迟 · 十月手记</span>
+      <span className="quote-card__from">DeepS先生 · 十月手记</span>
       <span className="quote-card__loose" aria-hidden="true">
         十月
       </span>

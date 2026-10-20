@@ -1,0 +1,67 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: #fbfbf8;
+  color: #1b1b18;
+  font-family: "Noto Sans SC", "Microsoft YaHei", sans-serif;
+}
+
+.api-home {
+  width: min(760px, calc(100% - 40px));
+  margin: 10vh auto;
+  padding: 38px;
+  border: 1px solid #e7e7df;
+  border-radius: 24px;
+  background: #fff;
+  box-shadow: 0 18px 50px rgba(27, 27, 24, 0.06);
+}
+
+.eyebrow {
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  color: #77776e;
+}
+
+h1 {
+  margin: 12px 0 14px;
+  font-family: "Noto Serif SC", Georgia, serif;
+  font-size: clamp(36px, 7vw, 58px);
+  line-height: 1.2;
+  letter-spacing: -0.06em;
+}
+
+.intro,
+.note {
+  color: #6e6e65;
+  line-height: 1.8;
+}
+
+ul {
+  margin: 24px 0;
+  padding: 18px 20px;
+  border: 1px dashed #d6d6cc;
+  border-radius: 14px;
+  list-style: none;
+}
+
+li + li {
+  margin-top: 8px;
+}
+
+code {
+  padding: 2px 5px;
+  border-radius: 4px;
+  background: #f6f6f1;
+  font-family: "Cascadia Mono", Consolas, monospace;
+  font-size: 0.88em;
+}
+
+.note {
+  margin-bottom: 0;
+  padding-top: 14px;
+  border-top: 1px solid #e7e7df;
+  font-size: 12px;
+}

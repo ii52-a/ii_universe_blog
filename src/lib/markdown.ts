@@ -59,3 +59,15 @@ export function countCharacters(blocks: ContentBlock[]) {
     return count
   }, 0)
 }
+
+export function stringifyArticleBody(blocks: ContentBlock[]) {
+  return blocks
+    .map((block) => {
+      if (block.type === 'h2') return `## ${block.text}`
+      if (block.type === 'quote') return `> ${block.text}`
+      if (block.type === 'list') return block.items.map((item) => `- ${item}`).join('\n')
+      if (block.type === 'figure') return `[插图：${block.caption}]`
+      return block.text
+    })
+    .join('\n\n')
+}

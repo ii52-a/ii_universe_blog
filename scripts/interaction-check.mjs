@@ -21,30 +21,85 @@ page.on('console', (message) => {
 })
 page.on('pageerror', (error) => errors.push(`pageerror: ${error.message}`))
 
+const stamp = Date.now().toString(36)
+const username = `DeepS测试${stamp.slice(-4)}`
+const email = `ui-${stamp}@example.com`
+const password = 'hello1234'
+const articleTitle = `从浏览器写进数据库的一页 ${stamp.slice(-4)}`
+
 await page.goto(`${base}/login`, { waitUntil: 'networkidle' })
-await page.getByRole('button', { name: /进去坐坐/ }).click()
-await page.waitForTimeout(250)
-assert.equal(await page.locator('.field-error').count() > 0, true, 'empty login should show field errors')
+await page.getByRole('tab', { name: '注册' }).click()
+await page.locator('#auth-name').fill(username)
+await page.locator('#auth-email').fill(email)
+await page.getByRole('button', { name: '获取验证码' }).click()
+await page.locator('.field-hint code').waitFor({ timeout: 10000 })
+const devCode = await page.locator('.field-hint code').innerText()
+assert.match(devCode, /^\d{6}$/)
+assert.equal(await page.locator('#auth-code').inputValue(), devCode)
+await page.locator('#auth-password').fill(password)
+await page.getByRole('button', { name: /建好账号/ }).click()
+await page.waitForURL('**/space', { timeout: 15000 })
+await page.waitForTimeout(500)
+assert.equal(
+  await page.locator('.space-copy h1').innerText().then((text) => text.includes(username)),
+  true,
+  'space should greet the registered user',
+)
+await page.screenshot({ path: `${outDir}/v13-space-light.png`, fullPage: true })
 
-await page.getByRole('button', { name: '填入演示账号' }).click()
-assert.equal(await page.locator('#auth-email').inputValue(), 'hello@halfday.club')
-assert.equal(await page.locator('#auth-password').inputValue(), 'halfday')
+await page.goto(`${base}/write`, { waitUntil: 'networkidle' })
+await page.locator('#write-title').fill(articleTitle)
+await page.locator('#write-excerpt').fill('这是一篇从浏览器表单提交、经 Next.js 写入数据库的测试文章。')
+await page.locator('#write-body').fill(
+  '这是从前端提交的正文。\n\n## 第一段\n文章会经过 Next.js API 写入 PostgreSQL，然后再出现在首页和归档里。\n\n> 刷新页面，它还在。',
+)
+await page.getByRole('button', { name: '发布这一页' }).click()
+await page.waitForURL(/\/articles\/page-/, { timeout: 15000 })
+await page.waitForTimeout(400)
+assert.equal(await page.locator('.article-byline strong').innerText(), username)
+assert.equal(await page.locator('.article-header h1').innerText(), articleTitle)
+await page.screenshot({ path: `${outDir}/v13-article-light.png`, fullPage: true })
 
+await page.getByRole('link', { name: /编辑/ }).click()
+await page.waitForURL(/\/write\?edit=/, { timeout: 10000 })
+await page.locator('#write-title').waitFor()
+const editedTitle = `${articleTitle}（改过）`
+await page.locator('#write-title').fill(editedTitle)
+await page.getByRole('button', { name: '保存修改' }).click()
+await page.waitForURL(/\/articles\/page-/, { timeout: 15000 })
+await page.waitForTimeout(300)
+assert.equal(await page.locator('.article-header h1').innerText(), editedTitle)
+
+await page.goto(`${base}/space`, { waitUntil: 'networkidle' })
+await page.waitForTimeout(400)
+assert.equal(await page.locator('.space-post').count(), 1)
+await page.screenshot({ path: `${outDir}/v13-space-with-post.png`, fullPage: true })
+
+await page.goto(`${base}/me`, { waitUntil: 'networkidle' })
+await page.getByRole('button', { name: '退出登录' }).click()
+await page.getByRole('button', { name: '确定退出' }).click()
+await page.waitForURL(`${base}/`, { timeout: 10000 })
+
+await page.goto(`${base}/login`, { waitUntil: 'networkidle' })
+await page.locator('#auth-identifier').fill(email)
+await page.locator('#auth-password').fill(password)
+await page.getByRole('radio', { name: /JWT/ }).check()
 await page.getByRole('button', { name: /进去坐坐/ }).click()
-await page.waitForURL('**/me', { timeout: 10000 })
-await page.getByRole('heading', { name: '我的半日' }).waitFor()
-assert.equal(await page.locator('.profile-card h2').innerText(), '迟迟')
+await page.waitForURL('**/space', { timeout: 15000 })
+assert.equal(
+  await page.getByRole('button', { name: new RegExp(username) }).count() > 0,
+  true,
+  'JWT login should restore the header user',
+)
+
+await page.locator('.space-post').first().waitFor()
+await page.locator('.space-post').first().getByRole('button', { name: /删除/ }).click()
+await page.locator('.space-post').first().getByRole('button', { name: '确定' }).click()
+await page.waitForTimeout(800)
+assert.equal(await page.locator('.space-post').count(), 0, 'deleted post should disappear')
 
 await page.goto(`${base}/`, { waitUntil: 'networkidle' })
 await page.waitForTimeout(400)
-assert.equal(
-  await page.locator('.seat-card__copy h2').innerText().then((text) => text.includes('迟迟')),
-  true,
-  'home seat card should show the signed-in user',
-)
-assert.equal(await page.locator('.mascot-companion').count(), 1, 'mascot companion should be present')
-assert.equal(await page.locator('.seat-card__placeholder').count(), 0, 'placeholder should be replaced by avatar')
-
 await page.locator('.brand__mark--button').click()
 await page.waitForTimeout(700)
 assert.equal(await page.evaluate(() => document.documentElement.dataset.theme), 'dark')
@@ -53,75 +108,6 @@ assert.equal(await page.evaluate(() => document.documentElement.dataset.theme), 
 await page.locator('.brand__mark--button').click()
 await page.waitForTimeout(500)
 assert.equal(await page.evaluate(() => document.documentElement.dataset.theme), 'light')
-
-await page.getByRole('button', { name: /迟迟/ }).click()
-await page.getByRole('menuitem', { name: '我的主页' }).click()
-await page.waitForURL('**/u/chichi')
-assert.equal(await page.locator('.user-ticket h1').innerText(), '迟迟')
-assert.equal(
-  await page.locator('.user-ticket__foot').innerText().then((text) => text.includes('这是你的那一页')),
-  true,
-)
-await page.goto(`${base}/me`, { waitUntil: 'networkidle' })
-
-await page.locator('#profile-name').fill('迟迟同学')
-await page.locator('#profile-bio').fill('住在杭州，写点不着急的事。今天也在慢慢走。')
-await page.getByRole('button', { name: '保存资料' }).click()
-await page.getByText('资料保存好了。').waitFor({ timeout: 10000 })
-await page.waitForTimeout(700)
-assert.equal(await page.locator('.auth-menu__trigger > span:nth-child(2)').innerText(), '迟迟同学')
-await page.screenshot({ path: `${outDir}/v12-profile-logged.png`, fullPage: true })
-
-await page.goto(`${base}/write`, { waitUntil: 'networkidle' })
-assert.equal(await page.locator('#write-title').count(), 1, 'write page should render for a signed-in user')
-await page.locator('#write-title').fill('测试的一页：风从桥下过')
-await page.locator('#write-excerpt').fill('一篇用于检查共同文章流的短文章，写完就会出现在归档最上面。')
-await page.locator('#write-body').fill(
-  '傍晚的桥上有风。\n\n## 写一页\n这一页是为了检查发布流程，也顺便看看新文章的署名。\n\n> 文章应该出现在所有人的页面里。\n\n- 标题\n- 摘要\n- 封面',
-)
-await page.locator('#write-tags').fill('测试, 桥')
-await page.getByRole('button', { name: '发布这一页' }).click()
-await page.waitForURL(/\/articles\/page-/, { timeout: 10000 })
-await page.waitForTimeout(300)
-assert.equal(await page.locator('.article-header h1').innerText(), '测试的一页：风从桥下过')
-assert.equal(await page.locator('.article-byline strong').innerText(), '迟迟同学')
-await page.goto(`${base}/articles`, { waitUntil: 'networkidle' })
-assert.equal(await page.locator('.post-row__copy strong').first().innerText(), '测试的一页：风从桥下过')
-await page.goto(`${base}/u/chichi`, { waitUntil: 'networkidle' })
-assert.equal(await page.locator('.user-summary__stats dd').nth(1).innerText(), '9')
-
-await page.goto(`${base}/articles/a-rainy-walk-from-mantoushan`, { waitUntil: 'networkidle' })
-await page.locator('#comment-a-rainy-walk-from-mantoushan').fill('今天照着走了一遍，桂花已经开了。下次想从凤山门往回走。')
-await page.getByRole('button', { name: /留一句/ }).click()
-await page.getByText('留言写好了。').waitFor({ timeout: 10000 })
-await page.getByText('今天照着走了一遍').waitFor({ timeout: 10000 })
-const commentCount = await page.locator('#comments-title span').innerText()
-assert.equal(commentCount, '3', 'comment count should update to 3')
-
-await page.locator('.article-action').first().click()
-await page.getByRole('button', { name: /收藏/ }).first().click()
-await page.screenshot({ path: `${outDir}/v12-article-logged.png`, fullPage: true })
-
-await page.locator('.search-trigger').click()
-await page.locator('#site-search').fill('散步')
-await page.waitForTimeout(300)
-await page.screenshot({ path: `${outDir}/v12-search-light.png` })
-assert.equal(await page.locator('.search-results a').count() > 0, true, 'search should return posts')
-await page.keyboard.press('Escape')
-await page.waitForTimeout(200)
-
-await page.goto(`${base}/me`, { waitUntil: 'networkidle' })
-await page.screenshot({ path: `${outDir}/v12-profile-saved.png`, fullPage: true })
-await page.getByRole('button', { name: '退出登录' }).click()
-await page.getByRole('button', { name: '确定退出' }).click()
-await page.waitForURL(`${base}/`, { timeout: 10000 })
-await page.waitForTimeout(250)
-assert.equal(await page.locator('.login-link').innerText().then((text) => text.includes('登录')), true)
-assert.equal(
-  await page.locator('.seat-card__copy h2').innerText().then((text) => text.includes('空着')),
-  true,
-  'signed-out seat card should show the empty placeholder',
-)
 
 const mobileContext = await browser.newContext({
   viewport: { width: 390, height: 844 },
@@ -133,14 +119,12 @@ await mobile.goto(`${base}/`, { waitUntil: 'networkidle' })
 await mobile.getByRole('button', { name: '打开菜单' }).click()
 await mobile.locator('#mobile-menu').waitFor()
 assert.equal(await mobile.locator('#mobile-menu').isVisible(), true)
-assert.equal(
-  await mobile.locator('#mobile-menu').innerText().then((text) => text.includes('日落')),
-  true,
-  'mobile menu should include the sunset page',
-)
+const menuText = await mobile.locator('#mobile-menu').innerText()
+assert.equal(menuText.includes('日落'), true)
+assert.equal(menuText.includes('写一页'), true)
 await mobile.waitForTimeout(300)
-await mobile.screenshot({ path: `${outDir}/v12-mobile-menu.png` })
-await mobile.getByRole('button', { name: '关闭菜单' }).click()
+await mobile.screenshot({ path: `${outDir}/v13-mobile-menu.png` })
 
 await browser.close()
-console.log(JSON.stringify({ ok: true, errors }, null, 2))
+console.log(JSON.stringify({ ok: true, username, email, errors }, null, 2))
+if (errors.length > 0) process.exitCode = 1
