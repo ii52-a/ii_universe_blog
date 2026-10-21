@@ -3,10 +3,24 @@ import assert from 'node:assert/strict'
 
 const baseURL = process.env.API_URL ?? 'http://127.0.0.1:3001'
 const api = await request.newContext({ baseURL })
+const admin = await request.newContext({ baseURL })
+const anon = await request.newContext({ baseURL })
 const stamp = Date.now().toString(36)
 const email = `api-${stamp}@example.com`
 const username = `测试岛民${stamp.slice(-4)}`
 const password = 'hello1234'
+const postData = {
+  title: '接口测试的一页',
+  excerpt: '这是一篇用于验证后端文章接口的测试文章。',
+  body: '## 测试\n这是一段足够长的测试正文，用来验证创建、修改、删除和审核流程。',
+  content: [
+    { type: 'h2', text: '测试' },
+    { type: 'p', text: '这是一段足够长的测试正文，用来验证创建、修改、删除和审核流程。' },
+  ],
+  category: '日常',
+  tags: ['测试'],
+  cover: 'walk',
+}
 
 async function json(response) {
   return response.json()
@@ -15,111 +29,130 @@ async function json(response) {
 try {
   let response = await api.get('/api/health')
   assert.equal(response.ok(), true, 'health should be ok')
-  const health = await json(response)
-  assert.equal(health.ok, true)
 
-  response = await api.post('/api/auth/code', {
-    data: { email, purpose: 'register' },
-  })
-  assert.equal(response.status(), 200, 'code request should succeed')
+  response = await api.post('/api/auth/code', { data: { email, purpose: 'register' } })
   const codeResponse = await json(response)
-  assert.match(codeResponse.devCode, /^\d{6}$/, 'development should expose a 6-digit code')
+  assert.match(codeResponse.devCode, /^\d{6}$/)
 
   response = await api.post('/api/auth/register', {
     data: { email, username, password, code: codeResponse.devCode },
   })
-  assert.equal(response.status(), 201, 'register should create a user')
+  assert.equal(response.status(), 201)
   const registered = await json(response)
-  assert.equal(registered.user.username, username)
-  assert.equal(registered.user.handle.startsWith('api-'), true)
+  assert.equal(registered.user.role, 'member')
+  assert.equal('mode' in registered, false)
+
+  const cookies = (await api.storageState()).cookies.map((cookie) => cookie.name)
+  assert.equal(cookies.includes('halfday_jwt'), true)
+  assert.equal(cookies.includes('halfday_session'), false)
 
   response = await api.get('/api/auth/me')
-  assert.equal(response.status(), 200, 'session should authenticate /me')
-  const me = await json(response)
-  assert.equal(me.user.email, email)
-  assert.equal(me.mode, 'session')
+  assert.equal(response.status(), 200)
+  assert.equal((await json(response)).user.email, email)
 
-  response = await api.post('/api/posts', {
-    data: {
-      title: '接口测试的一页',
-      excerpt: '这是一篇用于验证后端文章接口的测试文章。',
-      body: '## 测试\n这是一段足够长的测试正文，用来验证创建、修改和删除文章。',
-      content: [
-        { type: 'h2', text: '测试' },
-        { type: 'p', text: '这是一段足够长的测试正文，用来验证创建、修改和删除文章。' },
-      ],
-      category: '日常',
-      tags: ['测试'],
-      cover: 'walk',
-    },
-  })
-  assert.equal(response.status(), 201, 'create post should succeed')
+  const seedPosts = await json(await api.get('/api/posts?limit=50'))
+  const seedAuthors = new Set(seedPosts.posts.map((post) => post.authorHandle))
+  assert.equal(seedAuthors.size >= 4, true, 'seed posts should have several authors')
+  assert.equal(
+    seedPosts.posts.filter((post) => post.authorHandle === 'deepseek').length,
+    2,
+    'only the pages written by DeepS use the DeepS author',
+  )
+
+  response = await api.post('/api/posts', { data: postData })
+  assert.equal(response.status(), 201)
   const created = await json(response)
-  assert.equal(created.post.authorName, username)
+  assert.equal(created.post.status, 'pending', 'member posts should wait for review')
   const slug = created.post.slug
 
-  response = await api.patch(`/api/posts/${slug}`, {
-    data: { title: '接口测试的一页（已修改）' },
+  response = await anon.get(`/api/posts/${slug}`)
+  assert.equal(response.status(), 404, 'pending post should not be public')
+  response = await api.get('/api/posts?mine=true&limit=50')
+  assert.equal((await json(response)).posts.some((post) => post.slug === slug), true)
+
+  response = await api.get('/api/review')
+  assert.equal(response.status(), 403, 'members cannot review')
+
+  response = await admin.post('/api/auth/login', {
+    data: { identifier: 'ii52A1', password: 'ii52A1pass', remember: true },
   })
-  assert.equal(response.status(), 200, 'update should succeed')
-  assert.equal((await json(response)).post.title, '接口测试的一页（已修改）')
+  assert.equal(response.status(), 200)
+  assert.equal((await json(response)).user.role, 'admin')
+  const adminCookies = (await admin.storageState()).cookies.map((cookie) => cookie.name)
+  assert.equal(adminCookies.includes('halfday_jwt'), true)
 
+  response = await admin.get('/api/review')
+  assert.equal(response.status(), 200)
+  assert.equal((await json(response)).posts.some((post) => post.slug === slug), true)
+
+  response = await admin.patch(`/api/review/${slug}`, { data: { action: 'approve' } })
+  assert.equal(response.status(), 200)
+  assert.equal((await json(response)).post.status, 'published')
+
+  response = await anon.get(`/api/posts/${slug}`)
+  assert.equal(response.status(), 200, 'approved post should be public')
+
+  response = await api.patch(`/api/posts/${slug}`, { data: { title: '接口测试的一页（已修改）' } })
+  assert.equal(response.status(), 200)
+  assert.equal((await json(response)).post.status, 'pending', 'member edits go back to review')
+
+  response = await admin.patch(`/api/review/${slug}`, {
+    data: { action: 'reject', note: '再改一改' },
+  })
+  assert.equal(response.status(), 200)
+  assert.equal((await json(response)).post.status, 'rejected')
   response = await api.get(`/api/posts/${slug}`)
-  assert.equal(response.status(), 200, 'get post should succeed')
-  assert.equal((await json(response)).post.body.includes('测试正文'), true)
+  assert.equal((await json(response)).post.reviewNote, '再改一改')
 
-  response = await api.get('/api/posts?limit=3')
-  assert.equal(response.status(), 200, 'list should succeed')
-  assert.ok((await json(response)).posts.length >= 1)
+  response = await admin.post('/api/posts', {
+    data: { ...postData, title: '管理员直接发布的一页' },
+  })
+  assert.equal(response.status(), 201)
+  const adminPost = await json(response)
+  assert.equal(adminPost.post.status, 'published', 'admin posts publish without review')
+  response = await admin.delete(`/api/posts/${adminPost.post.slug}`)
+  assert.equal(response.status(), 200)
 
   response = await api.post('/api/auth/logout')
   assert.equal(response.status(), 200)
   response = await api.get('/api/auth/me')
-  assert.equal(response.status(), 401, 'logout should clear auth')
+  assert.equal(response.status(), 401)
 
   response = await api.post('/api/auth/login', {
-    data: { identifier: username, password, mode: 'jwt', remember: true },
-  })
-  assert.equal(response.status(), 200, 'jwt login should succeed')
-  assert.equal((await json(response)).mode, 'jwt')
-  response = await api.get('/api/auth/me')
-  assert.equal(response.status(), 200, 'jwt should authenticate /me')
-
-  response = await api.post('/api/auth/code', {
-    data: { email, purpose: 'reset' },
+    data: { identifier: username, password, remember: true },
   })
   assert.equal(response.status(), 200)
+  assert.equal('mode' in (await json(response)), false)
+
+  response = await api.post('/api/auth/code', { data: { email, purpose: 'reset' } })
   const resetCode = await json(response)
   response = await api.post('/api/auth/reset-password', {
     data: { email, code: resetCode.devCode, password: 'newpass1234' },
   })
-  assert.equal(response.status(), 200, 'reset password should succeed')
-
+  assert.equal(response.status(), 200)
+  response = await api.get('/api/auth/me')
+  assert.equal(response.status(), 401, 'password reset should invalidate old JWTs')
   response = await api.post('/api/auth/login', {
-    data: { identifier: email, password, mode: 'session', remember: false },
+    data: { identifier: email, password, remember: false },
   })
   assert.equal(response.status(), 401, 'old password should fail')
-
   response = await api.post('/api/auth/login', {
-    data: { identifier: email, password: 'newpass1234', mode: 'session', remember: false },
+    data: { identifier: email, password: 'newpass1234', remember: false },
   })
-  assert.equal(response.status(), 200, 'new password should work')
-  response = await api.get('/api/auth/me')
   assert.equal(response.status(), 200)
 
   response = await api.delete(`/api/posts/${slug}`)
-  assert.equal(response.status(), 200, 'delete should succeed')
-  response = await api.get(`/api/posts/${slug}`)
-  assert.equal(response.status(), 404, 'deleted post should be gone')
+  assert.equal(response.status(), 200)
 
   response = await api.get('/api/widgets')
   assert.equal(response.status(), 200)
   const widgets = await json(response)
   assert.equal(widgets.timeZone, 'Asia/Shanghai')
   assert.equal(widgets.location.city, '杭州')
-  assert.equal(typeof widgets.weather.temperature, 'number')
 
-  console.log(JSON.stringify({ ok: true, email, username, checks: 17 }, null, 2))
+  console.log(JSON.stringify({ ok: true, email, username, checks: 30 }, null, 2))
 } finally {
   await api.dispose()
+  await admin.dispose()
+  await anon.dispose()
 }

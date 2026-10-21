@@ -29,7 +29,6 @@ export const registerSchema = z.object({
 export const loginSchema = z.object({
   identifier: z.string().trim().min(1, '请输入邮箱或用户名').max(160),
   password: z.string().min(1, '请输入密码').max(72),
-  mode: z.enum(['session', 'jwt']).default('session'),
   remember: z.boolean().default(false),
 })
 
@@ -63,10 +62,14 @@ export const postCreateSchema = z.object({
   category: z.string().trim().min(1).max(24),
   tags: z.array(z.string().trim().min(1).max(24)).max(4).default([]),
   cover,
-  status: z.enum(['draft', 'published']).default('published'),
 })
 
 export const postUpdateSchema = postCreateSchema.partial()
+
+export const reviewSchema = z.object({
+  action: z.enum(['approve', 'reject']),
+  note: z.string().trim().max(200).optional(),
+})
 
 export type RegisterInput = z.infer<typeof registerSchema>
 export type LoginInput = z.infer<typeof loginSchema>

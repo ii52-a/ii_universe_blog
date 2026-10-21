@@ -26,10 +26,14 @@ npm run dev
 
 ## 表
 
-- `users`：邮箱、用户名、handle、bcrypt 密码、简介、地点、网站、头像
+- `users`：邮箱、用户名、handle、bcrypt 密码、`role`（member / admin）、简介、地点、网站、头像
 - `verification_codes`：注册 / 重置验证码，SHA-256 摘要、10 分钟过期、尝试次数
-- `sessions`：数据库会话，只存 token 的 SHA-256 摘要
-- `posts`：标题、摘要、正文、JSON 内容块、分类、标签、封面、状态、作者、时间
+- `posts`：标题、摘要、正文、JSON 内容块、分类、标签、封面、状态、审核原因、作者、时间
+
+账号：
+
+- 普通：`hello@halfday.club` / `halfday`
+- 特权：`ii52A1` / `ii52A1pass`
 
 ## 接口
 
@@ -38,18 +42,20 @@ npm run dev
 | GET | `/api/health` | - | 数据库类型与时间 |
 | POST | `/api/auth/code` | - | `register` / `reset` 验证码 |
 | POST | `/api/auth/register` | - | 邮箱 + 验证码注册，自动登录 |
-| POST | `/api/auth/login` | - | `mode: session \| jwt`，`remember` |
-| GET | `/api/auth/me` | Cookie | 当前用户 |
-| POST | `/api/auth/logout` | Cookie | 删除会话并清 Cookie |
+| POST | `/api/auth/login` | - | 只发 JWT Cookie，支持 `remember` |
+| GET | `/api/auth/me` | JWT | 当前用户 |
+| POST | `/api/auth/logout` | JWT | 清 JWT Cookie |
 | POST | `/api/auth/reset-password` | - | 验证码改密码 |
-| GET | `/api/users/me` | Cookie | 当前用户资料 |
-| PATCH | `/api/users/me` | Cookie | 改用户名、简介、城市、网站、头像 |
+| GET | `/api/users/me` | JWT | 当前用户资料 |
+| PATCH | `/api/users/me` | JWT | 改用户名、简介、城市、网站、头像 |
 | GET | `/api/users/:handle` | - | 公开用户与文章 |
 | GET | `/api/posts` | 可选 | `limit` `cursor` `category` `q` `author` `mine` |
-| POST | `/api/posts` | Cookie | 新建并发布 |
-| GET | `/api/posts/:slug` | 可选 | 详情；草稿仅作者可见 |
-| PATCH | `/api/posts/:slug` | Cookie | 作者修改 |
-| DELETE | `/api/posts/:slug` | Cookie | 作者删除 |
+| POST | `/api/posts` | JWT | 普通账号进入 `pending`，ii52A1 直接发布 |
+| GET | `/api/posts/:slug` | 可选 | 公开页；未发布仅作者 / 管理员可见 |
+| PATCH | `/api/posts/:slug` | JWT | 作者修改；普通账号重新进入审核 |
+| DELETE | `/api/posts/:slug` | JWT | 作者删除 |
+| GET | `/api/review` | 管理员 | 待审核队列 |
+| PATCH | `/api/review/:slug` | 管理员 | `approve` / `reject` |
 | GET | `/api/widgets` | - | 服务端时间、杭州、天气 |
 
 ## 快速验证
@@ -70,12 +76,13 @@ curl -X POST http://127.0.0.1:3001/api/auth/code \
 node scripts/backend-test.mjs
 ```
 
-测试覆盖验证码注册、会话登录、JWT 登录、`/me`、文章 CRUD、重置密码、退出、天气接口。
+测试覆盖验证码注册、JWT 登录、`/me`、文章 CRUD、审核通过 / 退回、管理员直发、重置密码、退出、天气接口。
 
 ## 安全说明
 
 - 密码使用 bcrypt（cost 12）哈希，不存明文。
-- 会话 token 只存 SHA-256 摘要，Cookie 为 `httpOnly` / `sameSite=lax`，生产自动 `secure`。
+- 登录只发 JWT Cookie，`httpOnly` / `sameSite=lax`，生产自动 `secure`。
+- JWT 带 `token_version`；重置密码会递增版本，旧 token 立即失效。
 - 验证码 6 位、10 分钟过期、60 秒冷却、最多 5 次尝试。
-- 所有输入经过 Zod；文章修改 / 删除校验作者。
+- 所有输入经过 Zod；文章修改 / 删除校验作者，审核校验 `role = admin`。
 - `EXPOSE_DEV_CODE=true` 仅用于没有邮件服务的演示；生产必须关闭并接入邮件发送。

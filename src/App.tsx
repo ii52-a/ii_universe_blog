@@ -15,6 +15,7 @@ import { UserPage } from './pages/UserPage'
 import { SunsetPage } from './pages/SunsetPage'
 import { WritePage } from './pages/WritePage'
 import { SpacePage } from './pages/SpacePage'
+import { ReviewPage } from './pages/ReviewPage'
 import { ForgotPasswordPage } from './pages/ForgotPasswordPage'
 import { NotFoundPage } from './pages/NotFoundPage'
 
@@ -38,6 +39,7 @@ export default function App() {
                   <Route path="/forgot" element={<ForgotPasswordPage />} />
                   <Route path="/me" element={<ProfilePage />} />
                   <Route path="/space" element={<SpacePage />} />
+                  <Route path="/review" element={<ReviewPage />} />
                   <Route path="/u/:handle" element={<UserPage />} />
                   <Route path="*" element={<NotFoundPage />} />
                 </Route>

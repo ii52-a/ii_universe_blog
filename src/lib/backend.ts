@@ -1,11 +1,15 @@
 import type { ContentBlock } from '../data/posts'
 
+export type UserRole = 'member' | 'admin'
+export type PostStatus = 'draft' | 'pending' | 'published' | 'rejected'
+
 export interface ApiUser {
   id: string
   email: string
   username: string
   name: string
   handle: string
+  role: UserRole
   bio: string
   location: string
   website: string
@@ -24,7 +28,9 @@ export interface ApiPost {
   category: string
   tags: string[]
   cover: string
-  status: 'draft' | 'published'
+  status: PostStatus
+  reviewNote: string
+  reviewedAt: string | null
   readMinutes: number
   publishedAt: string
   updatedAt: string
@@ -32,6 +38,7 @@ export interface ApiPost {
   authorName: string
   authorHandle: string
   authorColor: string
+  authorRole: UserRole
   avatar?: string
   authorAvatar?: string
   authorLocation: string
@@ -90,24 +97,19 @@ async function apiFetch<T>(path: string, init: RequestInit = {}): Promise<T> {
 }
 
 export const authApi = {
-  me: () => apiFetch<{ user: ApiUser; mode: 'session' | 'jwt' | null }>('/api/auth/me'),
+  me: () => apiFetch<{ user: ApiUser }>('/api/auth/me'),
   requestCode: (email: string, purpose: 'register' | 'reset') =>
     apiFetch<{ ok: true; devCode?: string; expiresIn: number; message: string }>('/api/auth/code', {
       method: 'POST',
       body: JSON.stringify({ email, purpose }),
     }),
   register: (input: { email: string; username: string; password: string; code: string }) =>
-    apiFetch<{ user: ApiUser; mode: 'session' }>('/api/auth/register', {
+    apiFetch<{ user: ApiUser }>('/api/auth/register', {
       method: 'POST',
       body: JSON.stringify(input),
     }),
-  login: (input: {
-    identifier: string
-    password: string
-    mode: 'session' | 'jwt'
-    remember: boolean
-  }) =>
-    apiFetch<{ user: ApiUser; mode: 'session' | 'jwt' }>('/api/auth/login', {
+  login: (input: { identifier: string; password: string; remember: boolean }) =>
+    apiFetch<{ user: ApiUser }>('/api/auth/login', {
       method: 'POST',
       body: JSON.stringify(input),
     }),
@@ -139,7 +141,6 @@ export interface PostInput {
   category: string
   tags: string[]
   cover: string
-  status?: 'draft' | 'published'
 }
 
 export const postsApi = {
@@ -170,6 +171,16 @@ export const postsApi = {
     apiFetch<{ user: ApiUser; posts: ApiPost[]; nextCursor: string | null }>(
       `/api/users/${encodeURIComponent(handle)}`,
     ),
+}
+
+export const reviewApi = {
+  pending: () =>
+    apiFetch<{ posts: ApiPost[]; nextCursor: string | null }>('/api/review'),
+  review: (slug: string, action: 'approve' | 'reject', note = '') =>
+    apiFetch<{ post: ApiPost }>(`/api/review/${encodeURIComponent(slug)}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ action, note }),
+    }),
 }
 
 export const widgetsApi = {

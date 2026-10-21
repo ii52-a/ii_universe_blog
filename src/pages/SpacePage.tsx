@@ -153,12 +153,17 @@ export function SpacePage() {
               <br />
               {user.name}。
             </h1>
-            <p>{user.bio || '这里的介绍还空着，可以慢慢补。'}</p>
+            <p>{user.bio || '介绍还空着。'}</p>
             <div className="space-actions">
               <Link className="button button--ink" to="/write">
                 <PenLine size={15} aria-hidden="true" />
                 写一页
               </Link>
+              {user.role === 'admin' && (
+                <Link className="text-link" to="/review">
+                  审核队列 <ArrowUpRight size={14} aria-hidden="true" />
+                </Link>
+              )}
               <Link className="text-link" to="/me">
                 编辑资料 <ArrowUpRight size={14} aria-hidden="true" />
               </Link>
@@ -202,7 +207,7 @@ export function SpacePage() {
             <div className="section-head">
               <div>
                 <h2 id="space-posts-title">我写过的页</h2>
-                <p>{loading ? '正在翻找…' : posts.length > 0 ? '地址不会变，随时可以回来改。' : '还空着，第一页等你写。'}</p>
+                <p>{loading ? '正在翻找…' : posts.length > 0 ? '地址不变，随时可改。' : '还空着。'}</p>
               </div>
               {posts.length > 0 && (
                 <Link className="text-link" to="/articles">
@@ -232,6 +237,15 @@ export function SpacePage() {
                     </span>
                     <div className="space-post__copy">
                       <div className="space-post__meta">
+                        {post.status !== 'published' && (
+                          <span className={`space-status space-status--${post.status}`}>
+                            {post.status === 'pending'
+                              ? '审核中'
+                              : post.status === 'rejected'
+                                ? '已退回'
+                                : '草稿'}
+                          </span>
+                        )}
                         <span>{post.category}</span>
                         <time dateTime={post.publishedAt}>
                           {new Intl.DateTimeFormat('zh-CN', { month: '2-digit', day: '2-digit' })
@@ -291,7 +305,7 @@ export function SpacePage() {
                 <Sparkles size={16} />
               </span>
               <h2>今天的小提示</h2>
-              <p>不用写完整。先把一个动作、一个声音，或者一句话记下来，剩下的明天再说。</p>
+              <p>先记一个动作或一句话，剩下的明天再说。</p>
               <span className="space-note__doodle" aria-hidden="true">
                 afterglow
               </span>
@@ -301,9 +315,9 @@ export function SpacePage() {
                 <UserRound size={16} />
               </span>
               <h2>公开的那一面</h2>
-              <p>别人看到的是你的名字、头像、写过的页和留言。邮箱不会公开。</p>
+              <p>别人能看到名字、头像、文章和留言。邮箱不公开。</p>
               <Link className="text-link" to={`/u/${user.handle}`}>
-                看看别人看到的 <ArrowUpRight size={13} aria-hidden="true" />
+                看看公开主页 <ArrowUpRight size={13} aria-hidden="true" />
               </Link>
             </div>
           </aside>

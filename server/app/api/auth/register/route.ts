@@ -4,7 +4,7 @@ import { hash } from 'bcryptjs'
 import { consumeCode } from '../../../../lib/codes'
 import {
   applyAuthCookie,
-  createSession,
+  createJwt,
   handleFromEmail,
   publicUser,
   type UserRow,
@@ -53,9 +53,9 @@ export async function POST(request: NextRequest) {
       [id, email, body.username, handle, passwordHash],
     )
     const user = publicUser(inserted.rows[0])
-    const session = await createSession(user.id, false, request.headers.get('user-agent') ?? '')
-    const response = NextResponse.json({ user, mode: 'session' }, { status: 201 })
-    applyAuthCookie(response, 'session', session.token, session.days)
+    const auth = await createJwt(user.id, false, inserted.rows[0].token_version)
+    const response = NextResponse.json({ user }, { status: 201 })
+    applyAuthCookie(response, auth.token, auth.days)
     response.headers.set('Cache-Control', 'no-store')
     return response
   } catch (error) {

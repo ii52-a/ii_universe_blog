@@ -13,7 +13,8 @@ import {
 import { type ContentBlock, type Post, postAuthor } from '../data/posts'
 import { usePageTitle } from '../hooks/usePageTitle'
 import { reactionsApi, commentsApi } from '../lib/api'
-import { deletePost, usePosts } from '../lib/postsStore'
+import { deletePost, mapApiPost, usePosts } from '../lib/postsStore'
+import { postsApi } from '../lib/backend'
 import { useToast } from '../context/ToastContext'
 import { useAuth } from '../context/AuthContext'
 import { CoverArt } from '../components/CoverArt'
@@ -32,7 +33,10 @@ export function ArticlePage() {
   const { slug } = useParams()
   const navigate = useNavigate()
   const allPosts = usePosts()
-  const post = allPosts.find((item) => item.slug === slug)
+  const localPost = allPosts.find((item) => item.slug === slug)
+  const [remotePost, setRemotePost] = useState<Post | null>(null)
+  const [loadingPost, setLoadingPost] = useState(!localPost)
+  const post = localPost ?? remotePost
   const { user } = useAuth()
   usePageTitle(post?.title ?? '没有这篇')
   const { showToast } = useToast()
@@ -42,6 +46,30 @@ export function ArticlePage() {
   const [commentCount, setCommentCount] = useState(0)
   const [progress, setProgress] = useState(0)
   const [activeHeading, setActiveHeading] = useState('')
+
+  useEffect(() => {
+    if (localPost || !slug) {
+      setRemotePost(null)
+      setLoadingPost(false)
+      return
+    }
+    let cancelled = false
+    setLoadingPost(true)
+    postsApi
+      .get(slug)
+      .then(({ post: apiPost }) => {
+        if (!cancelled) setRemotePost(mapApiPost(apiPost))
+      })
+      .catch(() => {
+        if (!cancelled) setRemotePost(null)
+      })
+      .finally(() => {
+        if (!cancelled) setLoadingPost(false)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [localPost, slug])
 
   const headings = useMemo(() => (post ? getHeadings(post) : []), [post])
 
@@ -96,6 +124,17 @@ export function ArticlePage() {
     })
     return () => observer.disconnect()
   }, [headings])
+
+  if (loadingPost) {
+    return (
+      <div className="article-page">
+        <div className="page-container write-loading">
+          <span className="spinner" aria-hidden="true" />
+          正在翻这一页…
+        </div>
+      </div>
+    )
+  }
 
   if (!post) return <NotFoundPage />
 
@@ -171,6 +210,18 @@ export function ArticlePage() {
           <span aria-hidden="true">/</span>
           <Link to={`/articles?category=${encodeURIComponent(post.category)}`}>{post.category}</Link>
         </nav>
+
+        {post.status && post.status !== 'published' && (
+          <div className={`article-state article-state--${post.status}`} role="status">
+            <strong>{post.status === 'pending' ? '审核中' : '已退回'}</strong>
+            <span>
+              {post.status === 'pending'
+                ? '只有你和管理员能看这一页。'
+                : post.reviewNote || '按审核意见改一改，再提交一次。'}
+            </span>
+            {canManage && <Link to={`/write?edit=${post.slug}`}>继续修改</Link>}
+          </div>
+        )}
 
         <header className="article-header">
           <div className="article-header__meta">

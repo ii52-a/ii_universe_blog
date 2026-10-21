@@ -3,7 +3,6 @@ import { compare } from 'bcryptjs'
 import {
   applyAuthCookie,
   createJwt,
-  createSession,
   publicUser,
   type UserRow,
 } from '../../../../lib/auth'
@@ -32,11 +31,9 @@ export async function POST(request: NextRequest) {
     if (!passwordOk) throw new ApiError(401, 'INVALID_CREDENTIALS', '邮箱、用户名或密码不正确')
 
     const user = publicUser(row)
-    const auth = body.mode === 'jwt'
-      ? await createJwt(user.id, body.remember)
-      : await createSession(user.id, body.remember, request.headers.get('user-agent') ?? '')
-    const response = NextResponse.json({ user, mode: body.mode })
-    applyAuthCookie(response, body.mode, auth.token, auth.days)
+    const auth = await createJwt(user.id, body.remember, row.token_version)
+    const response = NextResponse.json({ user })
+    applyAuthCookie(response, auth.token, auth.days)
     response.headers.set('Cache-Control', 'no-store')
     return response
   } catch (error) {

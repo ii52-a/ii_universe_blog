@@ -14,7 +14,7 @@ function emit(next: Post[]) {
   listeners.forEach((listener) => listener())
 }
 
-function mapApiPost(post: ApiPost): Post {
+export function mapApiPost(post: ApiPost): Post {
   return {
     id: post.id,
     slug: post.slug,
@@ -27,11 +27,14 @@ function mapApiPost(post: ApiPost): Post {
     readMinutes: post.readMinutes,
     cover: post.cover as CoverVariant,
     status: post.status,
+    reviewNote: post.reviewNote,
+    reviewedAt: post.reviewedAt,
     authorId: post.authorId,
     authorName: post.authorName,
     authorHandle: post.authorHandle,
     authorColor: post.authorColor,
     authorAvatar: post.authorAvatar ?? post.avatar,
+    authorRole: post.authorRole,
     authorLocation: post.authorLocation,
     userGenerated: post.userGenerated,
     content: post.content,
@@ -95,7 +98,6 @@ function toApiInput(input: NewPostInput): PostInput {
     category: input.category,
     tags: input.tags,
     cover: input.cover,
-    status: 'published',
   }
 }
 

@@ -1,9 +1,9 @@
-import { createHash, randomBytes, randomUUID } from 'node:crypto'
+import { randomBytes } from 'node:crypto'
 import type { NextRequest, NextResponse } from 'next/server'
 import { SignJWT, jwtVerify } from 'jose'
 import { ensureDatabase, getDatabase } from './db'
 
-export type AuthMode = 'session' | 'jwt'
+export type Role = 'member' | 'admin'
 
 export interface PublicUser {
   id: string
@@ -11,6 +11,7 @@ export interface PublicUser {
   username: string
   name: string
   handle: string
+  role: Role
   bio: string
   location: string
   website: string
@@ -25,6 +26,8 @@ export interface UserRow extends Record<string, unknown> {
   username: string
   handle: string
   password_hash: string
+  role: Role
+  token_version: number
   bio: string
   location: string
   website: string
@@ -34,18 +37,9 @@ export interface UserRow extends Record<string, unknown> {
   updated_at: string
 }
 
-export const SESSION_COOKIE = 'halfday_session'
 export const JWT_COOKIE = 'halfday_jwt'
 const DEFAULT_SECRET = 'halfday-local-dev-secret-change-me'
 const secret = new TextEncoder().encode(process.env.JWT_SECRET ?? DEFAULT_SECRET)
-
-export function hashToken(token: string) {
-  return createHash('sha256').update(token).digest('hex')
-}
-
-export function randomToken() {
-  return randomBytes(32).toString('base64url')
-}
 
 export function normalizeEmail(email: string) {
   return email.trim().toLowerCase()
@@ -68,6 +62,7 @@ export function publicUser(row: UserRow): PublicUser {
     username: row.username,
     name: row.username,
     handle: row.handle,
+    role: row.role ?? 'member',
     bio: row.bio,
     location: row.location,
     website: row.website,
@@ -77,23 +72,14 @@ export function publicUser(row: UserRow): PublicUser {
   }
 }
 
-export async function createSession(userId: string, remember: boolean, userAgent?: string) {
-  const db = await getDatabase()
-  const token = randomToken()
-  const days = remember ? 30 : 1
-  const expiresAt = new Date(Date.now() + days * 24 * 60 * 60 * 1000)
-  await db.query(
-    `INSERT INTO sessions (id, token_hash, user_id, expires_at, user_agent)
-     VALUES ($1, $2, $3, $4, $5)`,
-    [randomUUID(), hashToken(token), userId, expiresAt.toISOString(), userAgent ?? ''],
-  )
-  return { token, expiresAt, days }
+export function isAdmin(user: PublicUser | null): boolean {
+  return user?.role === 'admin'
 }
 
-export async function createJwt(userId: string, remember: boolean) {
+export async function createJwt(userId: string, remember: boolean, tokenVersion = 0) {
   const days = remember ? 30 : 1
   const expiresAt = new Date(Date.now() + days * 24 * 60 * 60 * 1000)
-  const token = await new SignJWT({})
+  const token = await new SignJWT({ ver: tokenVersion })
     .setProtectedHeader({ alg: 'HS256' })
     .setSubject(userId)
     .setIssuedAt()
@@ -112,60 +98,34 @@ function cookieOptions(maxAge: number) {
   }
 }
 
-export function applyAuthCookie(
-  response: NextResponse,
-  mode: AuthMode,
-  token: string,
-  days: number,
-) {
-  if (mode === 'session') {
-    response.cookies.set(SESSION_COOKIE, token, cookieOptions(days * 86400))
-    response.cookies.delete(JWT_COOKIE)
-  } else {
-    response.cookies.set(JWT_COOKIE, token, cookieOptions(days * 86400))
-    response.cookies.delete(SESSION_COOKIE)
-  }
+export function applyAuthCookie(response: NextResponse, token: string, days: number) {
+  response.cookies.set(JWT_COOKIE, token, cookieOptions(days * 86400))
 }
 
-export function clearAuthCookies(response: NextResponse) {
-  response.cookies.delete(SESSION_COOKIE)
+export function clearAuthCookie(response: NextResponse) {
   response.cookies.delete(JWT_COOKIE)
 }
 
 export async function getAuthUser(request: NextRequest): Promise<PublicUser | null> {
   await ensureDatabase()
   const db = await getDatabase()
-  const sessionToken = request.cookies.get(SESSION_COOKIE)?.value
-  if (sessionToken) {
-    const result = await db.query<UserRow>(
-      `SELECT u.* FROM sessions s
-       JOIN users u ON u.id = s.user_id
-       WHERE s.token_hash = $1 AND s.expires_at > now()
-       LIMIT 1`,
-      [hashToken(sessionToken)],
-    )
-    if (result.rows[0]) return publicUser(result.rows[0])
-  }
+  const bearer = request.headers.get('authorization')
+  const jwtToken =
+    request.cookies.get(JWT_COOKIE)?.value ??
+    (bearer?.startsWith('Bearer ') ? bearer.slice(7).trim() : undefined)
+  if (!jwtToken) return null
 
-  const jwtToken = request.cookies.get(JWT_COOKIE)?.value
-  if (jwtToken) {
-    try {
-      const verified = await jwtVerify(jwtToken, secret)
-      const userId = verified.payload.sub
-      if (userId) {
-        const result = await db.query<UserRow>('SELECT * FROM users WHERE id = $1 LIMIT 1', [userId])
-        if (result.rows[0]) return publicUser(result.rows[0])
-      }
-    } catch {
-      return null
-    }
+  try {
+    const verified = await jwtVerify(jwtToken, secret)
+    const userId = verified.payload.sub
+    if (!userId) return null
+    const result = await db.query<UserRow>('SELECT * FROM users WHERE id = $1 LIMIT 1', [userId])
+    const row = result.rows[0]
+    if (!row) return null
+    const version = typeof verified.payload.ver === 'number' ? verified.payload.ver : 0
+    if (version !== Number(row.token_version ?? 0)) return null
+    return publicUser(row)
+  } catch {
+    return null
   }
-  return null
-}
-
-export async function deleteCurrentSession(request: NextRequest) {
-  const token = request.cookies.get(SESSION_COOKIE)?.value
-  if (!token) return
-  const db = await getDatabase()
-  await db.query('DELETE FROM sessions WHERE token_hash = $1', [hashToken(token)])
 }

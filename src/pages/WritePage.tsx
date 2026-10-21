@@ -201,7 +201,12 @@ export function WritePage() {
         ? await updatePost(editingSlug, input)
         : await publishPost(input)
       removeStorage('write-draft.v1')
-      showToast(editingSlug ? '这一页改好了。' : '这一页写好了，已经放进风里。')
+      if (post.status === 'pending') {
+        showToast('已提交，等管理员审核。', 'info')
+        navigate('/space')
+        return
+      }
+      showToast(editingSlug ? '这一页改好了。' : '这一页已经放进风里。')
       navigate(`/articles/${post.slug}`)
     } catch (error) {
       showToast(error instanceof BackendError ? error.message : '没有发出去，再试一次。', 'error')
@@ -219,8 +224,8 @@ export function WritePage() {
             <h1>{editingSlug ? '把这一页再理一理。' : '把今天写下来。'}</h1>
             <p>
               {editingSlug
-                ? '改完以后会保留原来的地址，评论和收藏不会丢。'
-                : '这一页会放进「风吹散的页」，署你的名字。没有主题要求，散步、饭、旧东西，或者一件没做成的小事，都可以。'}
+                ? '地址不变，改完仍归你。'
+                : '写完会署你的名字。普通账号先审核，ii52A1 直接发布。'}
             </p>
           </div>
           <Link className="text-link" to="/articles">

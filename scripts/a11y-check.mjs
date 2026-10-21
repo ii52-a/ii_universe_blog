@@ -46,7 +46,8 @@ for (const theme of themes) {
   }
 
   await page.goto(`${base}/login`, { waitUntil: 'networkidle' })
-  await page.getByRole('button', { name: '填入演示账号' }).click()
+  await page.locator('#auth-identifier').fill('ii52A1')
+  await page.locator('#auth-password').fill('ii52A1pass')
   await page.getByRole('button', { name: /进去坐坐/ }).click()
   await page.waitForURL('**/space')
   await page.goto(`${base}/write`, { waitUntil: 'networkidle' })
@@ -74,6 +75,23 @@ for (const theme of themes) {
     theme,
     path: '/space',
     violations: spaceResults.violations.map((violation) => ({
+      id: violation.id,
+      impact: violation.impact,
+      help: violation.help,
+      nodes: violation.nodes.length,
+      targets: violation.nodes.slice(0, 6).map((node) => node.target.join(' ')),
+    })),
+  })
+
+  await page.goto(`${base}/review`, { waitUntil: 'networkidle' })
+  await page.waitForTimeout(500)
+  const reviewResults = await new AxeBuilder({ page })
+    .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
+    .analyze()
+  report.push({
+    theme,
+    path: '/review',
+    violations: reviewResults.violations.map((violation) => ({
       id: violation.id,
       impact: violation.impact,
       help: violation.help,

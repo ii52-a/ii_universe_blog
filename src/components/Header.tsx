@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { NavLink, useLocation, useNavigate, Link } from 'react-router-dom'
-import { ChevronDown, LogOut, Menu, PenLine, Search, Settings, Sparkles, UserRound, X } from 'lucide-react'
+import { ChevronDown, ClipboardCheck, LogOut, Menu, PenLine, Search, Settings, Sparkles, UserRound, X } from 'lucide-react'
 import { Brand } from './Brand'
 import { Avatar } from './Avatar'
 import { useAuth } from '../context/AuthContext'
@@ -197,6 +197,12 @@ function AuthMenu() {
             <Sparkles size={15} aria-hidden="true" />
             我的空间
           </Link>
+          {user.role === 'admin' && (
+            <Link to="/review" className="auth-menu__item" role="menuitem">
+              <ClipboardCheck size={15} aria-hidden="true" />
+              审核队列
+            </Link>
+          )}
           <Link to={`/u/${user.handle}`} className="auth-menu__item" role="menuitem">
             <UserRound size={15} aria-hidden="true" />
             公开主页
@@ -260,6 +266,11 @@ function MobileAccount({ onNavigate }: { onNavigate: () => void }) {
       <Link className="text-button" to={`/u/${user.handle}`} onClick={onNavigate}>
         主页
       </Link>
+      {user.role === 'admin' && (
+        <Link className="text-button" to="/review" onClick={onNavigate}>
+          审核
+        </Link>
+      )}
       <Link className="text-button" to="/me" onClick={onNavigate}>
         资料
       </Link>

@@ -16,6 +16,7 @@ export interface User {
   username: string
   email: string
   handle: string
+  role: 'member' | 'admin'
   bio: string
   location: string
   website: string
@@ -24,15 +25,13 @@ export interface User {
   joinedAt: string
 }
 
-export type AuthMode = 'session' | 'jwt'
-
 interface AuthContextValue {
   user: User | null
   ready: boolean
   login: (
     identifier: string,
     password: string,
-    options?: { mode?: AuthMode; remember?: boolean },
+    options?: { remember?: boolean },
   ) => Promise<User>
   register: (input: {
     username: string
@@ -41,7 +40,9 @@ interface AuthContextValue {
     code: string
   }) => Promise<User>
   logout: () => Promise<void>
-  updateUser: (patch: Partial<Omit<User, 'id' | 'email' | 'joinedAt'>>) => Promise<User>
+  updateUser: (
+    patch: Partial<Omit<User, 'id' | 'email' | 'joinedAt' | 'role'>>,
+  ) => Promise<User>
 }
 
 const REMEMBER_KEY = 'remember-email.v1'
@@ -53,6 +54,7 @@ export const demoUser: User = {
   username: 'DeepS先生',
   email: 'hello@halfday.club',
   handle: 'deepseek',
+  role: 'member',
   bio: 'DeepS先生，在杭州写一些不着急的事。',
   location: '杭州',
   website: 'halfday.club',
@@ -71,6 +73,7 @@ function mapUser(apiUser: ApiUser): User {
     username: apiUser.username,
     email: apiUser.email,
     handle: apiUser.handle,
+    role: apiUser.role,
     bio: apiUser.bio,
     location: apiUser.location,
     website: apiUser.website,
@@ -108,11 +111,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     async (
       identifier: string,
       password: string,
-      options: { mode?: AuthMode; remember?: boolean } = {},
+      options: { remember?: boolean } = {},
     ) => {
-      const mode = options.mode ?? 'session'
       const remember = options.remember ?? false
-      const result = await authApi.login({ identifier, password, mode, remember })
+      const result = await authApi.login({ identifier, password, remember })
       const next = mapUser(result.user)
       setUser(next)
       if (remember) writeStorage(REMEMBER_KEY, next.email)
@@ -141,7 +143,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const updateUser = useCallback(
-    async (patch: Partial<Omit<User, 'id' | 'email' | 'joinedAt'>>) => {
+    async (patch: Partial<Omit<User, 'id' | 'email' | 'joinedAt' | 'role'>>) => {
       if (!user) throw new Error('请先登录')
       const result = await authApi.updateProfile({
         username: patch.username ?? patch.name,

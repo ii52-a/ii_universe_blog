@@ -28,13 +28,16 @@ export interface Post {
   readMinutes: number
   cover: CoverVariant
   featured?: boolean
-  status?: 'draft' | 'published'
+  status?: 'draft' | 'pending' | 'published' | 'rejected'
+  reviewNote?: string
+  reviewedAt?: string | null
   authorId?: string
   authorName?: string
   authorHandle?: string
   authorColor?: string
   authorAvatar?: string
   authorLocation?: string
+  authorRole?: 'member' | 'admin'
   userGenerated?: boolean
   content: ContentBlock[]
 }
@@ -62,7 +65,7 @@ export function postAuthor(post: Post) {
 
 export const categories = ['城市', '旧物', '散步', '收集', '日常', '阅读', '饮食'] as const
 
-export const posts: Post[] = [
+const basePosts: Post[] = [
   {
     slug: 'ten-minutes-at-the-convenience-store',
     title: '在便利店门口站了十分钟',
@@ -439,6 +442,74 @@ export const posts: Post[] = [
     ],
   },
 ]
+
+const seedAuthors = {
+  deepseek: {
+    id: '00000000-0000-4000-8000-000000000001',
+    name: 'DeepS先生',
+    handle: 'deepseek',
+    color: '#BFD2FF',
+    location: '杭州',
+  },
+  chichi: {
+    id: '00000000-0000-4000-8000-000000000003',
+    name: '迟迟',
+    handle: 'chichi',
+    color: '#FFD84D',
+    location: '杭州',
+  },
+  xiaoye: {
+    id: '00000000-0000-4000-8000-000000000004',
+    name: '小野',
+    handle: 'xiaoye',
+    color: '#E9D5FF',
+    location: '上海',
+  },
+  mumu: {
+    id: '00000000-0000-4000-8000-000000000005',
+    name: '木木',
+    handle: 'mumu',
+    color: '#FDE68A',
+    location: '杭州',
+  },
+  nana: {
+    id: '00000000-0000-4000-8000-000000000006',
+    name: 'Nana',
+    handle: 'nana',
+    color: '#FBCFE8',
+    location: '成都',
+  },
+  chenpi: {
+    id: '00000000-0000-4000-8000-000000000007',
+    name: '陈皮',
+    handle: 'chenpi',
+    color: '#BBF7D0',
+    location: '广州',
+  },
+} as const
+
+const postAuthorKeys: Record<string, keyof typeof seedAuthors> = {
+  'ten-minutes-at-the-convenience-store': 'chichi',
+  'a-new-leg-for-an-old-chair': 'chichi',
+  'a-rainy-walk-from-mantoushan': 'deepseek',
+  'twenty-seven-grocery-receipts': 'xiaoye',
+  'after-clearing-the-desk': 'deepseek',
+  'a-book-with-a-typo': 'mumu',
+  'the-last-green-bean-ice-pop': 'nana',
+  'back-seat-of-the-bus': 'chenpi',
+}
+
+export const posts: Post[] = basePosts.map((post) => {
+  const author = seedAuthors[postAuthorKeys[post.slug] ?? 'deepseek']
+  return {
+    ...post,
+    authorId: author.id,
+    authorName: author.name,
+    authorHandle: author.handle,
+    authorColor: author.color,
+    authorLocation: author.location,
+  }
+})
 
 export const getPost = (slug?: string) => posts.find((post) => post.slug === slug)
 

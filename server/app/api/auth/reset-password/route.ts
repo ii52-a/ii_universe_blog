@@ -21,11 +21,10 @@ export async function POST(request: NextRequest) {
     if (!user.rows[0]) throw new ApiError(400, 'CODE_INVALID', '验证码不正确或已经过期')
     await consumeCode(db, email, 'reset', body.code)
     const passwordHash = await hash(body.password, 12)
-    await db.query('UPDATE users SET password_hash = $1, updated_at = now() WHERE id = $2', [
-      passwordHash,
-      user.rows[0].id,
-    ])
-    await db.query('DELETE FROM sessions WHERE user_id = $1', [user.rows[0].id])
+    await db.query(
+      'UPDATE users SET password_hash = $1, token_version = token_version + 1, updated_at = now() WHERE id = $2',
+      [passwordHash, user.rows[0].id],
+    )
     return NextResponse.json({ ok: true, message: '密码已经改好，请重新登录' })
   } catch (error) {
     return handleRouteError(error)

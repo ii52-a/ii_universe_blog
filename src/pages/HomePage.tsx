@@ -45,7 +45,7 @@ export function HomePage() {
                 <span className="hero-card__underlined">写成一页。</span>
               </h1>
               <p className="hero-card__lede">
-                这里没有攻略，也不教你怎么生活。只记一些散步、旧物、食物，和没来得及忘记的小事。
+                只记散步、旧物、食物，和一些没忘的小事。
               </p>
               <div className="hero-card__actions">
                 <Link className="button button--ink" to={`/articles/${latest.slug}`}>
@@ -103,7 +103,7 @@ export function HomePage() {
           <section className="recent" aria-labelledby="recent-title">
             <SectionHead
               title="最近写的"
-              description="有些是刚发生的事，有些是过了很久才写下来的。"
+              description="按时间排着，慢慢看。"
               link="/articles"
               id="recent-title"
             />

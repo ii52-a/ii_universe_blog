@@ -1,14 +1,13 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { clearAuthCookies, deleteCurrentSession } from '../../../../lib/auth'
+import { NextResponse } from 'next/server'
+import { clearAuthCookie } from '../../../../lib/auth'
 import { handleRouteError } from '../../../../lib/http'
 
 export const dynamic = 'force-dynamic'
 
-export async function POST(request: NextRequest) {
+export async function POST() {
   try {
-    await deleteCurrentSession(request)
     const response = NextResponse.json({ ok: true })
-    clearAuthCookies(response)
+    clearAuthCookie(response)
     return response
   } catch (error) {
     return handleRouteError(error)

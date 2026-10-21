@@ -2,7 +2,9 @@ import { randomBytes, randomUUID } from 'node:crypto'
 import type { ContentBlock } from '../../src/data/posts'
 import { ApiError } from './http'
 import type { DbClient } from './db'
-import { DEMO_USER_ID } from './seed'
+import { SEED_AUTHOR_IDS } from './seed'
+
+export type PostStatus = 'draft' | 'pending' | 'published' | 'rejected'
 
 export interface PostRow extends Record<string, unknown> {
   id: string
@@ -14,7 +16,9 @@ export interface PostRow extends Record<string, unknown> {
   category: string
   tags: string[]
   cover: string
-  status: 'draft' | 'published'
+  status: PostStatus
+  review_note: string
+  reviewed_at: string | null
   read_minutes: number
   author_id: string
   author_name: string
@@ -22,6 +26,7 @@ export interface PostRow extends Record<string, unknown> {
   author_color: string
   author_avatar: string | null
   author_location: string
+  author_role: 'member' | 'admin'
   created_at: string
   updated_at: string
   published_at: string
@@ -37,7 +42,9 @@ export interface PostDto {
   category: string
   tags: string[]
   cover: string
-  status: 'draft' | 'published'
+  status: PostStatus
+  reviewNote: string
+  reviewedAt: string | null
   readMinutes: number
   publishedAt: string
   updatedAt: string
@@ -46,6 +53,7 @@ export interface PostDto {
   authorHandle: string
   authorColor: string
   authorAvatar?: string
+  authorRole: 'member' | 'admin'
   authorLocation: string
   userGenerated: boolean
 }
@@ -64,6 +72,8 @@ export function mapPost(row: PostRow): PostDto {
     tags: row.tags ?? [],
     cover: row.cover,
     status: row.status,
+    reviewNote: row.review_note ?? '',
+    reviewedAt: row.reviewed_at ? new Date(row.reviewed_at).toISOString() : null,
     readMinutes: Number(row.read_minutes),
     publishedAt: new Date(row.published_at).toISOString(),
     updatedAt: new Date(row.updated_at).toISOString(),
@@ -72,15 +82,16 @@ export function mapPost(row: PostRow): PostDto {
     authorHandle: row.author_handle,
     authorColor: row.author_color,
     authorAvatar: row.author_avatar ?? undefined,
+    authorRole: row.author_role,
     authorLocation: row.author_location,
-    userGenerated: row.author_id !== DEMO_USER_ID,
+    userGenerated: !SEED_AUTHOR_IDS.includes(row.author_id),
   }
 }
 
 const baseSelect = `
   SELECT p.*, u.username AS author_name, u.handle AS author_handle,
          u.avatar_color AS author_color, u.avatar_url AS author_avatar,
-         u.location AS author_location
+         u.location AS author_location, u.role AS author_role
   FROM posts p
   JOIN users u ON u.id = p.author_id
 `
@@ -93,6 +104,7 @@ export interface ListPostsOptions {
   authorHandle?: string | null
   authorId?: string | null
   includeDrafts?: boolean
+  status?: PostStatus | null
 }
 
 function decodeCursor(cursor?: string | null) {
@@ -123,6 +135,9 @@ export async function listPosts(db: DbClient, options: ListPostsOptions = {}) {
 
   if (!options.includeDrafts) {
     where.push(`p.status = 'published'`)
+  } else if (options.status) {
+    params.push(options.status)
+    where.push(`p.status = $${params.length}`)
   }
   if (options.authorId) {
     params.push(options.authorId)
@@ -178,17 +193,17 @@ export async function createPost(
     category: string
     tags: string[]
     cover: string
-    status: 'draft' | 'published'
   },
+  status: 'pending' | 'published',
 ) {
   const slug = `page-${Date.now().toString(36)}-${randomBytes(3).toString('hex')}`
   const readMinutes = Math.max(2, Math.ceil(input.body.replace(/\s/g, '').length / 380))
   const id = randomUUID()
-  const publishedAt = new Date().toISOString()
+  const now = new Date().toISOString()
   await db.query(
     `INSERT INTO posts
-      (id, slug, title, excerpt, body, content, category, tags, cover, status, read_minutes, author_id, published_at, created_at, updated_at)
-     VALUES ($1, $2, $3, $4, $5, $6::jsonb, $7, $8, $9, $10, $11, $12, $13, $13, $13)`,
+      (id, slug, title, excerpt, body, content, category, tags, cover, status, review_note, reviewed_at, read_minutes, author_id, published_at, created_at, updated_at)
+     VALUES ($1, $2, $3, $4, $5, $6::jsonb, $7, $8, $9, $10, '', $11, $12, $13, $14, $14, $14)`,
     [
       id,
       slug,
@@ -199,10 +214,11 @@ export async function createPost(
       input.category,
       input.tags,
       input.cover,
-      input.status,
+      status,
+      status === 'published' ? now : null,
       readMinutes,
       authorId,
-      publishedAt,
+      now,
     ],
   )
   return getPost(db, slug)
@@ -220,8 +236,8 @@ export async function updatePost(
     category?: string
     tags?: string[]
     cover?: string
-    status?: 'draft' | 'published'
   },
+  nextStatus: 'pending' | 'published',
 ) {
   const existingResult = await db.query<PostRow>(`${baseSelect} WHERE p.slug = $1 LIMIT 1`, [slug])
   const existing = existingResult.rows[0]
@@ -241,7 +257,9 @@ export async function updatePost(
   if (input.category !== undefined) add('category', input.category)
   if (input.tags !== undefined) add('tags', input.tags)
   if (input.cover !== undefined) add('cover', input.cover)
-  if (input.status !== undefined) add('status', input.status)
+  add('status', nextStatus)
+  add('review_note', '')
+  add('reviewed_at', nextStatus === 'published' ? new Date().toISOString() : null)
   params.push(slug)
   const slugIndex = params.length
   if (input.body !== undefined) {
@@ -249,11 +267,33 @@ export async function updatePost(
     params.push(readMinutes)
     fields.push(`read_minutes = $${params.length}`)
   }
+  if (nextStatus === 'published') {
+    fields.push('published_at = now()')
+  }
   fields.push('updated_at = now()')
   await db.query(
     `UPDATE posts SET ${fields.join(', ')} WHERE slug = $${slugIndex} AND author_id = $${params.length + 1}::uuid`,
     [...params, authorId],
   )
+  return getPost(db, slug)
+}
+
+export async function reviewPost(
+  db: DbClient,
+  slug: string,
+  action: 'approve' | 'reject',
+  note = '',
+) {
+  const status = action === 'approve' ? 'published' : 'rejected'
+  const result = await db.query<{ id: string }>(
+    `UPDATE posts
+     SET status = $2, review_note = $3, reviewed_at = now(), updated_at = now(),
+         published_at = CASE WHEN $2 = 'published' THEN now() ELSE published_at END
+     WHERE slug = $1 AND status = 'pending'
+     RETURNING id`,
+    [slug, status, note],
+  )
+  if (!result.rows[0]) throw new ApiError(404, 'PENDING_POST_NOT_FOUND', '没有找到待审核的这一页')
   return getPost(db, slug)
 }
 

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getAuthUser } from '../../../lib/auth'
+import { getAuthUser, isAdmin } from '../../../lib/auth'
 import { ensureDatabase, getDatabase } from '../../../lib/db'
 import { ApiError, handleRouteError, readJson } from '../../../lib/http'
 import { createPost, listPosts } from '../../../lib/posts'
@@ -38,7 +38,8 @@ export async function POST(request: NextRequest) {
     const body = postCreateSchema.parse(await readJson(request))
     await ensureDatabase()
     const db = await getDatabase()
-    const post = await createPost(db, user.id, body)
+    const status = isAdmin(user) ? 'published' : 'pending'
+    const post = await createPost(db, user.id, body, status)
     return NextResponse.json({ post }, { status: 201 })
   } catch (error) {
     return handleRouteError(error)

@@ -15,7 +15,8 @@ import { readStorage } from '../lib/storage'
 import { usePosts } from '../lib/postsStore'
 import { postAuthor } from '../data/posts'
 import type { Comment } from '../data/comments'
-import { useAuth, demoUser } from '../context/AuthContext'
+import { useAuth, demoUser, type User } from '../context/AuthContext'
+import { postsApi } from '../lib/backend'
 import { usePageTitle } from '../hooks/usePageTitle'
 import { useToast } from '../context/ToastContext'
 import { Avatar } from '../components/Avatar'
@@ -31,30 +32,76 @@ export function UserPage() {
   const { showToast } = useToast()
   const allPosts = usePosts()
   const isMe = Boolean(user && user.handle === handle)
+  const [remoteProfile, setRemoteProfile] = useState<User | null>(null)
+  const [profileLoading, setProfileLoading] = useState(true)
   const publicAuthor = allPosts
     .map((post) => ({ author: postAuthor(post), post }))
     .find((entry) => entry.author.handle === handle)
   const profile = isMe
     ? user
-    : handle === demoUser.handle
-      ? demoUser
-      : publicAuthor
-        ? {
-            id: publicAuthor.author.id,
-            name: publicAuthor.author.name,
-            email: '',
-            handle: publicAuthor.author.handle,
-            bio: publicAuthor.author.bio || '在半日写过几页，偶尔也留一句话。',
-            location: publicAuthor.author.location,
-            website: '',
-            avatar: publicAuthor.author.avatar,
-            avatarColor: publicAuthor.author.color,
-            joinedAt: [...allPosts]
-              .reverse()
-              .find((post) => postAuthor(post).handle === handle)?.publishedAt ?? publicAuthor.post.publishedAt,
-          }
-        : null
+    : remoteProfile ??
+      (handle === demoUser.handle
+        ? demoUser
+        : publicAuthor
+          ? {
+              id: publicAuthor.author.id,
+              name: publicAuthor.author.name,
+              username: publicAuthor.author.name,
+              email: '',
+              handle: publicAuthor.author.handle,
+              role: 'member' as const,
+              bio: publicAuthor.author.bio || '在半日写过几页，偶尔也留一句话。',
+              location: publicAuthor.author.location,
+              website: '',
+              avatar: publicAuthor.author.avatar,
+              avatarColor: publicAuthor.author.color,
+              joinedAt:
+                [...allPosts]
+                  .reverse()
+                  .find((post) => postAuthor(post).handle === handle)?.publishedAt ??
+                publicAuthor.post.publishedAt,
+            }
+          : null)
   usePageTitle(profile ? `${profile.name}的主页` : '没有这位岛民')
+
+  useEffect(() => {
+    if (isMe) {
+      setRemoteProfile(null)
+      setProfileLoading(false)
+      return
+    }
+    let cancelled = false
+    setProfileLoading(true)
+    postsApi
+      .author(handle)
+      .then(({ user: apiUser }) => {
+        if (!cancelled) {
+          setRemoteProfile({
+            id: apiUser.id,
+            name: apiUser.name || apiUser.username,
+            username: apiUser.username,
+            email: apiUser.email,
+            handle: apiUser.handle,
+            role: apiUser.role,
+            bio: apiUser.bio,
+            location: apiUser.location,
+            website: apiUser.website,
+            avatar: apiUser.avatar,
+            avatarColor: apiUser.avatarColor,
+            joinedAt: apiUser.joinedAt,
+          })
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setRemoteProfile(null)
+      })
+      .finally(() => {
+        if (!cancelled) setProfileLoading(false)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [handle, isMe])
 
   const [comments, setComments] = useState<Comment[]>([])
   const [loading, setLoading] = useState(true)
@@ -76,6 +123,17 @@ export function UserPage() {
       cancelled = true
     }
   }, [profile?.id, profile?.name])
+
+  if (!profile && profileLoading) {
+    return (
+      <div className="user-page">
+        <div className="page-container write-loading">
+          <span className="spinner" aria-hidden="true" />
+          正在找这位岛民…
+        </div>
+      </div>
+    )
+  }
 
   if (!profile) return <NotFoundPage />
 

@@ -12,6 +12,13 @@ const seed = posts.map((post) => ({
   readMinutes: post.readMinutes,
   cover: post.cover,
   content: post.content,
+  author: {
+    id: post.authorId,
+    name: post.authorName,
+    handle: post.authorHandle,
+    color: post.authorColor,
+    location: post.authorLocation,
+  },
 }))
 const output = fileURLToPath(new URL('../db/seed-posts.json', import.meta.url))
 fs.writeFileSync(output, JSON.stringify(seed, null, 2) + '\n')

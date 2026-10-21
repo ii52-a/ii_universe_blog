@@ -12,7 +12,7 @@ import {
   UserRound,
 } from 'lucide-react'
 import { usePageTitle } from '../hooks/usePageTitle'
-import { useAuth, rememberedEmail, type AuthMode } from '../context/AuthContext'
+import { useAuth, rememberedEmail } from '../context/AuthContext'
 import { useToast } from '../context/ToastContext'
 import { authApi, BackendError } from '../lib/backend'
 import { Avatar } from '../components/Avatar'
@@ -34,7 +34,6 @@ export function LoginPage() {
   const [password, setPassword] = useState('')
   const [code, setCode] = useState('')
   const [devCode, setDevCode] = useState('')
-  const [authMode, setAuthMode] = useState<AuthMode>('session')
   const [remember, setRemember] = useState(true)
   const [showPassword, setShowPassword] = useState(false)
   const [submitting, setSubmitting] = useState(false)
@@ -108,7 +107,7 @@ export function LoginPage() {
     try {
       const nextUser =
         mode === 'login'
-          ? await login(identifier, password, { mode: authMode, remember })
+          ? await login(identifier, password, { remember })
           : await register({ username, email, password, code })
       showToast(mode === 'login' ? `欢迎回来，${nextUser.name}。` : `账号建好了，${nextUser.name}。`)
       navigate(from, { replace: true })
@@ -176,7 +175,7 @@ export function LoginPage() {
               <ArrowLeft size={15} aria-hidden="true" />
               回到半日
             </Link>
-            <span>v1.3 · 后端已接通</span>
+            <span>v1.4 · 审核已接通</span>
           </div>
           <div className="login-art__card">
             <span className="tape" />
@@ -188,7 +187,7 @@ export function LoginPage() {
             <br />
             一半用来浪费。
           </blockquote>
-          <p>登录以后，可以保存自己的文章、头像和留言。会话与 JWT 两种登录方式都可以选。</p>
+          <p>登录后可以写页、改资料、留言。</p>
           <div className="login-art__toys" aria-hidden="true">
             <span className="toy-dot toy-dot--yellow" />
             <span className="toy-dot toy-dot--blue" />
@@ -205,8 +204,8 @@ export function LoginPage() {
             <h1 id="auth-title">{mode === 'login' ? '回来坐坐。' : '给自己留个位置。'}</h1>
             <p>
               {mode === 'login'
-                ? '邮箱或用户名都可以。'
-                : '邮箱注册，验证码只在这一次使用。'}
+                ? '邮箱或用户名。'
+                : '邮箱注册，验证码一次有效。'}
             </p>
           </div>
 
@@ -358,52 +357,25 @@ export function LoginPage() {
                 <span className="field-error">{errors.password}</span>
               ) : (
                 <span className="field-hint">
-                  {mode === 'login' ? '不会保存明文密码。' : '8–72 位，至少一个字母和一个数字。'}
+                  {mode === 'login' ? '密码不会明文保存。' : '8–72 位，含字母和数字。'}
                 </span>
               )}
             </div>
 
             {mode === 'login' && (
-              <>
-                <fieldset className="auth-mode">
-                  <legend>登录方式</legend>
-                  <label className={authMode === 'session' ? 'is-active' : ''}>
-                    <input
-                      type="radio"
-                      name="auth-mode"
-                      value="session"
-                      checked={authMode === 'session'}
-                      onChange={() => setAuthMode('session')}
-                    />
-                    <span>会话 Cookie</span>
-                    <small>可撤销</small>
-                  </label>
-                  <label className={authMode === 'jwt' ? 'is-active' : ''}>
-                    <input
-                      type="radio"
-                      name="auth-mode"
-                      value="jwt"
-                      checked={authMode === 'jwt'}
-                      onChange={() => setAuthMode('jwt')}
-                    />
-                    <span>JWT</span>
-                    <small>无状态</small>
-                  </label>
-                </fieldset>
-                <div className="auth-options">
-                  <label className="remember-check">
-                    <input
-                      type="checkbox"
-                      checked={remember}
-                      onChange={(event) => setRemember(event.target.checked)}
-                    />
-                    <span>记住我 · 30 天</span>
-                  </label>
-                  <Link className="text-button" to="/forgot">
-                    忘记密码？
-                  </Link>
-                </div>
-              </>
+              <div className="auth-options">
+                <label className="remember-check">
+                  <input
+                    type="checkbox"
+                    checked={remember}
+                    onChange={(event) => setRemember(event.target.checked)}
+                  />
+                  <span>记住我 · 30 天</span>
+                </label>
+                <Link className="text-button" to="/forgot">
+                  忘记密码？
+                </Link>
+              </div>
             )}
 
             {errors.form && (
@@ -424,32 +396,46 @@ export function LoginPage() {
             </button>
 
             <p className="auth-form__terms">
-              密码会加密保存在 PostgreSQL。登录方式、是否记住我都可以随时改。
+              登录状态保存在 JWT Cookie。密码只以哈希形式保存。
             </p>
           </form>
 
           <div className="demo-account">
             <div>
               <strong>只想看看？</strong>
-              <span>用演示账号进来，资料可以随时改。</span>
+              <span>用演示账号进来。</span>
             </div>
-            <button
-              type="button"
-              className="text-button"
-              onClick={() => {
-                setMode('login')
-                setIdentifier('hello@halfday.club')
-                setPassword('halfday')
-                setErrors({})
-              }}
-            >
-              填入演示账号
-            </button>
-            <small>hello@halfday.club / halfday</small>
+            <div className="demo-account__actions">
+              <button
+                type="button"
+                className="text-button"
+                onClick={() => {
+                  setMode('login')
+                  setIdentifier('hello@halfday.club')
+                  setPassword('halfday')
+                  setErrors({})
+                }}
+              >
+                演示账号
+              </button>
+              <button
+                type="button"
+                className="text-button"
+                onClick={() => {
+                  setMode('login')
+                  setIdentifier('ii52A1')
+                  setPassword('ii52A1pass')
+                  setErrors({})
+                }}
+              >
+                管理员
+              </button>
+            </div>
+            <small>hello@halfday.club / halfday · ii52A1 / ii52A1pass</small>
           </div>
 
           <div className="auth-card__foot">
-            <span>没有别的入口，慢慢来就好。</span>
+            <span>慢慢来。</span>
             <Link to="/">
               先随便看看 <span aria-hidden="true">↗</span>
             </Link>

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getAuthUser } from '../../../../lib/auth'
+import { getAuthUser, isAdmin } from '../../../../lib/auth'
 import { ensureDatabase, getDatabase } from '../../../../lib/db'
 import { ApiError, handleRouteError, readJson } from '../../../../lib/http'
 import { deletePost, getPost, updatePost } from '../../../../lib/posts'
@@ -19,7 +19,7 @@ export async function GET(
     if (!post) throw new ApiError(404, 'POST_NOT_FOUND', '这一页不存在')
     if (post.status !== 'published') {
       const user = await getAuthUser(request)
-      if (!user || user.id !== post.authorId) {
+      if (!user || (user.id !== post.authorId && !isAdmin(user))) {
         throw new ApiError(404, 'POST_NOT_FOUND', '这一页不存在')
       }
     }
@@ -40,7 +40,8 @@ export async function PATCH(
     await ensureDatabase()
     const { slug } = await params
     const db = await getDatabase()
-    const post = await updatePost(db, slug, user.id, body)
+    const status = isAdmin(user) ? 'published' : 'pending'
+    const post = await updatePost(db, slug, user.id, body, status)
     return NextResponse.json({ post })
   } catch (error) {
     return handleRouteError(error)

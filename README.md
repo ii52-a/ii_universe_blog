@@ -1,8 +1,8 @@
 # 半日 · halfday
 
-一个以白色、纸张感和玩具感为基调的个人博客前端。内容围绕散步、旧物、食物和普通的日常，页面以紧凑的 bento 网格组织，日期、天气、时钟、在线状态、跟屏玩偶小满等小组件填满边角。
+一个以白色、纸张感和玩具感为基调的个人博客。内容围绕散步、旧物、食物和普通的日常，页面以紧凑的 bento 网格组织，日期、天气、时钟、在线状态、跟屏玩偶小满等小组件填满边角。
 
-当前版本：**v1.3.0**
+当前版本：**v1.4.0**
 
 仓库：**https://github.com/ii52-a/ii_universe_blog**
 
@@ -44,7 +44,7 @@ npm run build --prefix server
 
 ```bash
 npm run check      # TypeScript
-npm run test:ui    # Playwright：注册、登录、写文章、编辑、评论、退出
+npm run test:ui    # Playwright：注册、JWT、投稿审核、编辑、管理员直发、主题
 npm run test:a11y  # axe WCAG 2 A/AA（明暗两套主题）
 npm run shots      # 重新生成 screenshots/
 node scripts/backend-test.mjs  # 后端 API 集成测试（先启动 server）
@@ -52,10 +52,10 @@ node scripts/backend-test.mjs  # 后端 API 集成测试（先启动 server）
 
 ## 演示账号
 
-- 邮箱：`hello@halfday.club`
-- 密码：`halfday`
+- 普通账号：`hello@halfday.club` / `halfday`
+- 特权账号：`ii52A1` / `ii52A1pass`（直接发布 + 审核）
 
-登录页也可以直接点「填入演示账号」。账号、文章、会话和验证码由 Next.js API 写入 PostgreSQL / PGlite；头像和草稿仍保存在本机。
+登录页点「演示账号」或「管理员」可以直接填入。账号、文章、验证码和审核状态由 Next.js API 写入 PostgreSQL / PGlite；头像和草稿仍保存在本机。
 
 ## 已实现
 
@@ -82,12 +82,12 @@ node scripts/backend-test.mjs  # 后端 API 集成测试（先启动 server）
 ### 账号
 
 - 邮箱注册：6 位验证码、用户名 / 密码校验、60 秒发送冷却
-- 登录：邮箱或用户名 + 密码，可选**会话 Cookie 或 JWT**
+- 登录：邮箱或用户名 + 密码，只使用 **JWT Cookie**
 - 记住我（30 天）、忘记密码、重置密码
 - 页头展示用户姓名与头像
 - 个人资料编辑：昵称、简介、城市、网站、头像上传、头像底色
-- 公开主页 `/u/:handle`：岛民证、加入时间、写过的页、留言轨迹、常去分类、复制主页地址
-- 演示账号的公开主页：`/u/deepseek`
+- 公开主页 `/u/:handle`：岛民证、加入时间、写过的页、留言轨迹、常去分类
+- 作者不再统一是 DeepS先生：种子文章分属 DeepS、迟迟、小野、木木、Nana、陈皮
 
 ### 个人空间
 
@@ -96,20 +96,26 @@ node scripts/backend-test.mjs  # 后端 API 集成测试（先启动 server）
 - 在空间里直接写文章、编辑文章、删除文章
 - 右侧保留今日提示与公开主页入口
 
+### 审核
+
+- 普通账号发页 / 改页后进入 `pending`，公开页暂不可见
+- 特权账号 `ii52A1` 发页直接 `published`
+- `/review` 审核队列：通过或退回，退回可写原因
+- 作者在 `/space` 看到「审核中 / 已退回」，可继续修改
+
 ### 后端
 
 - Next.js 15 App Router Route Handlers，位于 `server/`
 - PostgreSQL：生产通过 `DATABASE_URL` + `pg`，本地 / 测试通过 PGlite
-- Argon 之外使用 bcrypt 哈希密码；会话 token 只存 SHA-256 摘要
+- 密码 bcrypt 哈希；登录只发 JWT Cookie
 - 统一错误格式、Zod 校验、验证码限流、接口限流
-- 文章 CRUD、作者权限校验、cursor 分页、分类 / 搜索
-- `/api/widgets` 聚合服务端时间、杭州地点、天气，并做 10 分钟内存缓存
+- 文章 CRUD、作者权限、管理员审核、cursor 分页
+- `/api/widgets` 聚合服务端时间、杭州地点、天气，并做 10 分钟缓存
 
 ### 日落与版本
 
 - 顶栏小标题「日落」进入 `/sunset`
-- 页面只做版本迭代记录，已移除日落时间卡片
-- v1.3.0 后端更新单、v1.2.0 / v1.1.0 旧版本、版本索引
+- 只保留 v1.4 / v1.3 更新单和版本索引
 - 下一次改版继续追加在这里
 
 ### 夜间模式
@@ -140,6 +146,7 @@ node scripts/backend-test.mjs  # 后端 API 集成测试（先启动 server）
 | `/sunset` | 日落与版本更新 |
 | `/u/:handle` | 公开岛民主页 |
 | `/space` | 登录后的个人空间 |
+| `/review` | 特权账号审核队列 |
 | `/forgot` | 找回密码 |
 | `/about` | 关于 |
 | `/login` | 登录 / 注册 |
@@ -157,24 +164,26 @@ node scripts/backend-test.mjs  # 后端 API 集成测试（先启动 server）
 | GET | `/api/health` | 数据库健康检查 |
 | POST | `/api/auth/code` | 生成注册 / 重置验证码 |
 | POST | `/api/auth/register` | 邮箱验证码注册 |
-| POST | `/api/auth/login` | 会话或 JWT 登录 |
+| POST | `/api/auth/login` | 只发 JWT Cookie |
 | GET | `/api/auth/me` | 当前用户 |
-| POST | `/api/auth/logout` | 退出并清理会话 |
+| POST | `/api/auth/logout` | 退出并清 JWT |
 | POST | `/api/auth/reset-password` | 验证码重置密码 |
 | GET / PATCH | `/api/users/me` | 当前用户资料 |
 | GET | `/api/users/:handle` | 公开用户与文章 |
 | GET / POST | `/api/posts` | 文章列表 / 新建 |
 | GET / PATCH / DELETE | `/api/posts/:slug` | 详情 / 修改 / 删除（作者权限） |
+| GET | `/api/review` | 管理员待审核队列 |
+| PATCH | `/api/review/:slug` | 管理员通过 / 退回 |
 | GET | `/api/widgets` | 时间、地点、天气 |
 
-数据库表：`users`、`verification_codes`、`sessions`、`posts`。索引覆盖登录查询、验证码查询、文章 feed、作者与分类。开发环境 `server/.data/halfday` 是 PGlite 数据目录，生产环境设置 `DATABASE_URL` 即可。
+数据库表：`users`、`verification_codes`、`posts`。`users.role` 区分普通 / 特权；`posts.status` 为 `draft / pending / published / rejected`。开发环境 `server/.data/halfday` 是 PGlite 数据目录，生产环境设置 `DATABASE_URL` 即可。
 
 ## 前端数据接口
 
 浏览器端：
 
 - `src/lib/backend.ts`：`authApi`、`postsApi`、`widgetsApi`，统一 `credentials: include`
-- `src/context/AuthContext.tsx`：会话恢复、登录、注册、资料更新
+- `src/context/AuthContext.tsx`：JWT 恢复、登录、注册、资料更新
 - `src/context/WidgetsContext.tsx`：服务端时间偏移、地点、天气
 - `src/lib/postsStore.ts`：列表缓存、发布 / 更新 / 删除后刷新
 - `commentsApi` / `reactionsApi` / `newsletterApi` 仍是本地前端接口，后续可平移到后端
@@ -212,23 +221,26 @@ node scripts/backend-test.mjs  # 后端 API 集成测试（先启动 server）
 
 ## 截图
 
-- `screenshots/v13-home-light.png`
-- `screenshots/v13-home-dark.png`
-- `screenshots/v13-home-light-full.png`
-- `screenshots/v13-home-mobile.png`
-- `screenshots/v13-space-light.png`
-- `screenshots/v13-login-light.png`
-- `screenshots/v13-login-dark.png`
-- `screenshots/v13-forgot-light.png`
-- `screenshots/v13-write-light.png`
-- `screenshots/v13-write-mobile.png`
-- `screenshots/v13-articles-light.png`
-- `screenshots/v13-article-light.png`
+- `screenshots/v14-home-light.png`
+- `screenshots/v14-home-dark.png`
+- `screenshots/v14-home-light-full.png`
+- `screenshots/v14-home-mobile.png`
+- `screenshots/v14-space-light.png`
+- `screenshots/v14-review-light.png`
+- `screenshots/v14-login-light.png`
+- `screenshots/v14-login-dark.png`
+- `screenshots/v14-login-mobile.png`
+- `screenshots/v14-forgot-light.png`
+- `screenshots/v14-write-light.png`
+- `screenshots/v14-write-mobile.png`
+- `screenshots/v14-articles-light.png`
+- `screenshots/v14-article-light.png`
+- `screenshots/v14-article-dark.png`
+- `screenshots/v14-sunset-light.png`
+- `screenshots/v14-sunset-dark.png`
+- `screenshots/v14-user-light.png`
+- `screenshots/v14-user-dark.png`
+- `screenshots/v14-mobile-menu.png`
+- `screenshots/v14-mobile-admin-menu.png`
 - `screenshots/v13-article-dark.png`
-- `screenshots/v13-sunset-light.png`
-- `screenshots/v13-sunset-dark.png`
-- `screenshots/v13-user-light.png`
-- `screenshots/v13-user-dark.png`
-- `screenshots/v13-mobile-menu.png`
-- `screenshots/v12-article-dark.png`
-- `screenshots/v12-login-dark.png`
+- `screenshots/v13-login-dark.png`

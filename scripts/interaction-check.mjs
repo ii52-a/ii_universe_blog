@@ -1,11 +1,7 @@
 import { chromium } from 'playwright'
 import assert from 'node:assert/strict'
-import fs from 'node:fs'
 
 const base = process.env.BASE_URL ?? 'http://127.0.0.1:4173'
-const outDir = 'screenshots'
-fs.mkdirSync(outDir, { recursive: true })
-
 const browser = await chromium.launch({ channel: 'msedge', headless: true })
 const context = await browser.newContext({
   viewport: { width: 1440, height: 1000 },
@@ -27,7 +23,31 @@ const email = `ui-${stamp}@example.com`
 const password = 'hello1234'
 const articleTitle = `从浏览器写进数据库的一页 ${stamp.slice(-4)}`
 
+async function logout() {
+  await page.goto(`${base}/me`, { waitUntil: 'networkidle' })
+  await page.getByRole('button', { name: '退出登录' }).click()
+  await page.getByRole('button', { name: '确定退出' }).click()
+  await page.waitForURL(`${base}/`, { timeout: 10000 })
+}
+
+async function login(identifier, secret) {
+  await page.goto(`${base}/login`, { waitUntil: 'networkidle' })
+  await page.locator('#auth-identifier').fill(identifier)
+  await page.locator('#auth-password').fill(secret)
+  await page.getByRole('button', { name: /进去坐坐/ }).click()
+  await page.waitForURL('**/space', { timeout: 15000 })
+}
+
+async function approveFirst() {
+  await page.goto(`${base}/review`, { waitUntil: 'networkidle' })
+  await page.locator('.review-card').first().waitFor({ timeout: 10000 })
+  await page.locator('.review-card').first().getByRole('button', { name: '通过' }).click()
+  await page.waitForTimeout(800)
+}
+
 await page.goto(`${base}/login`, { waitUntil: 'networkidle' })
+assert.equal(await page.getByText('登录状态保存在 JWT Cookie').count(), 1)
+assert.equal(await page.getByRole('radio').count(), 0, 'there should be no auth mode choice')
 await page.getByRole('tab', { name: '注册' }).click()
 await page.locator('#auth-name').fill(username)
 await page.locator('#auth-email').fill(email)
@@ -39,26 +59,45 @@ assert.equal(await page.locator('#auth-code').inputValue(), devCode)
 await page.locator('#auth-password').fill(password)
 await page.getByRole('button', { name: /建好账号/ }).click()
 await page.waitForURL('**/space', { timeout: 15000 })
-await page.waitForTimeout(500)
 assert.equal(
   await page.locator('.space-copy h1').innerText().then((text) => text.includes(username)),
   true,
-  'space should greet the registered user',
 )
-await page.screenshot({ path: `${outDir}/v13-space-light.png`, fullPage: true })
 
 await page.goto(`${base}/write`, { waitUntil: 'networkidle' })
 await page.locator('#write-title').fill(articleTitle)
 await page.locator('#write-excerpt').fill('这是一篇从浏览器表单提交、经 Next.js 写入数据库的测试文章。')
 await page.locator('#write-body').fill(
-  '这是从前端提交的正文。\n\n## 第一段\n文章会经过 Next.js API 写入 PostgreSQL，然后再出现在首页和归档里。\n\n> 刷新页面，它还在。',
+  '这是从前端提交的正文。\n\n## 第一段\n文章会经过审核，然后再出现在首页和归档里。\n\n> 刷新页面，它还在。',
 )
 await page.getByRole('button', { name: '发布这一页' }).click()
-await page.waitForURL(/\/articles\/page-/, { timeout: 15000 })
-await page.waitForTimeout(400)
+await page.waitForURL('**/space', { timeout: 15000 })
+await page.locator('.space-status--pending').first().waitFor()
+assert.equal(await page.locator('.space-status--pending').first().innerText(), '审核中')
+await page.locator('.space-post__title').first().click()
+await page.waitForURL(/\/articles\/page-/, { timeout: 10000 })
+await page.locator('.article-state--pending').waitFor({ timeout: 10000 })
+assert.equal(await page.locator('.article-state--pending').count(), 1)
+assert.equal(await page.locator('.article-state--pending').innerText().then((text) => text.includes('审核中')), true)
+await page.goto(`${base}/space`, { waitUntil: 'networkidle' })
+
+await logout()
+await login('ii52A1', 'ii52A1pass')
+assert.equal(
+  await page.getByRole('button', { name: /ii52A1/ }).count() > 0,
+  true,
+  'admin should see their account menu',
+)
+await approveFirst()
+assert.equal(await page.locator('.review-card').count(), 0)
+
+await logout()
+await login(username, password)
+await page.goto(`${base}/space`, { waitUntil: 'networkidle' })
+await page.locator('.space-post__title').first().click()
+await page.waitForURL(/\/articles\/page-/, { timeout: 10000 })
 assert.equal(await page.locator('.article-byline strong').innerText(), username)
 assert.equal(await page.locator('.article-header h1').innerText(), articleTitle)
-await page.screenshot({ path: `${outDir}/v13-article-light.png`, fullPage: true })
 
 await page.getByRole('link', { name: /编辑/ }).click()
 await page.waitForURL(/\/write\?edit=/, { timeout: 10000 })
@@ -66,37 +105,39 @@ await page.locator('#write-title').waitFor()
 const editedTitle = `${articleTitle}（改过）`
 await page.locator('#write-title').fill(editedTitle)
 await page.getByRole('button', { name: '保存修改' }).click()
-await page.waitForURL(/\/articles\/page-/, { timeout: 15000 })
-await page.waitForTimeout(300)
+await page.waitForURL('**/space', { timeout: 15000 })
+await page.locator('.space-status--pending').first().waitFor()
+
+await logout()
+await login('ii52A1', 'ii52A1pass')
+await approveFirst()
+
+await logout()
+await login(username, password)
+await page.goto(`${base}/space`, { waitUntil: 'networkidle' })
+await page.locator('.space-post__title').first().click()
+await page.waitForURL(/\/articles\/page-/, { timeout: 10000 })
 assert.equal(await page.locator('.article-header h1').innerText(), editedTitle)
 
 await page.goto(`${base}/space`, { waitUntil: 'networkidle' })
-await page.waitForTimeout(400)
-assert.equal(await page.locator('.space-post').count(), 1)
-await page.screenshot({ path: `${outDir}/v13-space-with-post.png`, fullPage: true })
-
-await page.goto(`${base}/me`, { waitUntil: 'networkidle' })
-await page.getByRole('button', { name: '退出登录' }).click()
-await page.getByRole('button', { name: '确定退出' }).click()
-await page.waitForURL(`${base}/`, { timeout: 10000 })
-
-await page.goto(`${base}/login`, { waitUntil: 'networkidle' })
-await page.locator('#auth-identifier').fill(email)
-await page.locator('#auth-password').fill(password)
-await page.getByRole('radio', { name: /JWT/ }).check()
-await page.getByRole('button', { name: /进去坐坐/ }).click()
-await page.waitForURL('**/space', { timeout: 15000 })
-assert.equal(
-  await page.getByRole('button', { name: new RegExp(username) }).count() > 0,
-  true,
-  'JWT login should restore the header user',
-)
-
-await page.locator('.space-post').first().waitFor()
 await page.locator('.space-post').first().getByRole('button', { name: /删除/ }).click()
 await page.locator('.space-post').first().getByRole('button', { name: '确定' }).click()
 await page.waitForTimeout(800)
-assert.equal(await page.locator('.space-post').count(), 0, 'deleted post should disappear')
+assert.equal(await page.locator('.space-post').count(), 0)
+
+await logout()
+await login('ii52A1', 'ii52A1pass')
+await page.goto(`${base}/write`, { waitUntil: 'networkidle' })
+await page.locator('#write-title').fill('管理员直接发布的一页')
+await page.locator('#write-excerpt').fill('管理员发页不需要审核，这条用于验证发布路径。')
+await page.locator('#write-body').fill('管理员发布的正文。\n\n## 直接发布\n这里应该直接进入文章详情，不需要出现在审核队列里。\n\n> 只有 ii52A1 能这样发。')
+await page.getByRole('button', { name: '发布这一页' }).click()
+await page.waitForURL(/\/articles\/page-/, { timeout: 15000 })
+assert.equal(await page.locator('.article-byline strong').innerText(), 'ii52A1')
+await page.goto(`${base}/space`, { waitUntil: 'networkidle' })
+await page.locator('.space-post').first().getByRole('button', { name: /删除/ }).click()
+await page.locator('.space-post').first().getByRole('button', { name: '确定' }).click()
+await page.waitForTimeout(700)
 
 await page.goto(`${base}/`, { waitUntil: 'networkidle' })
 await page.waitForTimeout(400)
@@ -122,8 +163,6 @@ assert.equal(await mobile.locator('#mobile-menu').isVisible(), true)
 const menuText = await mobile.locator('#mobile-menu').innerText()
 assert.equal(menuText.includes('日落'), true)
 assert.equal(menuText.includes('写一页'), true)
-await mobile.waitForTimeout(300)
-await mobile.screenshot({ path: `${outDir}/v13-mobile-menu.png` })
 
 await browser.close()
 console.log(JSON.stringify({ ok: true, username, email, errors }, null, 2))
