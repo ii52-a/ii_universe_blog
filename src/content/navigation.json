@@ -1,45 +1,31 @@
 {
   "eyebrow": "HALFDAY / UNIVERSE",
-  "title": "宇宙导航",
+  "title": "导航",
+  "blog": {
+    "label": "博客主页",
+    "href": "/",
+    "meta": "BLOG"
+  },
   "sections": [
-    {
-      "id": "blog",
-      "label": "BLOG",
-      "title": "博客",
-      "cards": [
-        { "label": "博客主页", "href": "/", "meta": "HOME", "featured": true },
-        { "label": "风吹散的页", "href": "/articles", "meta": "ARCHIVE" },
-        { "label": "日落", "href": "/sunset", "meta": "LOG" },
-        { "label": "关于", "href": "/about", "meta": "ABOUT" },
-        { "label": "登录", "href": "/login", "meta": "JWT" },
-        { "label": "个人空间", "href": "/space", "meta": "MEMBER" }
-      ]
-    },
-    {
-      "id": "components",
-      "label": "COMPONENTS",
-      "title": "其他组件",
-      "cards": [
-        { "label": "日历", "href": "/#calendar", "meta": "CALENDAR" },
-        { "label": "时钟", "href": "/#clock", "meta": "CLOCK" },
-        { "label": "天气", "href": "/#weather", "meta": "WEATHER" },
-        { "label": "在线", "href": "/#presence", "meta": "PRESENCE" },
-        { "label": "短句", "href": "/#quote", "meta": "QUOTE" },
-        { "label": "书单", "href": "/#shelf", "meta": "SHELF" },
-        { "label": "慢信", "href": "/#newsletter", "meta": "LETTER" },
-        { "label": "留言簿", "href": "/#guestbook", "meta": "GUESTBOOK" }
-      ]
-    },
     {
       "id": "links",
       "label": "LINKS",
       "title": "有趣的链接",
       "cards": [
         { "label": "GitHub", "href": "https://github.com/ii52-a/ii_universe_blog", "meta": "REPO", "external": true },
-        { "label": "RSS", "href": "/rss.xml", "meta": "FEED" },
-        { "label": "写信", "href": "mailto:hello@halfday.club", "meta": "MAIL" },
+        { "label": "Instagram", "href": "https://instagram.com", "meta": "PHOTO", "external": true },
         { "label": "Open-Meteo", "href": "https://open-meteo.com", "meta": "WEATHER", "external": true },
-        { "label": "Instagram", "href": "https://instagram.com", "meta": "PHOTO", "external": true }
+        { "label": "项目文档", "href": "https://github.com/ii52-a/ii_universe_blog#readme", "meta": "DOCS", "external": true }
+      ]
+    },
+    {
+      "id": "signal",
+      "label": "SIGNAL",
+      "title": "接口与订阅",
+      "cards": [
+        { "label": "RSS", "href": "/rss.xml", "meta": "FEED" },
+        { "label": "后端 API", "href": "/api/health", "meta": "API" },
+        { "label": "写信", "href": "mailto:hello@halfday.club", "meta": "MAIL" }
       ]
     },
     {
@@ -49,8 +35,7 @@
       "cards": [
         { "label": "星图", "meta": "SOON", "status": "soon" },
         { "label": "电台", "meta": "SOON", "status": "soon" },
-        { "label": "旧物仓", "meta": "SOON", "status": "soon" },
-        { "label": "项目文档", "href": "https://github.com/ii52-a/ii_universe_blog#readme", "meta": "DOCS", "external": true }
+        { "label": "旧物仓", "meta": "SOON", "status": "soon" }
       ]
     }
   ]

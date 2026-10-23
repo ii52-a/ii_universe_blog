@@ -1,11 +1,9 @@
 import { useEffect, useSyncExternalStore } from 'react'
-import { posts as seedPosts, type ContentBlock, type CoverVariant, type Post } from '../data/posts'
+import { type ContentBlock, type CoverVariant, type Post } from '../data/posts'
 import { postsApi, type ApiPost, type PostInput } from './backend'
 
 const listeners = new Set<() => void>()
-let snapshot: Post[] = [...seedPosts].sort(
-  (a, b) => +new Date(b.publishedAt) - +new Date(a.publishedAt),
-)
+let snapshot: Post[] = []
 let loadPromise: Promise<Post[]> | null = null
 let loadError: Error | null = null
 

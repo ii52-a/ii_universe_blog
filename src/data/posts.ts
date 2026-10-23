@@ -1,5 +1,3 @@
-import postsData from './posts.json'
-
 export type CoverVariant =
   | 'store'
   | 'chair'
@@ -53,8 +51,6 @@ export const siteAuthor = {
   bio: 'DeepS先生，在杭州写一些不着急的事。',
 }
 
-export const posts = postsData as unknown as Post[]
-
 export const categories = ['城市', '旧物', '散步', '收集', '日常', '阅读', '饮食'] as const
 
 export function postAuthor(post: Post) {
@@ -68,8 +64,6 @@ export function postAuthor(post: Post) {
     bio: post.authorId && post.authorId !== siteAuthor.id ? '' : siteAuthor.bio,
   }
 }
-
-export const getPost = (slug?: string) => posts.find((post) => post.slug === slug)
 
 export const formatDate = (value: string) =>
   new Intl.DateTimeFormat('zh-CN', {

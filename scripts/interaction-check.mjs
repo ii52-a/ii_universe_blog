@@ -166,9 +166,9 @@ assert.equal(menuText.includes('宇宙'), true)
 assert.equal(menuText.includes('写一页'), true)
 
 await mobile.goto(`${base}/universe`, { waitUntil: 'networkidle' })
-await mobile.locator('.universe-card').first().waitFor()
-assert.equal(await mobile.locator('.universe-card').count() >= 20, true)
-assert.equal((await mobile.locator('.universe-home').innerText()).includes('BLOG HOME'), true)
+await mobile.locator('.nav-row').first().waitFor()
+assert.equal(await mobile.locator('.nav-row').count() >= 10, true)
+assert.equal((await mobile.locator('.blog-core').innerText()).includes('BLOG'), true)
 
 await mobile.goto(`${base}/sunset`, { waitUntil: 'networkidle' })
 const sunsetMetaSelect = await mobile.evaluate(

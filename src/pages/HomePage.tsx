@@ -48,22 +48,30 @@ export function HomePage() {
               </h1>
               <p className="hero-card__lede">{content.lede}</p>
               <div className="hero-card__actions">
-                <Link className="button button--ink" to={`/articles/${latest.slug}`}>
-                  {content.readLatest}
-                  <ArrowUpRight size={16} aria-hidden="true" />
-                </Link>
+                {latest ? (
+                  <Link className="button button--ink" to={`/articles/${latest.slug}`}>
+                    {content.readLatest}
+                    <ArrowUpRight size={16} aria-hidden="true" />
+                  </Link>
+                ) : (
+                  <span className="button button--ink" aria-disabled="true">
+                    载入中
+                  </span>
+                )}
                 <Link className="text-link" to="/about">
                   {content.aboutLink}
                   <span aria-hidden="true">↗</span>
                 </Link>
               </div>
-              <div className="hero-card__latest">
-                <span className="hero-card__latest-label">{content.latestLabel}</span>
-                <Link to={`/articles/${latest.slug}`}>
-                  <span>{latest.title}</span>
-                  <span>{latest.readMinutes} 分钟</span>
-                </Link>
-              </div>
+              {latest && (
+                <div className="hero-card__latest">
+                  <span className="hero-card__latest-label">{content.latestLabel}</span>
+                  <Link to={`/articles/${latest.slug}`}>
+                    <span>{latest.title}</span>
+                    <span>{latest.readMinutes} 分钟</span>
+                  </Link>
+                </div>
+              )}
             </div>
 
             <div className="hero-papers" aria-hidden="true">
@@ -108,22 +116,33 @@ export function HomePage() {
               id="recent-title"
             />
             <div className="recent-grid">
-              <PostCard post={recent[0]} variant="featured" />
-              {recent.slice(1).map((post) => (
-                <PostCard key={post.slug} post={post} />
-              ))}
+              {recent.length > 0 ? (
+                <>
+                  <PostCard post={recent[0]} variant="featured" />
+                  {recent.slice(1).map((post) => (
+                    <PostCard key={post.slug} post={post} />
+                  ))}
+                </>
+              ) : (
+                <div className="recent-loading" role="status">
+                  <span className="spinner" aria-hidden="true" />
+                  正在从后端取页…
+                </div>
+              )}
             </div>
-            <Link className="all-posts-strip" to="/articles">
-              <span>
-                <strong>
-                  {content.oldPostsPrefix} {allPosts.length - recent.length} {content.oldPostsSuffix}
-                </strong>
-                <small>{content.oldPostsNote}</small>
-              </span>
-              <span className="all-posts-strip__arrow">
-                <ArrowUpRight size={19} aria-hidden="true" />
-              </span>
-            </Link>
+            {allPosts.length > recent.length && (
+              <Link className="all-posts-strip" to="/articles">
+                <span>
+                  <strong>
+                    {content.oldPostsPrefix} {allPosts.length - recent.length} {content.oldPostsSuffix}
+                  </strong>
+                  <small>{content.oldPostsNote}</small>
+                </span>
+                <span className="all-posts-strip__arrow">
+                  <ArrowUpRight size={19} aria-hidden="true" />
+                </span>
+              </Link>
+            )}
           </section>
 
           <aside className="home-side" aria-label="侧边栏">

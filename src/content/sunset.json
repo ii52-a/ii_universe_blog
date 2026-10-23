@@ -2,43 +2,43 @@
   "eyebrow": "日落 · 版本记录",
   "title": ["太阳先下班，", "我们晚一点。"],
   "intro": "只记改过什么，不开发布会。",
-  "version": "v1.5.0",
+  "version": "v1.6.0",
   "date": "2026 年 10 月 23 日",
   "location": "杭州",
-  "seal": { "version": "1.5", "date": "oct. 2026" },
+  "seal": { "version": "1.6", "date": "oct. 2026" },
   "latest": {
     "note": "本次更新 · 2026.10.23",
-    "title": "多了一张星图。",
-    "version": "v1.5.0",
+    "title": "把导航收成一颗核心。",
+    "version": "v1.6.0",
     "items": [
       {
         "tag": "导航",
-        "title": "宇宙导航",
-        "text": "新增 /universe：博客、其他组件、有趣的链接和实验占位。",
+        "title": "中心导航",
+        "text": "宇宙导航改为中央博客卡片 + 三组链接，博客不再拆成子页面。",
         "icon": "orbit",
         "date": "2026-10-23",
         "short": "10.23"
       },
       {
-        "tag": "内容",
-        "title": "文案搬进 JSON",
-        "text": "文章、首页、关于、日落和导航都能直接改 JSON。",
-        "icon": "archive",
+        "tag": "背景",
+        "title": "从中心溅射",
+        "text": "黑蓝射线、十字光束和同心环从中心向外散开。",
+        "icon": "sparkles",
         "date": "2026-10-23",
         "short": "10.23"
       },
       {
-        "tag": "日落",
-        "title": "有些字不能选",
-        "text": "日期、标签、版本号和印章设为不可选中，正文仍然可以复制。",
-        "icon": "lock",
+        "tag": "文章",
+        "title": "文章只在数据库",
+        "text": "前端删除文章副本，列表、详情、修改、删除全部走后端接口。",
+        "icon": "server",
         "date": "2026-10-23",
         "short": "10.23"
       },
       {
-        "tag": "减字",
-        "title": "再少一点字",
-        "text": "导航页只留分类、名字和编号，不写说明。",
+        "tag": "极简",
+        "title": "博客只是一张卡",
+        "text": "导航页只保留入口，不再展开博客内部组件。",
         "icon": "feather",
         "date": "2026-10-23",
         "short": "10.23"
@@ -47,20 +47,20 @@
   },
   "previous": {
     "note": "更早一点",
-    "title": "v1.4.0 · JWT 与审核",
-    "date": "2026-10-21",
+    "title": "v1.5.0 · 宇宙导航与 JSON",
+    "date": "2026-10-23",
     "items": [
       {
-        "tag": "登录",
-        "title": "只留 JWT",
-        "text": "登录状态只放在 JWT Cookie，重置密码会作废旧 token。",
-        "icon": "key"
+        "tag": "导航",
+        "title": "第一版宇宙导航",
+        "text": "分类卡片、博客 URL 与实验占位。",
+        "icon": "orbit"
       },
       {
-        "tag": "权限",
-        "title": "ii52A1 直接发",
-        "text": "只有特权账号免审核，其他账号进 /review 队列。",
-        "icon": "shield"
+        "tag": "内容",
+        "title": "文案进 JSON",
+        "text": "首页、关于、日落、导航都改为 JSON 驱动。",
+        "icon": "archive"
       }
     ]
   },
@@ -68,6 +68,7 @@
     "title": "版本索引",
     "note": "从新到旧",
     "items": [
+      { "version": "v1.6.0", "title": "中心导航、辐射背景与数据库文章", "date": "2026-10-23", "short": "10.23" },
       { "version": "v1.5.0", "title": "宇宙导航、JSON 内容与日落锁定", "date": "2026-10-23", "short": "10.23" },
       { "version": "v1.4.0", "title": "作者、JWT、特权账号与审核", "date": "2026-10-21", "short": "10.21" },
       { "version": "v1.3.0", "title": "Next.js 后端、登录注册与个人空间", "date": "2026-10-20", "short": "10.20" },
@@ -78,7 +79,7 @@
     ]
   },
   "note": {
-    "stamp": "v1.5",
+    "stamp": "v1.6",
     "title": "为什么放在日落",
     "body": "白天忙，日落前后正好翻一翻。",
     "link": "回首页",

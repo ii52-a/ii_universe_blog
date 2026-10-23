@@ -2,7 +2,7 @@
 
 一个以白色、纸张感和玩具感为基调的个人博客。内容围绕散步、旧物、食物和普通的日常，页面以紧凑的 bento 网格组织，日期、天气、时钟、在线状态、跟屏玩偶小满等小组件填满边角。
 
-当前版本：**v1.5.0**
+当前版本：**v1.6.0**
 
 仓库：**https://github.com/ii52-a/ii_universe_blog**
 
@@ -114,11 +114,12 @@ node scripts/backend-test.mjs  # 后端 API 集成测试（先启动 server）
 
 ### 宇宙导航
 
-- `/universe`：独立全屏页面，蓝黑散射宇宙背景
-- 分类：博客、其他组件、有趣的链接、实验
-- 卡片只留名称与编号；实验区用 `SOON` 占位
+- `/universe`：独立全屏页面，黑蓝中心辐射背景
+- 中央一张博客卡片，不再展开博客内部组件
+- 左右三组：有趣的链接、接口与订阅、实验占位
+- 只保留名称与编号；实验区用 `SOON` 占位
 - 显示博客主页完整 URL
-- 顶栏新增「宇宙」入口
+- 顶栏和页脚新增「宇宙」入口
 
 ### 日落与版本
 
@@ -192,11 +193,12 @@ node scripts/backend-test.mjs  # 后端 API 集成测试（先启动 server）
 
 页面内容与视图分开，直接改 JSON 即可：
 
-- `src/data/posts.json`：8 篇文章正文、作者、封面、时间
 - `src/content/site.json`：首页、归档、关于文案
 - `src/content/sunset.json`：日落版本记录
 - `src/content/navigation.json`：宇宙导航分类与卡片
-- `server/db/seed-posts.json`：后端种子文章（可由 `npm run db:export --prefix server` 生成）
+- `server/db/seed-posts.json`：后端种子文章；文章正文只在数据库与后端接口中
+
+前端不再保存文章副本；`src/lib/postsStore.ts` 仅缓存接口返回，文章详情每次都请求后端。
 
 ## 前端数据接口
 
@@ -233,6 +235,7 @@ node scripts/backend-test.mjs  # 后端 API 集成测试（先启动 server）
 
 - UI 方法参考见 [`.skills/README.md`](.skills/README.md)
 - 首页参考与下载来源见 [`.references/README.md`](.references/README.md)
+- 宇宙导航参考：[Link Hub 的目录式链接索引](https://gsapvault.com/templates/link-hub-template)、[SpaceX 的 mission-control 深色排版](https://geoffreymanda.github.io/design-atlas/styles/spacex.html)
 - 页面插画（便利店、椅子、雨路、小票、桌面、旧书、棒冰、公交、散步地图）均为本项目的内联 SVG，没有使用第三方图片素材
 
 ## 版本记录
@@ -241,28 +244,28 @@ node scripts/backend-test.mjs  # 后端 API 集成测试（先启动 server）
 
 ## 截图
 
-- `screenshots/v15-home-light.png`
-- `screenshots/v15-home-dark.png`
-- `screenshots/v15-home-light-full.png`
-- `screenshots/v15-home-mobile.png`
-- `screenshots/v15-universe-light.png`
-- `screenshots/v15-universe-mobile.png`
-- `screenshots/v15-space-light.png`
-- `screenshots/v15-review-light.png`
-- `screenshots/v15-login-light.png`
-- `screenshots/v15-login-dark.png`
-- `screenshots/v15-login-mobile.png`
-- `screenshots/v15-forgot-light.png`
-- `screenshots/v15-write-light.png`
-- `screenshots/v15-write-mobile.png`
-- `screenshots/v15-articles-light.png`
-- `screenshots/v15-article-light.png`
-- `screenshots/v15-article-dark.png`
-- `screenshots/v15-sunset-light.png`
-- `screenshots/v15-sunset-dark.png`
-- `screenshots/v15-user-light.png`
-- `screenshots/v15-user-dark.png`
-- `screenshots/v15-mobile-menu.png`
-- `screenshots/v15-mobile-admin-menu.png`
+- `screenshots/v16-home-light.png`
+- `screenshots/v16-home-dark.png`
+- `screenshots/v16-home-light-full.png`
+- `screenshots/v16-home-mobile.png`
+- `screenshots/v16-universe-light.png`
+- `screenshots/v16-universe-mobile.png`
+- `screenshots/v16-space-light.png`
+- `screenshots/v16-review-light.png`
+- `screenshots/v16-login-light.png`
+- `screenshots/v16-login-dark.png`
+- `screenshots/v16-login-mobile.png`
+- `screenshots/v16-forgot-light.png`
+- `screenshots/v16-write-light.png`
+- `screenshots/v16-write-mobile.png`
+- `screenshots/v16-articles-light.png`
+- `screenshots/v16-article-light.png`
+- `screenshots/v16-article-dark.png`
+- `screenshots/v16-sunset-light.png`
+- `screenshots/v16-sunset-dark.png`
+- `screenshots/v16-user-light.png`
+- `screenshots/v16-user-dark.png`
+- `screenshots/v16-mobile-menu.png`
+- `screenshots/v16-mobile-admin-menu.png`
 - `screenshots/v13-article-dark.png`
 - `screenshots/v13-login-dark.png`

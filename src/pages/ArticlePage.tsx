@@ -35,8 +35,8 @@ export function ArticlePage() {
   const allPosts = usePosts()
   const localPost = allPosts.find((item) => item.slug === slug)
   const [remotePost, setRemotePost] = useState<Post | null>(null)
-  const [loadingPost, setLoadingPost] = useState(!localPost)
-  const post = localPost ?? remotePost
+  const [loadingPost, setLoadingPost] = useState(true)
+  const post = remotePost ?? localPost
   const { user } = useAuth()
   usePageTitle(post?.title ?? '没有这篇')
   const { showToast } = useToast()
@@ -48,7 +48,7 @@ export function ArticlePage() {
   const [activeHeading, setActiveHeading] = useState('')
 
   useEffect(() => {
-    if (localPost || !slug) {
+    if (!slug) {
       setRemotePost(null)
       setLoadingPost(false)
       return
@@ -69,7 +69,7 @@ export function ArticlePage() {
     return () => {
       cancelled = true
     }
-  }, [localPost, slug])
+  }, [slug])
 
   const headings = useMemo(() => (post ? getHeadings(post) : []), [post])
 

@@ -3,38 +3,86 @@ import { ArrowUpRight } from 'lucide-react'
 import content from '../content/navigation.json'
 import { usePageTitle } from '../hooks/usePageTitle'
 
-const stars = Array.from({ length: 72 }, (_, index) => ({
-  left: `${(index * 37 + 11) % 100}%`,
-  top: `${(index * 61 + 7) % 100}%`,
-  size: index % 9 === 0 ? 2.4 : index % 4 === 0 ? 1.6 : 1,
-  delay: `${(index % 13) * 0.7}s`,
-  duration: `${7 + (index % 9)}s`,
+const stars = Array.from({ length: 64 }, (_, index) => ({
+  left: `${(index * 41 + 13) % 100}%`,
+  top: `${(index * 67 + 9) % 100}%`,
+  size: index % 11 === 0 ? 2.6 : index % 5 === 0 ? 1.7 : 1,
+  delay: `${(index % 12) * 0.8}s`,
+  duration: `${7 + (index % 8)}s`,
 }))
 
 export function UniversePage() {
   usePageTitle('宇宙导航')
   const blogUrl = typeof window === 'undefined' ? '/' : `${window.location.origin}/`
 
+  const renderRows = (section: (typeof content.sections)[number]) =>
+    section.cards.map((card, index) => {
+      const number = String(index + 1).padStart(2, '0')
+
+      if ('status' in card && card.status === 'soon') {
+        return (
+          <div className="nav-row is-soon" key={card.label} aria-disabled="true">
+            <span className="nav-row__index">{number}</span>
+            <strong>{card.label}</strong>
+            <span className="nav-row__meta">{card.meta}</span>
+          </div>
+        )
+      }
+
+      const href = 'href' in card && card.href ? card.href : '/'
+      const external = 'external' in card && card.external
+      const inner = (
+        <>
+          <span className="nav-row__index">{number}</span>
+          <strong>{card.label}</strong>
+          <span className="nav-row__meta">{card.meta}</span>
+          <ArrowUpRight size={14} aria-hidden="true" />
+        </>
+      )
+
+      if (external || href.startsWith('http') || href.startsWith('mailto')) {
+        return (
+          <a className="nav-row" href={href} key={card.label} target="_blank" rel="noreferrer">
+            {inner}
+          </a>
+        )
+      }
+
+      return (
+        <Link className="nav-row" to={href} key={card.label}>
+          {inner}
+        </Link>
+      )
+    })
+
+  const [links, signal, lab] = content.sections
+
   return (
     <div className="universe-page">
-      <div className="universe-stars" aria-hidden="true">
-        {stars.map((star, index) => (
-          <span
-            key={index}
-            className="universe-star"
-            style={{
-              left: star.left,
-              top: star.top,
-              width: star.size,
-              height: star.size,
-              animationDelay: star.delay,
-              animationDuration: star.duration,
-            }}
-          />
-        ))}
+      <div className="universe-space" aria-hidden="true">
+        <div className="universe-stars">
+          {stars.map((star, index) => (
+            <span
+              key={index}
+              className="universe-star"
+              style={{
+                left: star.left,
+                top: star.top,
+                width: star.size,
+                height: star.size,
+                animationDelay: star.delay,
+                animationDuration: star.duration,
+              }}
+            />
+          ))}
+        </div>
+        <div className="universe-rays" />
+        <div className="universe-cross" />
+        <div className="universe-core-glow" />
+        <div className="universe-ring universe-ring--one" />
+        <div className="universe-ring universe-ring--two" />
+        <div className="universe-ring universe-ring--three" />
       </div>
-      <div className="universe-nebula universe-nebula--one" aria-hidden="true" />
-      <div className="universe-nebula universe-nebula--two" aria-hidden="true" />
 
       <header className="universe-head">
         <Link className="universe-brand" to="/">
@@ -45,71 +93,46 @@ export function UniversePage() {
       </header>
 
       <main className="universe-main">
-        <div className="universe-top">
-          <span className="universe-kicker">INDEX / 04</span>
+        <div className="universe-title">
+          <span>INDEX / 03</span>
           <h1>{content.title}</h1>
-          <Link className="universe-home" to="/">
-            <span>BLOG HOME</span>
-            <strong>{blogUrl}</strong>
-            <ArrowUpRight size={16} aria-hidden="true" />
-          </Link>
         </div>
 
-        <div className="universe-sections">
-          {content.sections.map((section) => (
-            <section className="universe-section" key={section.id} id={section.id}>
-              <header className="universe-section__head">
-                <span>{section.label}</span>
-                <h2>{section.title}</h2>
-                <i>{String(section.cards.length).padStart(2, '0')}</i>
+        <div className="universe-layout">
+          <section className="nav-panel nav-panel--left" aria-labelledby="links-title">
+            <header className="nav-panel__head">
+              <span>{links.label}</span>
+              <h2 id="links-title">{links.title}</h2>
+            </header>
+            <div className="nav-list">{renderRows(links)}</div>
+          </section>
+
+          <Link className="blog-core" to={content.blog.href}>
+            <span className="blog-core__meta">01 / {content.blog.meta}</span>
+            <strong>{content.blog.label}</strong>
+            <code>{blogUrl}</code>
+            <ArrowUpRight size={18} aria-hidden="true" />
+            <span className="blog-core__orbit blog-core__orbit--one" aria-hidden="true" />
+            <span className="blog-core__orbit blog-core__orbit--two" aria-hidden="true" />
+          </Link>
+
+          <div className="nav-side">
+            <section className="nav-panel" aria-labelledby="signal-title">
+              <header className="nav-panel__head">
+                <span>{signal.label}</span>
+                <h2 id="signal-title">{signal.title}</h2>
               </header>
-              <div className="universe-grid">
-                {section.cards.map((card) => {
-                  if ('status' in card && card.status === 'soon') {
-                    return (
-                      <div className="universe-card is-soon" key={card.label} aria-disabled="true">
-                        <span className="universe-card__meta">{card.meta}</span>
-                        <strong>{card.label}</strong>
-                        <span className="universe-card__soon">SOON</span>
-                      </div>
-                    )
-                  }
-
-                  const href = 'href' in card && card.href ? card.href : '/'
-                  const external = 'external' in card && card.external
-                  const featured = 'featured' in card && card.featured
-                  const className = `universe-card${featured ? ' is-featured' : ''}`
-                  const inner = (
-                    <>
-                      <span className="universe-card__meta">{card.meta}</span>
-                      <strong>{card.label}</strong>
-                      <ArrowUpRight size={15} aria-hidden="true" />
-                    </>
-                  )
-
-                  if (external || href.startsWith('http') || href.startsWith('mailto')) {
-                    return (
-                      <a
-                        className={className}
-                        href={href}
-                        key={card.label}
-                        target="_blank"
-                        rel="noreferrer"
-                      >
-                        {inner}
-                      </a>
-                    )
-                  }
-
-                  return (
-                    <Link className={className} to={href} key={card.label}>
-                      {inner}
-                    </Link>
-                  )
-                })}
-              </div>
+              <div className="nav-list">{renderRows(signal)}</div>
             </section>
-          ))}
+
+            <section className="nav-panel" aria-labelledby="lab-title">
+              <header className="nav-panel__head">
+                <span>{lab.label}</span>
+                <h2 id="lab-title">{lab.title}</h2>
+              </header>
+              <div className="nav-list">{renderRows(lab)}</div>
+            </section>
+          </div>
         </div>
       </main>
 

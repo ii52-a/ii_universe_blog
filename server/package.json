@@ -1,6 +1,6 @@
 {
   "name": "halfday-server",
-  "version": "1.5.0",
+  "version": "1.6.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -9,7 +9,6 @@
     "start": "next start -p 3001",
     "db:init": "tsx scripts/init-db.ts",
     "db:seed": "tsx scripts/seed.ts",
-    "db:export": "tsx scripts/export-posts.ts",
     "test:api": "tsx scripts/api-test.ts"
   },
   "dependencies": {
