@@ -1,41 +1,43 @@
 {
-  "eyebrow": "HALFDAY / UNIVERSE",
   "title": "导航",
-  "blog": {
-    "label": "博客主页",
-    "href": "/",
-    "meta": "BLOG"
-  },
-  "sections": [
+  "search": "搜索导航",
+  "tabs": [
+    { "id": "all", "label": "全部" },
+    { "id": "daily", "label": "常用" },
+    { "id": "links", "label": "链接" },
+    { "id": "lab", "label": "实验" }
+  ],
+  "groups": [
     {
-      "id": "links",
-      "label": "LINKS",
-      "title": "有趣的链接",
-      "cards": [
-        { "label": "GitHub", "href": "https://github.com/ii52-a/ii_universe_blog", "meta": "REPO", "external": true },
-        { "label": "Instagram", "href": "https://instagram.com", "meta": "PHOTO", "external": true },
-        { "label": "Open-Meteo", "href": "https://open-meteo.com", "meta": "WEATHER", "external": true },
-        { "label": "项目文档", "href": "https://github.com/ii52-a/ii_universe_blog#readme", "meta": "DOCS", "external": true }
+      "id": "daily",
+      "label": "常用",
+      "tab": "daily",
+      "items": [
+        { "label": "半日", "href": "/", "icon": "blog", "accent": "#4f7cff" },
+        { "label": "GitHub", "href": "https://github.com/ii52-a/ii_universe_blog", "icon": "github", "accent": "#8b95a8", "external": true },
+        { "label": "RSS", "href": "/rss.xml", "icon": "rss", "accent": "#ff9f43" },
+        { "label": "写信", "href": "mailto:hello@halfday.club", "icon": "mail", "accent": "#69a4ff" },
+        { "label": "后端 API", "href": "/api/health", "icon": "api", "accent": "#4fd6a0" }
       ]
     },
     {
-      "id": "signal",
-      "label": "SIGNAL",
-      "title": "接口与订阅",
-      "cards": [
-        { "label": "RSS", "href": "/rss.xml", "meta": "FEED" },
-        { "label": "后端 API", "href": "/api/health", "meta": "API" },
-        { "label": "写信", "href": "mailto:hello@halfday.club", "meta": "MAIL" }
+      "id": "links",
+      "label": "链接",
+      "tab": "links",
+      "items": [
+        { "label": "Instagram", "href": "https://instagram.com", "icon": "instagram", "accent": "#f0668f", "external": true },
+        { "label": "Open-Meteo", "href": "https://open-meteo.com", "icon": "weather", "accent": "#52b8ff", "external": true },
+        { "label": "项目文档", "href": "https://github.com/ii52-a/ii_universe_blog#readme", "icon": "docs", "accent": "#9b8cff", "external": true }
       ]
     },
     {
       "id": "lab",
-      "label": "LAB",
-      "title": "实验",
-      "cards": [
-        { "label": "星图", "meta": "SOON", "status": "soon" },
-        { "label": "电台", "meta": "SOON", "status": "soon" },
-        { "label": "旧物仓", "meta": "SOON", "status": "soon" }
+      "label": "实验",
+      "tab": "lab",
+      "items": [
+        { "label": "星图", "icon": "star", "accent": "#5e7cff", "status": "soon" },
+        { "label": "电台", "icon": "radio", "accent": "#ff6b9a", "status": "soon" },
+        { "label": "旧物仓", "icon": "box", "accent": "#e1a34c", "status": "soon" }
       ]
     }
   ]

@@ -1,7 +1,35 @@
+import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { ArrowUpRight } from 'lucide-react'
+import {
+  BookOpen,
+  Braces,
+  CloudSun,
+  FileText,
+  Github,
+  Instagram,
+  Mail,
+  Package,
+  Radio,
+  Rss,
+  Search,
+  Telescope,
+} from 'lucide-react'
 import content from '../content/navigation.json'
 import { usePageTitle } from '../hooks/usePageTitle'
+
+const icons = {
+  blog: BookOpen,
+  github: Github,
+  rss: Rss,
+  mail: Mail,
+  api: Braces,
+  instagram: Instagram,
+  weather: CloudSun,
+  docs: FileText,
+  star: Telescope,
+  radio: Radio,
+  box: Package,
+} as const
 
 const stars = Array.from({ length: 64 }, (_, index) => ({
   left: `${(index * 41 + 13) % 100}%`,
@@ -11,51 +39,26 @@ const stars = Array.from({ length: 64 }, (_, index) => ({
   duration: `${7 + (index % 8)}s`,
 }))
 
+function ItemIcon({ name }: { name: string }) {
+  const Icon = icons[name as keyof typeof icons] ?? BookOpen
+  return <Icon size={15} strokeWidth={1.8} />
+}
+
 export function UniversePage() {
   usePageTitle('宇宙导航')
-  const blogUrl = typeof window === 'undefined' ? '/' : `${window.location.origin}/`
+  const [tab, setTab] = useState('all')
+  const [query, setQuery] = useState('')
 
-  const renderRows = (section: (typeof content.sections)[number]) =>
-    section.cards.map((card, index) => {
-      const number = String(index + 1).padStart(2, '0')
-
-      if ('status' in card && card.status === 'soon') {
-        return (
-          <div className="nav-row is-soon" key={card.label} aria-disabled="true">
-            <span className="nav-row__index">{number}</span>
-            <strong>{card.label}</strong>
-            <span className="nav-row__meta">{card.meta}</span>
-          </div>
-        )
-      }
-
-      const href = 'href' in card && card.href ? card.href : '/'
-      const external = 'external' in card && card.external
-      const inner = (
-        <>
-          <span className="nav-row__index">{number}</span>
-          <strong>{card.label}</strong>
-          <span className="nav-row__meta">{card.meta}</span>
-          <ArrowUpRight size={14} aria-hidden="true" />
-        </>
-      )
-
-      if (external || href.startsWith('http') || href.startsWith('mailto')) {
-        return (
-          <a className="nav-row" href={href} key={card.label} target="_blank" rel="noreferrer">
-            {inner}
-          </a>
-        )
-      }
-
-      return (
-        <Link className="nav-row" to={href} key={card.label}>
-          {inner}
-        </Link>
-      )
-    })
-
-  const [links, signal, lab] = content.sections
+  const groups = useMemo(() => {
+    const keyword = query.trim().toLowerCase()
+    return content.groups
+      .filter((group) => tab === 'all' || group.tab === tab)
+      .map((group) => ({
+        ...group,
+        items: group.items.filter((item) => !keyword || item.label.toLowerCase().includes(keyword)),
+      }))
+      .filter((group) => group.items.length > 0)
+  }, [tab, query])
 
   return (
     <div className="universe-page">
@@ -93,52 +96,104 @@ export function UniversePage() {
       </header>
 
       <main className="universe-main">
-        <div className="universe-title">
-          <span>INDEX / 03</span>
+        <div className="nav-hero">
+          <span>HALFDAY / INDEX</span>
           <h1>{content.title}</h1>
+          <label className="nav-search">
+            <Search size={16} aria-hidden="true" />
+            <span className="sr-only">{content.search}</span>
+            <input
+              type="search"
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder={content.search}
+              autoComplete="off"
+            />
+          </label>
         </div>
 
-        <div className="universe-layout">
-          <section className="nav-panel nav-panel--left" aria-labelledby="links-title">
-            <header className="nav-panel__head">
-              <span>{links.label}</span>
-              <h2 id="links-title">{links.title}</h2>
-            </header>
-            <div className="nav-list">{renderRows(links)}</div>
-          </section>
-
-          <Link className="blog-core" to={content.blog.href}>
-            <span className="blog-core__meta">01 / {content.blog.meta}</span>
-            <strong>{content.blog.label}</strong>
-            <code>{blogUrl}</code>
-            <ArrowUpRight size={18} aria-hidden="true" />
-            <span className="blog-core__orbit blog-core__orbit--one" aria-hidden="true" />
-            <span className="blog-core__orbit blog-core__orbit--two" aria-hidden="true" />
-          </Link>
-
-          <div className="nav-side">
-            <section className="nav-panel" aria-labelledby="signal-title">
-              <header className="nav-panel__head">
-                <span>{signal.label}</span>
-                <h2 id="signal-title">{signal.title}</h2>
-              </header>
-              <div className="nav-list">{renderRows(signal)}</div>
-            </section>
-
-            <section className="nav-panel" aria-labelledby="lab-title">
-              <header className="nav-panel__head">
-                <span>{lab.label}</span>
-                <h2 id="lab-title">{lab.title}</h2>
-              </header>
-              <div className="nav-list">{renderRows(lab)}</div>
-            </section>
+        <section className="nav-shell" aria-label="导航">
+          <div className="nav-tabs" role="tablist" aria-label="导航分类">
+            {content.tabs.map((item) => (
+              <button
+                key={item.id}
+                type="button"
+                role="tab"
+                aria-selected={tab === item.id}
+                className={tab === item.id ? 'is-active' : ''}
+                onClick={() => setTab(item.id)}
+              >
+                {item.label}
+              </button>
+            ))}
           </div>
-        </div>
+
+          <div className="nav-body">
+            {groups.length > 0 ? (
+              groups.map((group) => (
+                <div className="nav-group" key={group.id}>
+                  <div className="nav-group__label">{group.label}</div>
+                  <div className="nav-grid">
+                    {group.items.map((item) => {
+                      const isSoon = 'status' in item && item.status === 'soon'
+                      if (isSoon) {
+                        return (
+                          <div className="nav-item is-soon" key={item.label} aria-disabled="true">
+                            <span
+                              className="nav-item__icon"
+                              style={{ backgroundColor: item.accent }}
+                              aria-hidden="true"
+                            >
+                              <ItemIcon name={item.icon} />
+                            </span>
+                            <span>{item.label}</span>
+                            <small>SOON</small>
+                          </div>
+                        )
+                      }
+
+                      const href = 'href' in item && item.href ? item.href : '/'
+                      const external = 'external' in item && item.external
+                      const inner = (
+                        <>
+                          <span
+                            className="nav-item__icon"
+                            style={{ backgroundColor: item.accent }}
+                            aria-hidden="true"
+                          >
+                            <ItemIcon name={item.icon} />
+                          </span>
+                          <span>{item.label}</span>
+                        </>
+                      )
+
+                      if (external || href.startsWith('http') || href.startsWith('mailto')) {
+                        return (
+                          <a className="nav-item" href={href} key={item.label} target="_blank" rel="noreferrer">
+                            {inner}
+                          </a>
+                        )
+                      }
+
+                      return (
+                        <Link className="nav-item" to={href} key={item.label}>
+                          {inner}
+                        </Link>
+                      )
+                    })}
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="nav-empty">没有找到</div>
+            )}
+          </div>
+        </section>
       </main>
 
       <footer className="universe-foot">
         <span>HALFDAY / 2026</span>
-        <Link to="/">← 回到博客</Link>
+        <Link to="/">回到博客</Link>
       </footer>
     </div>
   )

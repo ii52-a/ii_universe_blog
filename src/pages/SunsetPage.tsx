@@ -65,14 +65,14 @@ export function SunsetPage() {
           <div className="sunset-log__head">
             <div>
               <span className="page-hero__note is-unselectable">{content.latest.note}</span>
-              <h2 id="release-title">{content.latest.title}</h2>
+              <h2 id="release-title">{content.latest.version}</h2>
             </div>
-            <span className="sunset-log__version is-unselectable">{content.latest.version}</span>
+            <span className="sunset-log__version is-unselectable">{content.latest.short}</span>
           </div>
 
           <div className="release-list">
             {content.latest.items.map((item) => (
-              <article className="release-item" key={item.title}>
+              <article className="release-item" key={item.text}>
                 <span className="release-item__mark" aria-hidden="true">
                   <ReleaseIcon name={item.icon} />
                 </span>
@@ -81,7 +81,6 @@ export function SunsetPage() {
                     <span>{item.tag}</span>
                     <time dateTime={item.date}>{item.short}</time>
                   </div>
-                  <h3>{item.title}</h3>
                   <p>{item.text}</p>
                 </div>
                 <span className="release-item__doodle is-unselectable" aria-hidden="true">
@@ -96,7 +95,7 @@ export function SunsetPage() {
           <div className="release-block__head">
             <div>
               <span className="page-hero__note is-unselectable">{content.previous.note}</span>
-              <h2 id="v13-title">{content.previous.title}</h2>
+              <h2 id="v13-title">{content.previous.version}</h2>
             </div>
             <time className="is-unselectable" dateTime={content.previous.date}>
               {content.previous.date}
@@ -104,7 +103,7 @@ export function SunsetPage() {
           </div>
           <div className="release-list release-list--quiet">
             {content.previous.items.map((item) => (
-              <article className="release-item release-item--quiet" key={item.title}>
+              <article className="release-item release-item--quiet" key={item.text}>
                 <span className="release-item__mark" aria-hidden="true">
                   <ReleaseIcon name={item.icon} />
                 </span>
@@ -112,7 +111,6 @@ export function SunsetPage() {
                   <div className="release-item__meta is-unselectable">
                     <span>{item.tag}</span>
                   </div>
-                  <h3>{item.title}</h3>
                   <p>{item.text}</p>
                 </div>
               </article>
@@ -130,7 +128,6 @@ export function SunsetPage() {
               {content.index.items.map((item) => (
                 <li key={item.version}>
                   <span>{item.version}</span>
-                  <strong>{item.title}</strong>
                   <time className="is-unselectable" dateTime={item.date}>
                     {item.short}
                   </time>
