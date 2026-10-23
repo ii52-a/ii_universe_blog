@@ -11,14 +11,15 @@ export interface WidgetsPayload {
   }
   weather: {
     temperature: number
+    apparentTemperature: number | null
     high: number
     low: number
     humidity: number | null
     kind: WeatherKind
     label: string
-    source: 'open-meteo' | 'fallback'
+    source: 'open-meteo'
     updatedAt: string
-  }
+  } | null
 }
 
 const CACHE_MS = 10 * 60 * 1000
@@ -44,32 +45,28 @@ function describe(code: number): { kind: WeatherKind; label: string } {
   return { kind: 'cloud', label: '多云' }
 }
 
-function fallbackWeather(): WidgetsPayload['weather'] {
-  return {
-    temperature: 24,
-    high: 27,
-    low: 18,
-    humidity: 62,
-    kind: 'cloud',
-    label: '多云',
-    source: 'fallback',
-    updatedAt: new Date().toISOString(),
-  }
-}
-
 async function loadWeather(): Promise<WidgetsPayload['weather']> {
   try {
-    const url = `https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}&current=temperature_2m,relative_humidity_2m,weather_code&daily=temperature_2m_max,temperature_2m_min&timezone=${encodeURIComponent(TIME_ZONE)}&forecast_days=1`
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}&current=temperature_2m,apparent_temperature,relative_humidity_2m,weather_code&daily=temperature_2m_max,temperature_2m_min&timezone=${encodeURIComponent(TIME_ZONE)}&forecast_days=1`
     const response = await fetch(url, { signal: AbortSignal.timeout(6500), cache: 'no-store' })
     if (!response.ok) throw new Error(`weather ${response.status}`)
     const data = (await response.json()) as {
-      current?: { temperature_2m?: number; relative_humidity_2m?: number; weather_code?: number }
+      current?: {
+        temperature_2m?: number
+        apparent_temperature?: number
+        relative_humidity_2m?: number
+        weather_code?: number
+      }
       daily?: { temperature_2m_max?: number[]; temperature_2m_min?: number[] }
     }
     if (typeof data.current?.temperature_2m !== 'number') throw new Error('weather missing')
     const detail = describe(data.current.weather_code ?? 2)
     return {
       temperature: Math.round(data.current.temperature_2m),
+      apparentTemperature:
+        typeof data.current.apparent_temperature === 'number'
+          ? Math.round(data.current.apparent_temperature)
+          : null,
       high: Math.round(data.daily?.temperature_2m_max?.[0] ?? 27),
       low: Math.round(data.daily?.temperature_2m_min?.[0] ?? 18),
       humidity: data.current.relative_humidity_2m ?? null,
@@ -79,7 +76,7 @@ async function loadWeather(): Promise<WidgetsPayload['weather']> {
       updatedAt: new Date().toISOString(),
     }
   } catch {
-    return fallbackWeather()
+    return null
   }
 }
 

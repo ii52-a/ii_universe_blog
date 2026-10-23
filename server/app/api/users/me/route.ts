@@ -41,7 +41,7 @@ export async function PATCH(request: NextRequest) {
     if (body.username !== undefined) add('username', body.username)
     if (body.bio !== undefined) add('bio', body.bio)
     if (body.location !== undefined) add('location', body.location)
-    if (body.website !== undefined) add('website', body.website)
+    if (body.github !== undefined) add('github_url', body.github)
     if (body.avatarColor !== undefined) add('avatar_color', body.avatarColor)
     if (body.avatarUrl !== undefined) add('avatar_url', body.avatarUrl)
     if (fields.length > 0) {

@@ -2,11 +2,9 @@ import { useEffect, useRef, useState, type ChangeEvent, type FormEvent } from 'r
 import { Link, Navigate, useNavigate } from 'react-router-dom'
 import {
   ArrowUpRight,
-  Bookmark,
   Camera,
   Check,
-  Link2,
-  Lock,
+  Github,
   LogOut,
   MapPin,
   Palette,
@@ -15,12 +13,7 @@ import {
 import { usePageTitle } from '../hooks/usePageTitle'
 import { useAuth } from '../context/AuthContext'
 import { useToast } from '../context/ToastContext'
-import { reactionsApi } from '../lib/api'
-import { formatDate } from '../data/posts'
-import { usePosts } from '../lib/postsStore'
 import { Avatar } from '../components/Avatar'
-import { CoverArt } from '../components/CoverArt'
-import { PostRow } from '../components/PostCard'
 
 const avatarColors = ['#FFD84D', '#FFB4A2', '#BFDBFE', '#BBF7D0', '#E9D5FF', '#FBCFE8', '#FDE68A']
 
@@ -28,7 +21,7 @@ interface FormState {
   name: string
   bio: string
   location: string
-  website: string
+  github: string
   avatar?: string
   avatarColor: string
 }
@@ -40,20 +33,18 @@ export function ProfilePage() {
   const { user, updateUser, logout, ready } = useAuth()
   const { showToast } = useToast()
   const navigate = useNavigate()
-  const allPosts = usePosts()
   const fileRef = useRef<HTMLInputElement>(null)
   const [form, setForm] = useState<FormState>({
     name: user?.name ?? '',
     bio: user?.bio ?? '',
     location: user?.location ?? '',
-    website: user?.website ?? '',
+    github: user?.github ?? '',
     avatar: user?.avatar,
     avatarColor: user?.avatarColor ?? '#BFD2FF',
   })
   const [errors, setErrors] = useState<FormErrors>({})
   const [saving, setSaving] = useState(false)
   const [avatarError, setAvatarError] = useState('')
-  const [savedSlugs] = useState<string[]>(() => reactionsApi.savedSlugs())
   const [confirmLogout, setConfirmLogout] = useState(false)
   const [justSaved, setJustSaved] = useState(false)
 
@@ -63,7 +54,7 @@ export function ProfilePage() {
       name: user.name,
       bio: user.bio,
       location: user.location,
-      website: user.website,
+      github: user.github,
       avatar: user.avatar,
       avatarColor: user.avatarColor,
     })
@@ -82,12 +73,11 @@ export function ProfilePage() {
 
   if (!user) return <Navigate to="/login?from=/me" replace />
 
-  const savedPosts = allPosts.filter((post) => savedSlugs.includes(post.slug))
   const dirty =
     form.name !== user.name ||
     form.bio !== user.bio ||
     form.location !== user.location ||
-    form.website !== user.website ||
+    form.github !== user.github ||
     form.avatar !== user.avatar ||
     form.avatarColor !== user.avatarColor
 
@@ -124,12 +114,12 @@ export function ProfilePage() {
     if (form.name.trim().length > 16) next.name = '名字最多 16 个字。'
     if (form.bio.length > 80) next.bio = '介绍最多 80 个字。'
     if (form.location.length > 20) next.location = '城市名短一点，20 个字以内。'
-    if (form.website && !/^(https?:\/\/)?[\w-]+(\.[\w-]+)+([/?#][^\s]*)?$/i.test(form.website.trim())) {
-      next.website = '网址格式不太对。'
+    if (form.github && !/^(https?:\/\/)?(www\.)?github\.com\/[^\s]+$/i.test(form.github.trim())) {
+      next.github = 'GitHub 地址格式不太对。'
     }
     setErrors(next)
     if (next.name) window.requestAnimationFrame(() => document.getElementById('profile-name')?.focus())
-    else if (next.website) window.requestAnimationFrame(() => document.getElementById('profile-website')?.focus())
+    else if (next.github) window.requestAnimationFrame(() => document.getElementById('profile-github')?.focus())
     return Object.keys(next).length === 0
   }
 
@@ -142,7 +132,7 @@ export function ProfilePage() {
         name: form.name.trim(),
         bio: form.bio.trim(),
         location: form.location.trim(),
-        website: form.website.trim(),
+        github: form.github.trim(),
         avatar: form.avatar,
         avatarColor: form.avatarColor,
       })
@@ -161,7 +151,7 @@ export function ProfilePage() {
     <div className="page-container profile-page">
       <header className="profile-head">
         <div>
-          <span className="page-hero__note">账号与资料</span>
+          <span className="page-hero__note">资料</span>
           <h1>我的半日</h1>
           <p>头像、名字、几句话。都可以慢慢改。</p>
         </div>
@@ -180,13 +170,8 @@ export function ProfilePage() {
             </span>
           </div>
           <h2>{form.name || user.name}</h2>
-          <p className="profile-card__email">{user.email}</p>
           <p className="profile-card__bio">{form.bio || '这个人还没写介绍。'}</p>
           <dl className="profile-card__stats">
-            <div>
-              <dt>收藏</dt>
-              <dd>{savedPosts.length} 篇</dd>
-            </div>
             <div>
               <dt>加入</dt>
               <dd>{new Intl.DateTimeFormat('zh-CN', { year: 'numeric', month: 'short' }).format(new Date(user.joinedAt))}</dd>
@@ -199,15 +184,19 @@ export function ProfilePage() {
                 {form.location}
               </span>
             )}
-            {form.website && (
-              <span>
-                <Link2 size={13} aria-hidden="true" />
-                {form.website.replace(/^https?:\/\//, '')}
-              </span>
+            {form.github && (
+              <a
+                href={/^https?:\/\//.test(form.github) ? form.github : `https://${form.github}`}
+                target="_blank"
+                rel="noreferrer"
+              >
+                <Github size={13} aria-hidden="true" />
+                {form.github.replace(/^https?:\/\/(www\.)?github\.com\//, 'github.com/')}
+              </a>
             )}
           </div>
           <div className="profile-card__foot">
-            <span>资料保存在本机</span>
+            <span>资料保存在数据库</span>
             <Link className="text-button" to="/me#settings">
               改一改
             </Link>
@@ -340,22 +329,22 @@ export function ProfilePage() {
               </div>
 
               <div className="field">
-                <label htmlFor="profile-website">个人网站</label>
-                <div className={`field__control${errors.website ? ' has-error' : ''}`}>
-                  <Link2 size={16} aria-hidden="true" />
+                <label htmlFor="profile-github">GitHub</label>
+                <div className={`field__control${errors.github ? ' has-error' : ''}`}>
+                  <Github size={16} aria-hidden="true" />
                   <input
-                    id="profile-website"
-                    name="website"
+                    id="profile-github"
+                    name="github"
                     type="text"
                     inputMode="url"
                     autoComplete="url"
-                    placeholder="halfday.club"
-                    value={form.website}
-                    onChange={(event) => updateField('website', event.target.value)}
-                    aria-invalid={Boolean(errors.website)}
+                    placeholder="https://github.com/yourname"
+                    value={form.github}
+                    onChange={(event) => updateField('github', event.target.value)}
+                    aria-invalid={Boolean(errors.github)}
                   />
                 </div>
-                {errors.website && <span className="field-error">{errors.website}</span>}
+                {errors.github && <span className="field-error">{errors.github}</span>}
               </div>
 
               <div className="profile-form__actions">
@@ -372,62 +361,17 @@ export function ProfilePage() {
             </form>
           </section>
 
-          <section className="profile-section" id="saved" aria-labelledby="saved-title">
+          <section className="profile-section profile-section--logout" aria-label="退出登录">
             <div className="profile-section__head">
               <div>
-                <h2 id="saved-title">收藏的文章</h2>
-                <p>看到文章右上角的书签，就会出现在这里。</p>
+                <h2>退出登录</h2>
               </div>
-              <Bookmark size={18} aria-hidden="true" />
+              <LogOut size={18} aria-hidden="true" />
             </div>
-            {savedPosts.length > 0 ? (
-              <div className="saved-list">
-                {savedPosts.map((post) => (
-                  <PostRow key={post.slug} post={post} />
-                ))}
-              </div>
-            ) : (
-              <div className="saved-empty">
-                <span className="saved-empty__cover" aria-hidden="true">
-                  <CoverArt variant="desk" decorative />
-                </span>
-                <div>
-                  <strong>书架还是空的。</strong>
-                  <p>遇到想再读一遍的文章，点一下书签。</p>
-                  <Link className="text-link" to="/articles">
-                    去翻翻 <span aria-hidden="true">↗</span>
-                  </Link>
-                </div>
-              </div>
-            )}
-          </section>
-
-          <section className="profile-section profile-section--account" aria-labelledby="account-title">
-            <div className="profile-section__head">
-              <div>
-                <h2 id="account-title">账号</h2>
-                <p>邮箱和加入时间不会公开。</p>
-              </div>
-              <Lock size={18} aria-hidden="true" />
-            </div>
-            <dl className="account-list">
-              <div>
-                <dt>邮箱</dt>
-                <dd>{user.email}</dd>
-              </div>
-              <div>
-                <dt>加入半日</dt>
-                <dd>{formatDate(user.joinedAt)}</dd>
-              </div>
-              <div>
-                <dt>资料存放</dt>
-                <dd>本机浏览器</dd>
-              </div>
-            </dl>
             <div className="account-danger">
               <div>
                 <strong>离开一下？</strong>
-                <span>退出以后，留言和收藏还会留着。</span>
+                <span>下次回来再登录。</span>
               </div>
               {confirmLogout ? (
                 <span className="account-danger__confirm">
@@ -435,7 +379,7 @@ export function ProfilePage() {
                     type="button"
                     className="button button--danger button--small"
                     onClick={() => {
-                      logout()
+                      void logout()
                       showToast('已退出，下次见。', 'info')
                       navigate('/')
                     }}

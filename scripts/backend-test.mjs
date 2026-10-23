@@ -50,6 +50,12 @@ try {
   assert.equal(response.status(), 200)
   assert.equal((await json(response)).user.email, email)
 
+  response = await api.patch('/api/users/me', {
+    data: { github: 'https://github.com/ii52-a' },
+  })
+  assert.equal(response.status(), 200)
+  assert.equal((await json(response)).user.github, 'https://github.com/ii52-a')
+
   const seedPosts = await json(await api.get('/api/posts?limit=50'))
   const seedAuthors = new Set(seedPosts.posts.map((post) => post.authorHandle))
   assert.equal(seedAuthors.size >= 4, true, 'seed posts should have several authors')
@@ -91,6 +97,9 @@ try {
 
   response = await anon.get(`/api/posts/${slug}`)
   assert.equal(response.status(), 200, 'approved post should be public')
+  response = await anon.get(`/api/users/${registered.user.handle}`)
+  assert.equal(response.status(), 200)
+  assert.equal((await json(response)).stats.postCount >= 1, true)
 
   response = await api.patch(`/api/posts/${slug}`, { data: { title: '接口测试的一页（已修改）' } })
   assert.equal(response.status(), 200)
@@ -149,6 +158,7 @@ try {
   const widgets = await json(response)
   assert.equal(widgets.timeZone, 'Asia/Shanghai')
   assert.equal(widgets.location.city, '杭州')
+  assert.equal(widgets.weather === null || typeof widgets.weather.temperature === 'number', true)
 
   console.log(JSON.stringify({ ok: true, email, username, checks: 30 }, null, 2))
 } finally {

@@ -2,7 +2,7 @@
 
 一个以白色、纸张感和玩具感为基调的个人博客。内容围绕散步、旧物、食物和普通的日常，页面以紧凑的 bento 网格组织，日期、天气、时钟、在线状态、跟屏玩偶小满等小组件填满边角。
 
-当前版本：**v1.7.0**
+当前版本：**v1.8.0**
 
 仓库：**https://github.com/ii52-a/ii_universe_blog**
 
@@ -71,7 +71,7 @@ node scripts/backend-test.mjs  # 后端 API 集成测试（先启动 server）
 ### 文章与评论
 
 - 顶栏的「文章」改叫「风吹散的页」，所有用户的文章放在同一处
-- 作者默认 **DeepS先生（@deepseek）**；新注册用户写的页署自己的名字
+- 只有 DeepS 自己写的两页署 **DeepS先生（@deepseek）**；其他种子页分属迟迟、小野、木木、Nana、陈皮
 - 文章归档页：分类筛选、关键词搜索，筛选状态写入 URL
 - 文章详情：阅读进度、目录跟随、点赞、收藏、分享、标签话题页，并署名实际作者
 - 撰写页 `/write`：标题、摘要、分类、标签、封面、正文、实时预览、自动草稿
@@ -85,9 +85,11 @@ node scripts/backend-test.mjs  # 后端 API 集成测试（先启动 server）
 - 登录：邮箱或用户名 + 密码，只使用 **JWT Cookie**
 - 记住我（30 天）、忘记密码、重置密码
 - 页头展示用户姓名与头像
-- 个人资料编辑：昵称、简介、城市、网站、头像上传、头像底色
-- 公开主页 `/u/:handle`：岛民证、加入时间、写过的页、留言轨迹、常去分类
-- 作者不再统一是 DeepS先生：种子文章分属 DeepS、迟迟、小野、木木、Nana、陈皮
+- 个人资料编辑：昵称、简介、城市、GitHub、头像上传、头像底色
+- 资料页只保留资料与退出登录，不含账号信息和收藏列表
+- 公开主页 `/u/:handle`：岛民证、加入时间、写过的页、使用记录、常去的分类、留言轨迹
+- 主页统计通过 `/api/users/:handle` 获取，DeepS 演示资料也来自数据库
+- 文章作者、评论者、留言者都可以点进个人主页
 
 ### 个人空间
 
@@ -95,6 +97,12 @@ node scripts/backend-test.mjs  # 后端 API 集成测试（先启动 server）
 - 头像漂浮、轨道环旋转、统计数字递增、文章行依次进入
 - 在空间里直接写文章、编辑文章、删除文章
 - 右侧保留今日提示与公开主页入口
+
+### 交互与安全
+
+- 点击外部链接先弹出无责声明，可选择继续或留在半日
+- 小满台词集中在 `src/content/mascot.json`
+- 天气只显示 Open-Meteo 真实数据；不可用时不伪造温度
 
 ### 审核
 
@@ -162,7 +170,7 @@ node scripts/backend-test.mjs  # 后端 API 集成测试（先启动 server）
 | `/forgot` | 找回密码 |
 | `/about` | 关于 |
 | `/login` | 登录 / 注册 |
-| `/me` | 个人资料、收藏与账号设置 |
+| `/me` | 个人资料与退出登录 |
 | `*` | 404 |
 
 路由集中在 `src/App.tsx`，页面级组件在 `src/pages/`，新增页面只需注册一条路由并在导航中接入。
@@ -197,6 +205,7 @@ node scripts/backend-test.mjs  # 后端 API 集成测试（先启动 server）
 - `src/content/site.json`：首页、归档、关于文案
 - `src/content/sunset.json`：日落版本记录
 - `src/content/navigation.json`：宇宙导航分类与卡片
+- `src/content/mascot.json`：小满台词
 - `server/db/seed-posts.json`：后端种子文章；文章正文只在数据库与后端接口中
 
 前端不再保存文章副本；`src/lib/postsStore.ts` 仅缓存接口返回，文章详情每次都请求后端。
@@ -245,28 +254,29 @@ node scripts/backend-test.mjs  # 后端 API 集成测试（先启动 server）
 
 ## 截图
 
-- `screenshots/v17-home-light.png`
-- `screenshots/v17-home-dark.png`
-- `screenshots/v17-home-light-full.png`
-- `screenshots/v17-home-mobile.png`
-- `screenshots/v17-universe-light.png`
-- `screenshots/v17-universe-mobile.png`
-- `screenshots/v17-space-light.png`
-- `screenshots/v17-review-light.png`
-- `screenshots/v17-login-light.png`
-- `screenshots/v17-login-dark.png`
-- `screenshots/v17-login-mobile.png`
-- `screenshots/v17-forgot-light.png`
-- `screenshots/v17-write-light.png`
-- `screenshots/v17-write-mobile.png`
-- `screenshots/v17-articles-light.png`
-- `screenshots/v17-article-light.png`
-- `screenshots/v17-article-dark.png`
-- `screenshots/v17-sunset-light.png`
-- `screenshots/v17-sunset-dark.png`
-- `screenshots/v17-user-light.png`
-- `screenshots/v17-user-dark.png`
-- `screenshots/v17-mobile-menu.png`
-- `screenshots/v17-mobile-admin-menu.png`
+- `screenshots/v18-home-light.png`
+- `screenshots/v18-home-dark.png`
+- `screenshots/v18-home-light-full.png`
+- `screenshots/v18-home-mobile.png`
+- `screenshots/v18-universe-light.png`
+- `screenshots/v18-universe-mobile.png`
+- `screenshots/v18-space-light.png`
+- `screenshots/v18-review-light.png`
+- `screenshots/v18-profile-light.png`
+- `screenshots/v18-login-light.png`
+- `screenshots/v18-login-dark.png`
+- `screenshots/v18-login-mobile.png`
+- `screenshots/v18-forgot-light.png`
+- `screenshots/v18-write-light.png`
+- `screenshots/v18-write-mobile.png`
+- `screenshots/v18-articles-light.png`
+- `screenshots/v18-article-light.png`
+- `screenshots/v18-article-dark.png`
+- `screenshots/v18-sunset-light.png`
+- `screenshots/v18-sunset-dark.png`
+- `screenshots/v18-user-light.png`
+- `screenshots/v18-user-dark.png`
+- `screenshots/v18-mobile-menu.png`
+- `screenshots/v18-mobile-admin-menu.png`
 - `screenshots/v13-article-dark.png`
 - `screenshots/v13-login-dark.png`

@@ -14,14 +14,15 @@ interface WidgetsData {
   location: { city: string; district: string; latitude: number; longitude: number }
   weather: {
     temperature: number
+    apparentTemperature: number | null
     high: number
     low: number
     humidity: number | null
     kind: WeatherKind
     label: string
-    source: 'open-meteo' | 'fallback'
+    source: 'open-meteo'
     updatedAt: string
-  }
+  } | null
   timeZone: string
   serverOffsetMs: number
   loading: boolean
@@ -29,20 +30,9 @@ interface WidgetsData {
   refresh: () => void
 }
 
-const fallbackWeather: WidgetsData['weather'] = {
-  temperature: 24,
-  high: 27,
-  low: 18,
-  humidity: 62,
-  kind: 'cloud',
-  label: '多云',
-  source: 'fallback',
-  updatedAt: '',
-}
-
 const WidgetsContext = createContext<WidgetsData>({
   location: { city: '杭州', district: '西湖区', latitude: 30.2741, longitude: 120.1551 },
-  weather: fallbackWeather,
+  weather: null,
   timeZone: 'Asia/Shanghai',
   serverOffsetMs: 0,
   loading: true,
@@ -53,7 +43,7 @@ const WidgetsContext = createContext<WidgetsData>({
 export function WidgetsProvider({ children }: { children: ReactNode }) {
   const [data, setData] = useState<Omit<WidgetsData, 'loading' | 'error' | 'refresh'>>({
     location: { city: '杭州', district: '西湖区', latitude: 30.2741, longitude: 120.1551 },
-    weather: fallbackWeather,
+    weather: null,
     timeZone: 'Asia/Shanghai',
     serverOffsetMs: 0,
   })

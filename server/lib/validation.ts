@@ -42,11 +42,14 @@ export const profileUpdateSchema = z.object({
   username: username.optional(),
   bio: z.string().trim().max(160, '介绍最多 160 个字').optional(),
   location: z.string().trim().max(40, '城市最多 40 个字').optional(),
-  website: z
+  github: z
     .string()
     .trim()
-    .max(120)
-    .refine((value) => !value || /^(https?:\/\/)?[\w-]+(\.[\w-]+)+([/?#][^\s]*)?$/i.test(value), '网址格式不正确')
+    .max(160)
+    .refine(
+      (value) => !value || /^(https?:\/\/)?(www\.)?github\.com\/[^\s]+$/i.test(value),
+      'GitHub 地址格式不正确',
+    )
     .optional(),
   avatarColor: z.string().regex(/^#[0-9a-fA-F]{6}$/, '颜色格式不正确').optional(),
   avatarUrl: z.string().max(2_000_000).optional().nullable(),

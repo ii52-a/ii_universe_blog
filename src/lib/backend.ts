@@ -12,7 +12,7 @@ export interface ApiUser {
   role: UserRole
   bio: string
   location: string
-  website: string
+  github: string
   avatar?: string
   avatarColor: string
   joinedAt: string
@@ -123,7 +123,7 @@ export const authApi = {
     username?: string
     bio?: string
     location?: string
-    website?: string
+    github?: string
     avatarColor?: string
     avatarUrl?: string | null
   }) =>
@@ -131,6 +131,13 @@ export const authApi = {
       method: 'PATCH',
       body: JSON.stringify(patch),
     }),
+}
+
+export interface UserStats {
+  postCount: number
+  wordCount: number
+  categories: Array<{ name: string; count: number }>
+  activity: Array<{ kind: string; title: string; slug: string; at: string }>
 }
 
 export interface PostInput {
@@ -168,7 +175,7 @@ export const postsApi = {
   remove: (slug: string) =>
     apiFetch<{ ok: true }>(`/api/posts/${encodeURIComponent(slug)}`, { method: 'DELETE' }),
   author: (handle: string) =>
-    apiFetch<{ user: ApiUser; posts: ApiPost[]; nextCursor: string | null }>(
+    apiFetch<{ user: ApiUser; posts: ApiPost[]; stats: UserStats; nextCursor: string | null }>(
       `/api/users/${encodeURIComponent(handle)}`,
     ),
 }
@@ -191,13 +198,14 @@ export const widgetsApi = {
       location: { city: string; district: string; latitude: number; longitude: number }
       weather: {
         temperature: number
+        apparentTemperature: number | null
         high: number
         low: number
         humidity: number | null
         kind: 'sun' | 'cloud' | 'rain' | 'storm' | 'snow' | 'fog'
         label: string
-        source: 'open-meteo' | 'fallback'
+        source: 'open-meteo'
         updatedAt: string
-      }
+      } | null
     }>('/api/widgets'),
 }

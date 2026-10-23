@@ -5,18 +5,18 @@ import {
   ArrowUpRight,
   CalendarDays,
   Check,
+  Clock3,
   Copy,
-  Link2,
+  Github,
   MapPin,
   PencilLine,
 } from 'lucide-react'
 import { commentsApi } from '../lib/api'
-import { readStorage } from '../lib/storage'
-import { usePosts } from '../lib/postsStore'
-import { postAuthor } from '../data/posts'
+import { mapApiPost, usePosts } from '../lib/postsStore'
+import { postAuthor, type Post } from '../data/posts'
 import type { Comment } from '../data/comments'
-import { useAuth, demoUser, type User } from '../context/AuthContext'
-import { postsApi } from '../lib/backend'
+import { useAuth, type User } from '../context/AuthContext'
+import { postsApi, type UserStats } from '../lib/backend'
 import { usePageTitle } from '../hooks/usePageTitle'
 import { useToast } from '../context/ToastContext'
 import { Avatar } from '../components/Avatar'
@@ -33,6 +33,8 @@ export function UserPage() {
   const allPosts = usePosts()
   const isMe = Boolean(user && user.handle === handle)
   const [remoteProfile, setRemoteProfile] = useState<User | null>(null)
+  const [remotePosts, setRemotePosts] = useState<Post[]>([])
+  const [remoteStats, setRemoteStats] = useState<UserStats | null>(null)
   const [profileLoading, setProfileLoading] = useState(true)
   const publicAuthor = allPosts
     .map((post) => ({ author: postAuthor(post), post }))
@@ -40,41 +42,34 @@ export function UserPage() {
   const profile = isMe
     ? user
     : remoteProfile ??
-      (handle === demoUser.handle
-        ? demoUser
-        : publicAuthor
-          ? {
-              id: publicAuthor.author.id,
-              name: publicAuthor.author.name,
-              username: publicAuthor.author.name,
-              email: '',
-              handle: publicAuthor.author.handle,
-              role: 'member' as const,
-              bio: publicAuthor.author.bio || '在半日写过几页，偶尔也留一句话。',
-              location: publicAuthor.author.location,
-              website: '',
-              avatar: publicAuthor.author.avatar,
-              avatarColor: publicAuthor.author.color,
-              joinedAt:
-                [...allPosts]
-                  .reverse()
-                  .find((post) => postAuthor(post).handle === handle)?.publishedAt ??
-                publicAuthor.post.publishedAt,
-            }
-          : null)
+      (publicAuthor
+        ? {
+            id: publicAuthor.author.id,
+            name: publicAuthor.author.name,
+            username: publicAuthor.author.name,
+            email: '',
+            handle: publicAuthor.author.handle,
+            role: 'member' as const,
+            bio: publicAuthor.author.bio || '在半日写过几页，偶尔也留一句话。',
+            location: publicAuthor.author.location,
+            github: '',
+            avatar: publicAuthor.author.avatar,
+            avatarColor: publicAuthor.author.color,
+            joinedAt:
+              [...allPosts]
+                .reverse()
+                .find((post) => postAuthor(post).handle === handle)?.publishedAt ??
+              publicAuthor.post.publishedAt,
+          }
+        : null)
   usePageTitle(profile ? `${profile.name}的主页` : '没有这位岛民')
 
   useEffect(() => {
-    if (isMe) {
-      setRemoteProfile(null)
-      setProfileLoading(false)
-      return
-    }
     let cancelled = false
     setProfileLoading(true)
     postsApi
       .author(handle)
-      .then(({ user: apiUser }) => {
+      .then(({ user: apiUser, posts: apiPosts, stats }) => {
         if (!cancelled) {
           setRemoteProfile({
             id: apiUser.id,
@@ -85,11 +80,13 @@ export function UserPage() {
             role: apiUser.role,
             bio: apiUser.bio,
             location: apiUser.location,
-            website: apiUser.website,
+            github: apiUser.github,
             avatar: apiUser.avatar,
             avatarColor: apiUser.avatarColor,
             joinedAt: apiUser.joinedAt,
           })
+          setRemotePosts(apiPosts.map(mapApiPost))
+          setRemoteStats(stats)
         }
       })
       .catch(() => {
@@ -141,15 +138,18 @@ export function UserPage() {
     new Date(profile.joinedAt),
   )
   const days = Math.max(1, Math.floor((Date.now() - +new Date(profile.joinedAt)) / 86400000))
-  const saved = readStorage<string[]>('post-bookmarks.v1', [])
-  const authored = allPosts.filter((post) => postAuthor(post).id === profile.id)
-  const visitedPlaces = Array.from(
-    new Set(
-      comments
-        .map((comment) => allPosts.find((post) => post.slug === comment.postId)?.category)
-        .filter((value): value is string => Boolean(value)),
-    ),
-  ).slice(0, 4)
+  const authored = remotePosts.length
+    ? remotePosts
+    : allPosts.filter((post) => postAuthor(post).id === profile.id)
+  const visitedPlaces = remoteStats?.categories.length
+    ? remoteStats.categories.map((category) => category.name)
+    : Array.from(
+        new Set(
+          comments
+            .map((comment) => allPosts.find((post) => post.slug === comment.postId)?.category)
+            .filter((value): value is string => Boolean(value)),
+        ),
+      ).slice(0, 4)
 
   const copyLink = async () => {
     try {
@@ -203,10 +203,14 @@ export function UserPage() {
                       {profile.location}
                     </span>
                   )}
-                  {profile.website && (
-                    <a href={`https://${profile.website.replace(/^https?:\/\//, '')}`} target="_blank" rel="noreferrer">
-                      <Link2 size={13} aria-hidden="true" />
-                      {profile.website.replace(/^https?:\/\//, '')}
+                  {profile.github && (
+                    <a
+                      href={/^https?:\/\//.test(profile.github) ? profile.github : `https://${profile.github}`}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      <Github size={13} aria-hidden="true" />
+                      GitHub
                     </a>
                   )}
                   <span>
@@ -256,7 +260,7 @@ export function UserPage() {
               </div>
               <div>
                 <dt>写的页</dt>
-                <dd>{authored.length}</dd>
+                <dd>{remoteStats?.postCount ?? authored.length}</dd>
               </div>
               <div>
                 <dt>在岛上</dt>
@@ -268,20 +272,32 @@ export function UserPage() {
 
         <div className="user-content">
           <div className="user-main">
-            {authored.length > 0 && (
-              <section className="user-posts" aria-labelledby="user-posts-title">
-                <SectionHead
-                  title="写过的页"
-                  description={`${authored.length} 篇，和其他人的页放在一起。`}
-                  id="user-posts-title"
-                />
+            <section className="user-posts" aria-labelledby="user-posts-title">
+              <SectionHead
+                title="写过的页"
+                description={authored.length > 0 ? `${authored.length} 篇，和其他人的页放在一起。` : '还没有发布。'}
+                id="user-posts-title"
+                link={isMe ? '/write' : undefined}
+                linkLabel={isMe ? '写一页' : undefined}
+              />
+              {authored.length > 0 ? (
                 <div className="user-posts__list">
                   {authored.slice(0, 4).map((post) => (
                     <PostRow key={post.slug} post={post} />
                   ))}
                 </div>
-              </section>
-            )}
+              ) : (
+                <div className="user-posts__empty">
+                  <span aria-hidden="true">✳</span>
+                  <p>{isMe ? '你还没有发布过页。' : '这个人还没有发布页。'}</p>
+                  {isMe && (
+                    <Link className="text-link" to="/write">
+                      去写一页 <ArrowUpRight size={13} aria-hidden="true" />
+                    </Link>
+                  )}
+                </div>
+              )}
+            </section>
 
             <section className="user-traces" aria-labelledby="traces-title">
               <SectionHead
@@ -341,6 +357,28 @@ export function UserPage() {
           </div>
 
           <aside className="user-side">
+            {remoteStats && remoteStats.activity.length > 0 && (
+              <div className="user-side__card">
+                <h2>使用记录</h2>
+                <div className="user-records">
+                  {remoteStats.activity.slice(0, 4).map((item) => (
+                    <Link key={`${item.slug}-${item.at}`} to={`/articles/${item.slug}`}>
+                      <span>
+                        <Clock3 size={12} aria-hidden="true" />
+                        {item.kind}
+                      </span>
+                      <strong>{item.title}</strong>
+                      <time dateTime={item.at}>
+                        {new Intl.DateTimeFormat('zh-CN', { month: '2-digit', day: '2-digit' })
+                          .format(new Date(item.at))
+                          .replace('/', '.')}
+                      </time>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            )}
+
             <div className="user-side__card">
               <h2>关于这一页</h2>
               <p>这里只放公开的东西：头像、名字、几句介绍，和留在半日的句子。邮箱不会出现在这里。</p>
@@ -355,6 +393,12 @@ export function UserPage() {
                     {profile.location}
                   </span>
                 )}
+                {remoteStats && (
+                  <span>
+                    <Clock3 size={13} aria-hidden="true" />
+                    {remoteStats.wordCount.toLocaleString('zh-CN')} 字
+                  </span>
+                )}
               </div>
             </div>
 
@@ -367,23 +411,6 @@ export function UserPage() {
                       {place}
                     </Link>
                   ))}
-                </div>
-              </div>
-            )}
-
-            {isMe && saved.length > 0 && (
-              <div className="user-side__card">
-                <h2>收着的几页</h2>
-                <div className="user-side__saved">
-                  {allPosts
-                    .filter((post) => saved.includes(post.slug))
-                    .slice(0, 3)
-                    .map((post) => (
-                      <Link key={post.slug} to={`/articles/${post.slug}`}>
-                        {post.title}
-                        <ArrowUpRight size={12} aria-hidden="true" />
-                      </Link>
-                    ))}
                 </div>
               </div>
             )}

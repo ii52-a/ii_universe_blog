@@ -15,6 +15,7 @@ export interface PublicUser {
   bio: string
   location: string
   website: string
+  github: string
   avatar?: string
   avatarColor: string
   joinedAt: string
@@ -31,6 +32,7 @@ export interface UserRow extends Record<string, unknown> {
   bio: string
   location: string
   website: string
+  github_url: string
   avatar_color: string
   avatar_url: string | null
   created_at: string
@@ -66,6 +68,7 @@ export function publicUser(row: UserRow): PublicUser {
     bio: row.bio,
     location: row.location,
     website: row.website,
+    github: row.github_url ?? '',
     avatar: row.avatar_url ?? undefined,
     avatarColor: row.avatar_color,
     joinedAt: new Date(row.created_at).toISOString(),

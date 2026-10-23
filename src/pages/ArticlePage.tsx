@@ -238,7 +238,9 @@ export function ArticlePage() {
           <div className="article-byline">
             <Avatar name={author.name} color={author.color} src={author.avatar} size="md" />
             <div>
-              <strong>{author.name}</strong>
+              <Link className="article-byline__link" to={`/u/${author.handle}`}>
+                <strong>{author.name}</strong>
+              </Link>
               <span>
                 <i className="online-dot" aria-hidden="true" /> 在{author.location}，慢慢写
               </span>

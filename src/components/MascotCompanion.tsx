@@ -3,27 +3,16 @@ import { useLocation } from 'react-router-dom'
 import { Minus, Sparkles } from 'lucide-react'
 import { readStorage, writeStorage } from '../lib/storage'
 import { useAuth } from '../context/AuthContext'
+import mascot from '../content/mascot.json'
 import { Mascot } from './Mascot'
 
-const idleMessages = [
-  '今天也没干什么大事。',
-  '要不要出去走走？',
-  '桂花味的风，闻到了吗？',
-  '先喝口水吧。',
-  '坐着发呆，也算正事。',
-  '天黑之前，把这一页读完。',
-]
+const idleMessages = mascot.idle
 
 function routeMessage(pathname: string, name?: string) {
-  if (pathname === '/') return `${name ? `${name}，` : ''}回来啦。今天想读哪页？`
-  if (pathname.startsWith('/sunset')) return '今天的日落，看到了吗？'
-  if (pathname.startsWith('/u/')) return '这一页是你呀。'
-  if (pathname.startsWith('/login')) return '我在门口等你。'
-  if (pathname.startsWith('/me')) return '座位已经给你留好了。'
-  if (pathname.startsWith('/about')) return '这里讲的是半日，也讲我。'
-  if (pathname.startsWith('/articles/')) return '这篇我读过两遍。'
-  if (pathname.startsWith('/articles')) return '慢慢翻，不着急。'
-  return '随便逛逛吧。'
+  const route = mascot.routes.find((item) =>
+    'exact' in item && item.exact ? pathname === item.prefix : pathname.startsWith(item.prefix),
+  )
+  return (route?.text ?? mascot.fallback).replace('{name}', name ? `${name}，` : '')
 }
 
 export function MascotCompanion() {
@@ -108,7 +97,7 @@ export function MascotCompanion() {
     setHidden(false)
     writeStorage('mascot-hidden.v1', false)
     setBubble(true)
-    setMessage('我又回来了。')
+    setMessage(mascot.returned)
     window.clearTimeout(bubbleTimer.current)
     bubbleTimer.current = window.setTimeout(() => setBubble(false), 4200)
   }

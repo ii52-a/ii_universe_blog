@@ -26,7 +26,7 @@ npm run dev
 
 ## 表
 
-- `users`：邮箱、用户名、handle、bcrypt 密码、`role`（member / admin）、简介、地点、网站、头像
+- `users`：邮箱、用户名、handle、bcrypt 密码、`role`（member / admin）、简介、地点、GitHub、头像
 - `verification_codes`：注册 / 重置验证码，SHA-256 摘要、10 分钟过期、尝试次数
 - `posts`：标题、摘要、正文、JSON 内容块、分类、标签、封面、状态、审核原因、作者、时间
 
@@ -47,8 +47,8 @@ npm run dev
 | POST | `/api/auth/logout` | JWT | 清 JWT Cookie |
 | POST | `/api/auth/reset-password` | - | 验证码改密码 |
 | GET | `/api/users/me` | JWT | 当前用户资料 |
-| PATCH | `/api/users/me` | JWT | 改用户名、简介、城市、网站、头像 |
-| GET | `/api/users/:handle` | - | 公开用户与文章 |
+| PATCH | `/api/users/me` | JWT | 改用户名、简介、城市、GitHub、头像 |
+| GET | `/api/users/:handle` | - | 公开用户、文章、使用统计 |
 | GET | `/api/posts` | 可选 | `limit` `cursor` `category` `q` `author` `mine` |
 | POST | `/api/posts` | JWT | 普通账号进入 `pending`，ii52A1 直接发布 |
 | GET | `/api/posts/:slug` | 可选 | 公开页；未发布仅作者 / 管理员可见 |
@@ -56,7 +56,7 @@ npm run dev
 | DELETE | `/api/posts/:slug` | JWT | 作者删除 |
 | GET | `/api/review` | 管理员 | 待审核队列 |
 | PATCH | `/api/review/:slug` | 管理员 | `approve` / `reject` |
-| GET | `/api/widgets` | - | 服务端时间、杭州、天气 |
+| GET | `/api/widgets` | - | 服务端时间、杭州、真实天气；取不到为 null |
 
 ## 快速验证
 

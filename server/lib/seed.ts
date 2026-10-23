@@ -46,6 +46,7 @@ interface SeedUser {
   bio: string
   location: string
   website: string
+  github?: string
   color: string
   joinedAt: string
 }
@@ -61,6 +62,7 @@ const seedUsers: SeedUser[] = [
     bio: 'DeepS先生，在杭州写一些不着急的事。',
     location: '杭州',
     website: 'halfday.club',
+    github: 'https://github.com/ii52-a/ii_universe_blog',
     color: '#BFD2FF',
     joinedAt: '2024-11-02T10:00:00+08:00',
   },
@@ -74,6 +76,7 @@ const seedUsers: SeedUser[] = [
     bio: '半日的管理员，负责把门开着。',
     location: '杭州',
     website: '',
+    github: 'https://github.com/ii52-a',
     color: '#FDE68A',
     joinedAt: '2024-11-01T10:00:00+08:00',
   },
@@ -142,6 +145,19 @@ const seedUsers: SeedUser[] = [
     color: '#BBF7D0',
     joinedAt: '2025-09-11T10:00:00+08:00',
   },
+  {
+    id: '00000000-0000-4000-8000-000000000008',
+    email: 'akang@halfday.club',
+    username: '阿宽',
+    handle: 'akang',
+    password: 'halfday',
+    role: 'member',
+    bio: '偶尔留言，常常路过。',
+    location: '杭州',
+    website: '',
+    color: '#BFDBFE',
+    joinedAt: '2025-10-02T10:00:00+08:00',
+  },
 ]
 
 function blocksToMarkdown(blocks: ContentBlock[]) {
@@ -162,8 +178,8 @@ export async function seedDatabase(db: DbClient) {
 
   for (const user of seedUsers) {
     await db.query(
-      `INSERT INTO users (id, email, username, handle, password_hash, role, bio, location, website, avatar_color, created_at, updated_at)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $11)
+      `INSERT INTO users (id, email, username, handle, password_hash, role, bio, location, website, github_url, avatar_color, created_at, updated_at)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $12)
        ON CONFLICT (id) DO UPDATE SET role = EXCLUDED.role`,
       [
         user.id,
@@ -175,6 +191,7 @@ export async function seedDatabase(db: DbClient) {
         user.bio,
         user.location,
         user.website,
+        user.github ?? '',
         user.color,
         user.joinedAt,
       ],

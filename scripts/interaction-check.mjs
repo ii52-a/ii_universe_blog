@@ -98,6 +98,13 @@ await page.locator('.space-post__title').first().click()
 await page.waitForURL(/\/articles\/page-/, { timeout: 10000 })
 assert.equal(await page.locator('.article-byline strong').innerText(), username)
 assert.equal(await page.locator('.article-header h1').innerText(), articleTitle)
+await page.locator('.article-byline__link').click()
+await page.waitForURL(/\/u\//, { timeout: 10000 })
+await page.getByText('使用记录').waitFor({ timeout: 15000 })
+assert.equal((await page.locator('.user-side').innerText()).includes('使用记录'), true)
+assert.equal((await page.locator('.user-side').innerText()).includes('常去的地方'), true)
+await page.goBack()
+await page.waitForURL(/\/articles\/page-/, { timeout: 10000 })
 
 await page.getByRole('link', { name: /编辑/ }).click()
 await page.waitForURL(/\/write\?edit=/, { timeout: 10000 })
@@ -149,6 +156,18 @@ assert.equal(await page.evaluate(() => document.documentElement.dataset.theme), 
 await page.locator('.brand__mark--button').click()
 await page.waitForTimeout(500)
 assert.equal(await page.evaluate(() => document.documentElement.dataset.theme), 'light')
+
+await page.goto(`${base}/articles/ten-minutes-at-the-convenience-store`, { waitUntil: 'networkidle' })
+await page.getByRole('link', { name: '小野' }).first().click()
+await page.waitForURL('**/u/xiaoye', { timeout: 10000 })
+assert.equal((await page.locator('.user-hero').innerText()).includes('小野'), true)
+
+await page.goto(`${base}/`, { waitUntil: 'networkidle' })
+await page.getByRole('link', { name: /GitHub/ }).first().click()
+await page.locator('.external-guard').waitFor()
+assert.equal((await page.locator('.external-guard').innerText()).includes('请保护个人财产和账号安全'), true)
+await page.getByRole('button', { name: '留在半日' }).click()
+assert.equal(await page.locator('.external-guard').count(), 0)
 
 const mobileContext = await browser.newContext({
   viewport: { width: 390, height: 844 },

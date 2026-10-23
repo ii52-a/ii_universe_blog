@@ -19,7 +19,7 @@ export interface User {
   role: 'member' | 'admin'
   bio: string
   location: string
-  website: string
+  github: string
   avatar?: string
   avatarColor: string
   joinedAt: string
@@ -48,20 +48,6 @@ interface AuthContextValue {
 const REMEMBER_KEY = 'remember-email.v1'
 const AuthContext = createContext<AuthContextValue | null>(null)
 
-export const demoUser: User = {
-  id: '00000000-0000-4000-8000-000000000001',
-  name: 'DeepS先生',
-  username: 'DeepS先生',
-  email: 'hello@halfday.club',
-  handle: 'deepseek',
-  role: 'member',
-  bio: 'DeepS先生，在杭州写一些不着急的事。',
-  location: '杭州',
-  website: 'halfday.club',
-  avatarColor: '#BFD2FF',
-  joinedAt: '2024-11-02T10:00:00+08:00',
-}
-
 export function rememberedEmail() {
   return readStorage<string>(REMEMBER_KEY, '')
 }
@@ -76,7 +62,7 @@ function mapUser(apiUser: ApiUser): User {
     role: apiUser.role,
     bio: apiUser.bio,
     location: apiUser.location,
-    website: apiUser.website,
+    github: apiUser.github,
     avatar: apiUser.avatar,
     avatarColor: apiUser.avatarColor,
     joinedAt: apiUser.joinedAt,
@@ -149,7 +135,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         username: patch.username ?? patch.name,
         bio: patch.bio,
         location: patch.location,
-        website: patch.website,
+        github: patch.github,
         avatarColor: patch.avatarColor,
         avatarUrl: patch.avatar === null ? null : patch.avatar,
       })

@@ -84,6 +84,23 @@ for (const theme of themes) {
     })),
   })
 
+  await page.goto(`${base}/me`, { waitUntil: 'networkidle' })
+  await page.waitForTimeout(500)
+  const meResults = await new AxeBuilder({ page })
+    .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
+    .analyze()
+  report.push({
+    theme,
+    path: '/me',
+    violations: meResults.violations.map((violation) => ({
+      id: violation.id,
+      impact: violation.impact,
+      help: violation.help,
+      nodes: violation.nodes.length,
+      targets: violation.nodes.slice(0, 6).map((node) => node.target.join(' ')),
+    })),
+  })
+
   await page.goto(`${base}/review`, { waitUntil: 'networkidle' })
   await page.waitForTimeout(500)
   const reviewResults = await new AxeBuilder({ page })

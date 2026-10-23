@@ -1,0 +1,25 @@
+{
+  "idle": [
+    "今天也没干什么大事。",
+    "要不要出去走走？",
+    "桂花味的风，闻到了吗？",
+    "先喝口水吧。",
+    "坐着发呆，也算正事。",
+    "天黑之前，把这一页读完。"
+  ],
+  "routes": [
+    { "prefix": "/", "exact": true, "text": "{name}回来啦。今天想读哪页？" },
+    { "prefix": "/sunset", "text": "今天的日落，看到了吗？" },
+    { "prefix": "/u/", "text": "这一页是你呀。" },
+    { "prefix": "/login", "text": "我在门口等你。" },
+    { "prefix": "/me", "text": "座位已经给你留好了。" },
+    { "prefix": "/about", "text": "这里讲的是半日，也讲我。" },
+    { "prefix": "/articles/", "text": "这篇我读过两遍。" },
+    { "prefix": "/articles", "text": "慢慢翻，不着急。" },
+    { "prefix": "/space", "text": "你的房间开着灯。" },
+    { "prefix": "/review", "text": "有页在等你看。" },
+    { "prefix": "/universe", "text": "从中心往外走吧。" }
+  ],
+  "fallback": "随便逛逛吧。",
+  "returned": "我又回来了。"
+}

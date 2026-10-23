@@ -4,6 +4,7 @@ import { ThemeProvider } from './context/ThemeContext'
 import { WidgetsProvider } from './context/WidgetsContext'
 import { ToastProvider } from './context/ToastContext'
 import { Layout } from './components/Layout'
+import { ExternalLinkGuard } from './components/ExternalLinkGuard'
 import { HomePage } from './pages/HomePage'
 import { ArticlesPage } from './pages/ArticlesPage'
 import { ArticlePage } from './pages/ArticlePage'
@@ -23,6 +24,7 @@ import { NotFoundPage } from './pages/NotFoundPage'
 export default function App() {
   return (
     <BrowserRouter>
+      <ExternalLinkGuard />
       <ThemeProvider>
         <WidgetsProvider>
           <AuthProvider>

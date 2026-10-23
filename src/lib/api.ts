@@ -8,7 +8,15 @@ const POST_BOOKMARKS_KEY = 'post-bookmarks.v1'
 const SUBSCRIBERS_KEY = 'subscribers.v1'
 
 function allComments(): Comment[] {
-  return readStorage<Comment[]>(COMMENTS_KEY, seedComments)
+  const handles = new Map(
+    seedComments
+      .filter((comment) => comment.authorHandle)
+      .map((comment) => [comment.authorName, comment.authorHandle]),
+  )
+  return readStorage<Comment[]>(COMMENTS_KEY, seedComments).map((comment) => ({
+    ...comment,
+    authorHandle: comment.authorHandle ?? handles.get(comment.authorName),
+  }))
 }
 
 function persist(next: Comment[]) {
@@ -45,6 +53,7 @@ export const commentsApi = {
     postId: string
     authorName: string
     authorId?: string
+    authorHandle?: string
     authorColor: string
     authorAvatar?: string
     body: string
@@ -59,6 +68,7 @@ export const commentsApi = {
       postId: input.postId,
       authorName: input.authorName,
       authorId: input.authorId,
+      authorHandle: input.authorHandle,
       authorColor: input.authorColor,
       authorAvatar: input.authorAvatar,
       body,

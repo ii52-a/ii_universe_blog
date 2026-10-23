@@ -85,12 +85,27 @@ export function ClockWidget() {
 export function WeatherWidget() {
   const { weather, location } = useWidgets()
 
+  if (!weather) {
+    return (
+      <article className="widget weather-widget weather-widget--unavailable" id="weather" aria-label="天气暂不可用">
+        <div className="weather-widget__copy">
+          <div className="widget__head">
+            <span className="weather-widget__label">天气</span>
+            <span className="weather-widget__live">接口未返回</span>
+          </div>
+          <div className="weather-widget__temperature">—</div>
+          <p className="weather-widget__range">稍后再试</p>
+        </div>
+      </article>
+    )
+  }
+
   return (
     <article className={`widget weather-widget weather-widget--${weather.kind}`} id="weather" aria-label={`${location.city}天气，${weather.label}，${weather.temperature} 度`}>
       <div className="weather-widget__copy">
         <div className="widget__head">
           <span className="weather-widget__label">{weather.label}</span>
-          <span className="weather-widget__live">{weather.source === 'open-meteo' ? '实时' : '估算'}</span>
+          <span className="weather-widget__live">实时</span>
         </div>
         <div className="weather-widget__temperature">
           {weather.temperature}
@@ -98,6 +113,11 @@ export function WeatherWidget() {
         </div>
         <p className="weather-widget__range">
           最高 {weather.high}° <span aria-hidden="true">/</span> 最低 {weather.low}°
+          {weather.apparentTemperature !== null && (
+            <>
+              <span aria-hidden="true"> / </span>体感 {weather.apparentTemperature}°
+            </>
+          )}
           {weather.humidity !== null && (
             <>
               <span aria-hidden="true"> / </span>湿度 {weather.humidity}%
@@ -138,7 +158,7 @@ export function PresenceWidget() {
         </span>
         <div>
           <span className="presence-widget__eyebrow">正在听</span>
-          <strong>{weather.kind === 'rain' ? '雨落在遮阳棚上' : '风穿过窗缝'}</strong>
+          <strong>{weather?.kind === 'rain' ? '雨落在遮阳棚上' : '风穿过窗缝'}</strong>
         </div>
         <div className="equalizer" aria-hidden="true">
           <i />
@@ -151,7 +171,7 @@ export function PresenceWidget() {
         <span>
           {location.city} · {location.district}
         </span>
-        <span>{weather.source === 'open-meteo' ? '实时天气' : '本地频道'}</span>
+        <span>{weather ? '实时天气' : '天气未连接'}</span>
       </div>
     </article>
   )

@@ -41,7 +41,13 @@ export function CommentItem({
       <Avatar name={comment.authorName} color={comment.authorColor} src={comment.authorAvatar} size={compact ? 'sm' : 'md'} />
       <div className="comment__body">
         <div className="comment__head">
-          <strong>{comment.authorName}</strong>
+          {comment.authorHandle ? (
+            <Link className="comment__author" to={`/u/${comment.authorHandle}`}>
+              <strong>{comment.authorName}</strong>
+            </Link>
+          ) : (
+            <strong>{comment.authorName}</strong>
+          )}
           {comment.own && <span className="comment__badge">我</span>}
           <time dateTime={comment.createdAt}>{relativeTime(comment.createdAt)}</time>
         </div>
@@ -135,6 +141,7 @@ export function CommentComposer({
         postId,
         authorName: user.name,
         authorId: user.id,
+        authorHandle: user.handle,
         authorColor: user.avatarColor,
         authorAvatar: user.avatar,
         body,
