@@ -2,12 +2,14 @@ import { useDeferredValue, useEffect, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { PenLine, Search, X } from 'lucide-react'
 import { categories, postAuthor } from '../data/posts'
+import site from '../content/site.json'
 import { usePosts } from '../lib/postsStore'
 import { usePageTitle } from '../hooks/usePageTitle'
 import { PostRow } from '../components/PostCard'
 
 export function ArticlesPage() {
   usePageTitle('风吹散的页')
+  const content = site.articles
   const allPosts = usePosts()
   const [params, setParams] = useSearchParams()
   const category = params.get('category') ?? '全部'
@@ -47,19 +49,16 @@ export function ArticlesPage() {
     <div className="page-container articles-page">
       <header className="page-hero">
         <div>
-          <span className="page-hero__note">按时间倒着排，最近的在上面</span>
-          <h1>翻到哪页算哪页。</h1>
-          <p>
-            散步时记下的路线、修过的旧东西、吃过以后才想起来拍照的食物。没有固定的主题，想到什么写什么。现在也收着别人被风吹来的页。
-          </p>
+          <h1>{content.title}</h1>
+          <p>{content.lede}</p>
           <Link className="button button--ink page-hero__write" to="/write">
             <PenLine size={15} aria-hidden="true" />
-            写一页
+            {content.write}
           </Link>
         </div>
         <div className="page-hero__aside" aria-hidden="true">
-          <span className="page-hero__stamp">半日</span>
-          <span className="page-hero__scribble">写字的地方</span>
+          <span className="page-hero__stamp">{content.stamp}</span>
+          <span className="page-hero__scribble">{content.scribble}</span>
         </div>
       </header>
 

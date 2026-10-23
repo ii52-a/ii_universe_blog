@@ -162,7 +162,23 @@ await mobile.locator('#mobile-menu').waitFor()
 assert.equal(await mobile.locator('#mobile-menu').isVisible(), true)
 const menuText = await mobile.locator('#mobile-menu').innerText()
 assert.equal(menuText.includes('日落'), true)
+assert.equal(menuText.includes('宇宙'), true)
 assert.equal(menuText.includes('写一页'), true)
+
+await mobile.goto(`${base}/universe`, { waitUntil: 'networkidle' })
+await mobile.locator('.universe-card').first().waitFor()
+assert.equal(await mobile.locator('.universe-card').count() >= 20, true)
+assert.equal((await mobile.locator('.universe-home').innerText()).includes('BLOG HOME'), true)
+
+await mobile.goto(`${base}/sunset`, { waitUntil: 'networkidle' })
+const sunsetMetaSelect = await mobile.evaluate(
+  () => getComputedStyle(document.querySelector('.sunset-hero__meta')).userSelect,
+)
+const sunsetBodySelect = await mobile.evaluate(
+  () => getComputedStyle(document.querySelector('.release-item__copy p')).userSelect,
+)
+assert.equal(sunsetMetaSelect, 'none')
+assert.notEqual(sunsetBodySelect, 'none')
 
 await browser.close()
 console.log(JSON.stringify({ ok: true, username, email, errors }, null, 2))

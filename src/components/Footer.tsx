@@ -30,6 +30,7 @@ export function Footer() {
           {latest && <Link to={`/articles/${latest.slug}`}>最新一篇</Link>}
           <Link to="/articles?category=散步">散步路线</Link>
           <Link to="/sunset">日落与版本</Link>
+          <Link to="/universe">宇宙导航</Link>
           <Link to="/about">关于半日</Link>
         </div>
 
@@ -63,7 +64,7 @@ export function Footer() {
       <div className="site-footer__word" aria-hidden="true" />
 
       <div className="site-footer__bottom">
-        <span>© 2026 半日 · v1.4.0</span>
+        <span>© 2026 半日 · v1.5.0</span>
         <span>文字采用 CC BY-NC-SA 4.0</span>
         <span>用纸、茶和一点耐心做的</span>
       </div>

@@ -1,50 +1,37 @@
 import { Link } from 'react-router-dom'
 import { MapPin, MoveUpRight } from 'lucide-react'
+import site from '../content/site.json'
 import { usePageTitle } from '../hooks/usePageTitle'
 import { CoverArt } from '../components/CoverArt'
 import { Avatar } from '../components/Avatar'
 
-const nowItems = [
-  { label: '在', value: '杭州，靠近凤凰山' },
-  { label: '做', value: '一本关于街道的小册子' },
-  { label: '读', value: '《路上观察学》，一天两页' },
-  { label: '听', value: '邻居练萨克斯，反复那一句' },
-]
-
-const timeline = [
-  { time: '2024.11', title: '开始写半日', text: '第一篇文章写的是搬家后楼下的面馆。照片拍糊了，但没删。' },
-  { time: '2025.06', title: '改成现在这样', text: '把页面清空，只留下文章和一点没用的东西。' },
-  { time: '2026.10', title: '第 26 次更新', text: '还在写。这里的文章没有变多，只是变慢了一点。' },
-]
-
 export function AboutPage() {
   usePageTitle('关于')
+  const content = site.about
 
   return (
     <div className="page-container about-page">
       <header className="about-hero">
         <div className="about-hero__copy">
-          <span className="page-hero__note">关于半日，也关于我</span>
+          <span className="page-hero__note">{content.note}</span>
           <h1>
-            住在杭州，
+            {content.title[0]}
             <br />
-            <span>写一些不着急的事。</span>
+            <span>{content.title[1]}</span>
           </h1>
-          <p>
-            白天做设计，晚上写字。半日记散步、旧物、食物，也记一些没舍得丢的瞬间。
-          </p>
+          <p>{content.lede}</p>
           <div className="about-hero__actions">
             <Link className="button button--ink" to="/articles">
-              翻翻文章
+              {content.articlesLink}
               <MoveUpRight size={16} aria-hidden="true" />
             </Link>
             <a className="text-link" href="mailto:hello@halfday.club">
-              写封信 <span aria-hidden="true">↗</span>
+              {content.mailLink} <span aria-hidden="true">↗</span>
             </a>
           </div>
           <div className="about-hero__place">
             <MapPin size={14} aria-hidden="true" />
-            杭州 · 北纬 30° · 常住凤凰山脚
+            {content.place}
           </div>
         </div>
 
@@ -52,32 +39,32 @@ export function AboutPage() {
           <div className="about-photo about-photo--one">
             <span className="tape tape--blue" />
             <CoverArt variant="walk" decorative />
-            <span>凤凰山脚，雨后</span>
+            <span>{content.photos[0]}</span>
           </div>
           <div className="about-photo about-photo--two">
             <span className="tape" />
             <CoverArt variant="store" decorative />
-            <span>凌晨的便利店</span>
+            <span>{content.photos[1]}</span>
           </div>
           <div className="about-photo about-photo--three">
             <CoverArt variant="chair" decorative />
-            <span>修好的椅子</span>
+            <span>{content.photos[2]}</span>
           </div>
-          <span className="about-collage__note">三张“下次一定拍好”</span>
+          <span className="about-collage__note">{content.photosNote}</span>
         </div>
       </header>
 
       <section className="about-now" aria-labelledby="now-title">
         <div className="about-now__intro">
-          <span className="about-now__tag">现在</span>
-          <h2 id="now-title">最近的日子</h2>
-          <p>这一栏会随手改，不太准时。</p>
+          <span className="about-now__tag">{content.nowTag}</span>
+          <h2 id="now-title">{content.nowTitle}</h2>
+          <p>{content.nowNote}</p>
           <span className="about-now__doodle" aria-hidden="true">
             ∿
           </span>
         </div>
         <dl className="now-list">
-          {nowItems.map((item) => (
+          {content.nowItems.map((item) => (
             <div className="now-list__row" key={item.label}>
               <dt>{item.label}</dt>
               <dd>{item.value}</dd>
@@ -88,32 +75,29 @@ export function AboutPage() {
 
       <section className="about-story" aria-labelledby="story-title">
         <div className="about-story__title">
-          <h2 id="story-title">为什么叫半日</h2>
+          <h2 id="story-title">{content.storyTitle}</h2>
           <span aria-hidden="true">✳</span>
         </div>
         <div className="about-story__body">
-          <p>
-            以前午休只有一个小时：吃一碗面，绕写字楼走一圈，再在便利店站一会儿。那段时间像一天里唯一属于自己的部分。
-          </p>
-          <p>
-            半日就是那一小块，不安排、不打卡、不赶时间。
-          </p>
+          {content.story.map((paragraph) => (
+            <p key={paragraph}>{paragraph}</p>
+          ))}
           <blockquote>
-            不指望把生活写得多好看，
+            {content.quote[0]}
             <br />
-            只想在忘掉之前，先记下来。
+            {content.quote[1]}
           </blockquote>
-          <p>这里不常更新，慢慢来。</p>
+          <p>{content.storyEnd}</p>
         </div>
       </section>
 
       <section className="about-timeline" aria-labelledby="timeline-title">
         <div className="about-timeline__head">
-          <h2 id="timeline-title">一路写过来</h2>
-          <p>没有发生什么大事，但都还记得。</p>
+          <h2 id="timeline-title">{content.timelineTitle}</h2>
+          <p>{content.timelineNote}</p>
         </div>
         <ol>
-          {timeline.map((item) => (
+          {content.timeline.map((item) => (
             <li key={item.time}>
               <time>{item.time}</time>
               <div>
@@ -127,22 +111,16 @@ export function AboutPage() {
 
       <section className="about-faq" aria-labelledby="faq-title">
         <div>
-          <h2 id="faq-title">有人问过</h2>
-          <p>如果还有别的，可以留言。</p>
+          <h2 id="faq-title">{content.faqTitle}</h2>
+          <p>{content.faqNote}</p>
         </div>
         <div className="faq-list">
-          <details>
-            <summary>可以转载吗？</summary>
-            <p>注明出处、不商用就可以。整篇搬运到别的平台之前，最好先和我说一声。</p>
-          </details>
-          <details>
-            <summary>照片和插图是谁做的？</summary>
-            <p>页面里的插画都是我画的。照片偶尔用相机，偶尔用手机，拍糊了也照用。</p>
-          </details>
-          <details>
-            <summary>会写杭州以外的地方吗？</summary>
-            <p>会。只是目前大部分时间都在杭州，走得最远的路线也不过是从馒头山到凤山门。</p>
-          </details>
+          {content.faqs.map((item) => (
+            <details key={item.q}>
+              <summary>{item.q}</summary>
+              <p>{item.a}</p>
+            </details>
+          ))}
         </div>
       </section>
 
@@ -154,15 +132,15 @@ export function AboutPage() {
           </span>
         </div>
         <div>
-          <h2>有空来坐。</h2>
-          <p>如果想说点什么，留言或者写信都行。</p>
+          <h2>{content.contactTitle}</h2>
+          <p>{content.contactBody}</p>
         </div>
         <div className="about-contact__actions">
           <Link className="button button--ink" to="/#guestbook">
-            去留言簿 <MoveUpRight size={16} aria-hidden="true" />
+            {content.guestbook} <MoveUpRight size={16} aria-hidden="true" />
           </Link>
           <a className="text-link" href="mailto:hello@halfday.club">
-            hello@halfday.club
+            {content.emailText}
           </a>
         </div>
       </section>

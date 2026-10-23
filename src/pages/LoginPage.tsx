@@ -175,7 +175,7 @@ export function LoginPage() {
               <ArrowLeft size={15} aria-hidden="true" />
               回到半日
             </Link>
-            <span>v1.4 · 审核已接通</span>
+            <span>v1.5 · 宇宙导航</span>
           </div>
           <div className="login-art__card">
             <span className="tape" />

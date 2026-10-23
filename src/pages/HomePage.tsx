@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import { ArrowUpRight } from 'lucide-react'
+import site from '../content/site.json'
 import { usePageTitle } from '../hooks/usePageTitle'
 import { useClock } from '../hooks/useClock'
 import { usePosts } from '../lib/postsStore'
@@ -20,6 +21,7 @@ import { GuestbookSection } from '../components/GuestbookSection'
 
 export function HomePage() {
   usePageTitle('')
+  const content = site.home
   const clock = useClock()
   const allPosts = usePosts()
   const latest = allPosts[0]
@@ -35,30 +37,28 @@ export function HomePage() {
               <div className="hero-card__meta">
                 <span className="live-dot" aria-hidden="true" />
                 <span>
-                  {clock.monthLabel} · 杭州
+                  {clock.monthLabel} · {content.location}
                 </span>
-                <span className="hero-card__weather">风从西边来</span>
+                <span className="hero-card__weather">{content.weather}</span>
               </div>
               <h1 id="hero-title">
-                把日子，
+                {content.title[0]}
                 <br />
-                <span className="hero-card__underlined">写成一页。</span>
+                <span className="hero-card__underlined">{content.title[1]}</span>
               </h1>
-              <p className="hero-card__lede">
-                只记散步、旧物、食物，和一些没忘的小事。
-              </p>
+              <p className="hero-card__lede">{content.lede}</p>
               <div className="hero-card__actions">
                 <Link className="button button--ink" to={`/articles/${latest.slug}`}>
-                  读最近一篇
+                  {content.readLatest}
                   <ArrowUpRight size={16} aria-hidden="true" />
                 </Link>
                 <Link className="text-link" to="/about">
-                  半日是谁
+                  {content.aboutLink}
                   <span aria-hidden="true">↗</span>
                 </Link>
               </div>
               <div className="hero-card__latest">
-                <span className="hero-card__latest-label">最近写完</span>
+                <span className="hero-card__latest-label">{content.latestLabel}</span>
                 <Link to={`/articles/${latest.slug}`}>
                   <span>{latest.title}</span>
                   <span>{latest.readMinutes} 分钟</span>
@@ -74,18 +74,18 @@ export function HomePage() {
               <div className="hero-paper hero-paper--front">
                 <span className="tape" />
                 <CoverArt variant="store" decorative />
-                <span className="hero-paper__caption">凌晨一点四十七分</span>
+                <span className="hero-paper__caption">{content.paperCaption}</span>
               </div>
               <span className="hero-sticker">
-                今天也
+                {content.sticker[0]}
                 <br />
-                不赶时间
+                {content.sticker[1]}
               </span>
               <span className="hero-scribble">✳</span>
             </div>
 
             <div className="hero-card__corner" aria-hidden="true">
-              十月
+              {content.corner}
             </div>
           </div>
 
@@ -102,8 +102,8 @@ export function HomePage() {
         <div className="home-columns">
           <section className="recent" aria-labelledby="recent-title">
             <SectionHead
-              title="最近写的"
-              description="按时间排着，慢慢看。"
+              title={content.recentTitle}
+              description={content.recentDescription}
               link="/articles"
               id="recent-title"
             />
@@ -115,8 +115,10 @@ export function HomePage() {
             </div>
             <Link className="all-posts-strip" to="/articles">
               <span>
-                <strong>还有 {allPosts.length - recent.length} 篇旧文</strong>
-                <small>从 2024 年开始，按时间排在那边。</small>
+                <strong>
+                  {content.oldPostsPrefix} {allPosts.length - recent.length} {content.oldPostsSuffix}
+                </strong>
+                <small>{content.oldPostsNote}</small>
               </span>
               <span className="all-posts-strip__arrow">
                 <ArrowUpRight size={19} aria-hidden="true" />

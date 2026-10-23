@@ -16,7 +16,7 @@ export function CalendarWidget() {
   const bad = ['熬夜', '空腹喝咖啡', '刷太久手机'][day % 3]
 
   return (
-    <article className="widget calendar-widget" aria-label="今日日历">
+    <article className="widget calendar-widget" id="calendar" aria-label="今日日历">
       <span className="calendar-widget__tape" aria-hidden="true" />
       <div className="calendar-widget__rings" aria-hidden="true">
         <i />
@@ -54,7 +54,7 @@ export function ClockWidget() {
   const { location } = useWidgets()
 
   return (
-    <article className="widget clock-widget" aria-label={`${location.city}时间 ${clock.hour}:${clock.minute}:${clock.second}`}>
+    <article className="widget clock-widget" id="clock" aria-label={`${location.city}时间 ${clock.hour}:${clock.minute}:${clock.second}`}>
       <div className="widget__head">
         <span className="clock-widget__place">
           <MapPin size={12} aria-hidden="true" />
@@ -86,7 +86,7 @@ export function WeatherWidget() {
   const { weather, location } = useWidgets()
 
   return (
-    <article className={`widget weather-widget weather-widget--${weather.kind}`} aria-label={`${location.city}天气，${weather.label}，${weather.temperature} 度`}>
+    <article className={`widget weather-widget weather-widget--${weather.kind}`} id="weather" aria-label={`${location.city}天气，${weather.label}，${weather.temperature} 度`}>
       <div className="weather-widget__copy">
         <div className="widget__head">
           <span className="weather-widget__label">{weather.label}</span>
@@ -124,7 +124,7 @@ export function PresenceWidget() {
     : presence.people
 
   return (
-    <article className="widget presence-widget" aria-label={`${presence.count} 人正在浏览`}>
+    <article className="widget presence-widget" id="presence" aria-label={`${presence.count} 人正在浏览`}>
       <div className="presence-widget__head">
         <span className="presence-widget__status">
           <i aria-hidden="true" />
@@ -159,7 +159,7 @@ export function PresenceWidget() {
 
 export function QuoteCard() {
   return (
-    <aside className="quote-card" aria-label="十月短句">
+    <aside className="quote-card" id="quote" aria-label="十月短句">
       <svg className="quote-card__branch" viewBox="0 0 150 92" aria-hidden="true">
         <path d="M4 82c32-8 58-25 78-58" fill="none" stroke="#2449E8" strokeWidth="2" strokeLinecap="round" />
         <path d="M42 64c-13-2-20-10-22-21 14 0 22 7 22 21ZM62 47c-3-14 4-24 15-30 5 14-1 25-15 30ZM84 30c-4-12 1-21 11-27 5 13 0 23-11 27Z" fill="#BFD2FF" stroke="#2449E8" strokeWidth="1.5" />
@@ -187,7 +187,7 @@ const shelf = [
 
 export function ShelfCard() {
   return (
-    <aside className="shelf-card" aria-label="床头三本书">
+    <aside className="shelf-card" id="shelf" aria-label="床头三本书">
       <div className="shelf-card__head">
         <h3>床头三本</h3>
         <span>最近翻的</span>
@@ -236,7 +236,7 @@ export function NewsletterCard() {
   }
 
   return (
-    <aside className="newsletter-card" aria-labelledby="newsletter-title">
+    <aside className="newsletter-card" id="newsletter" aria-labelledby="newsletter-title">
       <span className="newsletter-card__icon" aria-hidden="true">
         <Mail size={17} />
       </span>

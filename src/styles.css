@@ -10685,6 +10685,511 @@ main:focus {
   }
 }
 
+.is-unselectable {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* ---------- universe navigation ---------- */
+.universe-page {
+  position: relative;
+  min-height: 100vh;
+  overflow-x: hidden;
+  background:
+    radial-gradient(ellipse at 18% 8%, rgba(36, 73, 232, 0.28), transparent 32%),
+    radial-gradient(ellipse at 82% 36%, rgba(57, 133, 255, 0.16), transparent 35%),
+    radial-gradient(ellipse at 50% 100%, rgba(36, 73, 232, 0.22), transparent 45%),
+    #03050d;
+  color: #eaf2ff;
+  font-family: var(--sans);
+}
+
+.universe-page::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image:
+    radial-gradient(1px 1px at 20% 30%, rgba(255, 255, 255, 0.9), transparent),
+    radial-gradient(1px 1px at 70% 64%, rgba(143, 184, 255, 0.8), transparent),
+    radial-gradient(1.5px 1.5px at 46% 82%, rgba(255, 255, 255, 0.7), transparent);
+  background-size: 290px 290px, 430px 430px, 610px 610px;
+  opacity: 0.65;
+  animation: universeStarDrift 90s linear infinite;
+}
+
+.universe-page::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(3, 5, 13, 0) 0%, rgba(3, 5, 13, 0.7) 100%);
+}
+
+.universe-stars {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.universe-star {
+  position: absolute;
+  border-radius: 50%;
+  background: #dce9ff;
+  box-shadow: 0 0 8px rgba(155, 193, 255, 0.95);
+  animation: universeTwinkle 8s ease-in-out infinite;
+}
+
+.universe-nebula {
+  position: absolute;
+  z-index: 0;
+  pointer-events: none;
+  border-radius: 50%;
+  filter: blur(66px);
+  opacity: 0.55;
+  animation: universeNebula 18s ease-in-out infinite alternate;
+}
+
+.universe-nebula--one {
+  width: 58vw;
+  height: 34vw;
+  left: -18vw;
+  top: 4vh;
+  background: radial-gradient(ellipse, rgba(46, 93, 255, 0.5), rgba(12, 26, 78, 0) 66%);
+}
+
+.universe-nebula--two {
+  width: 52vw;
+  height: 32vw;
+  right: -14vw;
+  top: 44vh;
+  background: radial-gradient(ellipse, rgba(39, 154, 255, 0.32), rgba(6, 18, 53, 0) 68%);
+  animation-delay: -8s;
+}
+
+@keyframes universeStarDrift {
+  to {
+    background-position: 290px 290px, -430px 430px, 610px -610px;
+  }
+}
+
+@keyframes universeTwinkle {
+  0%,
+  100% {
+    opacity: 0.25;
+    transform: scale(0.8);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.15);
+  }
+}
+
+@keyframes universeNebula {
+  to {
+    transform: translate3d(4vw, 3vh, 0) scale(1.08);
+  }
+}
+
+.universe-head,
+.universe-main,
+.universe-foot {
+  position: relative;
+  z-index: 2;
+  width: min(1240px, calc(100% - 64px));
+  margin-inline: auto;
+}
+
+.universe-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 26px 0;
+  border-bottom: 1px solid rgba(146, 183, 255, 0.17);
+}
+
+.universe-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: #edf5ff;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-decoration: none;
+}
+
+.universe-brand__mark {
+  width: 21px;
+  height: 21px;
+  border: 1px solid #cfe0ff;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #eaf2ff 0 48%, #03050d 49% 100%);
+  box-shadow: 0 0 18px rgba(95, 144, 255, 0.7);
+}
+
+.universe-brand em {
+  color: #6f9cff;
+  font-style: normal;
+}
+
+.universe-coord {
+  color: rgba(173, 198, 255, 0.6);
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.16em;
+}
+
+.universe-main {
+  padding: 62px 0 74px;
+}
+
+.universe-top {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 28px;
+}
+
+.universe-kicker {
+  grid-column: 1;
+  color: #6f9cff;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+}
+
+.universe-top h1 {
+  grid-column: 1;
+  margin: 12px 0 0;
+  color: #f3f8ff;
+  font-family: var(--serif);
+  font-size: clamp(46px, 7vw, 92px);
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: -0.08em;
+  text-shadow: 0 0 38px rgba(74, 127, 255, 0.3);
+}
+
+.universe-home {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 4px 24px;
+  align-items: center;
+  min-width: 300px;
+  padding: 15px 17px;
+  border: 1px solid rgba(124, 164, 255, 0.38);
+  border-radius: 6px;
+  background: rgba(9, 22, 60, 0.55);
+  color: #dce9ff;
+  text-decoration: none;
+  backdrop-filter: blur(12px);
+  transition: border-color 180ms var(--ease), background-color 180ms var(--ease);
+}
+
+.universe-home:hover {
+  border-color: #9ec0ff;
+  background: rgba(16, 38, 96, 0.68);
+}
+
+.universe-home span {
+  grid-column: 1;
+  color: #7099ef;
+  font-family: var(--mono);
+  font-size: 8px;
+  letter-spacing: 0.16em;
+}
+
+.universe-home strong {
+  grid-column: 1;
+  overflow: hidden;
+  color: #f0f6ff;
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 400;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.universe-home svg {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  color: #87adff;
+}
+
+.universe-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 44px;
+  margin-top: 58px;
+}
+
+.universe-section {
+  animation: universeIn 600ms var(--ease) both;
+}
+
+.universe-section:nth-child(2) {
+  animation-delay: 90ms;
+}
+
+.universe-section:nth-child(3) {
+  animation-delay: 180ms;
+}
+
+.universe-section:nth-child(4) {
+  animation-delay: 270ms;
+}
+
+@keyframes universeIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+}
+
+.universe-section__head {
+  display: grid;
+  grid-template-columns: 100px minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: 14px;
+  padding-bottom: 11px;
+  border-bottom: 1px solid rgba(136, 173, 255, 0.22);
+}
+
+.universe-section__head > span {
+  color: #6798ff;
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.18em;
+}
+
+.universe-section__head h2 {
+  margin: 0;
+  color: #dce9ff;
+  font-family: var(--serif);
+  font-size: 24px;
+  font-weight: 500;
+  letter-spacing: -0.04em;
+}
+
+.universe-section__head i {
+  color: rgba(157, 190, 255, 0.55);
+  font-family: var(--mono);
+  font-size: 9px;
+  font-style: normal;
+}
+
+.universe-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 9px;
+  margin-top: 12px;
+}
+
+.universe-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 92px;
+  padding: 13px 14px;
+  border: 1px solid rgba(116, 155, 255, 0.18);
+  border-radius: 5px;
+  background:
+    linear-gradient(135deg, rgba(29, 58, 129, 0.33), rgba(6, 15, 43, 0.58));
+  color: #eaf2ff;
+  text-decoration: none;
+  overflow: hidden;
+  transition:
+    border-color 180ms var(--ease),
+    background-color 180ms var(--ease),
+    transform 180ms var(--ease);
+}
+
+.universe-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(120deg, transparent 20%, rgba(133, 176, 255, 0.09), transparent 80%);
+  transform: translateX(-100%);
+  transition: transform 500ms var(--ease);
+}
+
+.universe-card:hover {
+  border-color: rgba(165, 199, 255, 0.68);
+  background-color: rgba(28, 63, 143, 0.35);
+  transform: translateY(-2px);
+}
+
+.universe-card:hover::before {
+  transform: translateX(100%);
+}
+
+.universe-card.is-featured {
+  grid-column: span 2;
+}
+
+.universe-card__meta {
+  color: #6c9af7;
+  font-family: var(--mono);
+  font-size: 8px;
+  letter-spacing: 0.16em;
+}
+
+.universe-card strong {
+  position: relative;
+  z-index: 1;
+  align-self: flex-start;
+  color: #eff6ff;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.universe-card > svg {
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  color: #7ba7ff;
+  opacity: 0.8;
+}
+
+.universe-card.is-soon {
+  border-style: dashed;
+  color: rgba(199, 219, 255, 0.42);
+  background: rgba(8, 18, 45, 0.3);
+  cursor: not-allowed;
+}
+
+.universe-card.is-soon strong {
+  color: rgba(199, 219, 255, 0.42);
+}
+
+.universe-card__soon {
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  color: #537fbf;
+  font-family: var(--mono);
+  font-size: 8px;
+  letter-spacing: 0.12em;
+}
+
+.universe-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 20px 0 28px;
+  border-top: 1px solid rgba(146, 183, 255, 0.17);
+  color: rgba(173, 198, 255, 0.55);
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.13em;
+}
+
+.universe-foot a {
+  color: #9ebfff;
+  text-decoration: none;
+}
+
+.universe-foot a:hover {
+  color: #f0f6ff;
+}
+
+@media (max-width: 980px) {
+  .universe-head,
+  .universe-main,
+  .universe-foot {
+    width: min(100% - 40px, 720px);
+  }
+
+  .universe-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 700px) {
+  .universe-head {
+    padding: 19px 0;
+  }
+
+  .universe-coord {
+    display: none;
+  }
+
+  .universe-main {
+    padding: 40px 0 50px;
+  }
+
+  .universe-top {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .universe-top h1 {
+    font-size: 52px;
+  }
+
+  .universe-home {
+    grid-column: 1;
+    grid-row: auto;
+    min-width: 0;
+  }
+
+  .universe-sections {
+    gap: 32px;
+    margin-top: 40px;
+  }
+
+  .universe-section__head {
+    grid-template-columns: 74px minmax(0, 1fr) auto;
+  }
+
+  .universe-section__head h2 {
+    font-size: 21px;
+  }
+
+  .universe-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .universe-card.is-featured {
+    grid-column: span 2;
+  }
+
+  .universe-card {
+    min-height: 82px;
+  }
+
+  .universe-foot {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 8px;
+    padding-bottom: 22px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .universe-page::before,
+  .universe-star,
+  .universe-nebula,
+  .universe-section {
+    animation: none;
+  }
+
+  .universe-card,
+  .universe-home {
+    transition: none;
+  }
+}
+
 /* ---------- night mode ---------- */
 :root[data-theme='dark'] {
   color-scheme: dark;

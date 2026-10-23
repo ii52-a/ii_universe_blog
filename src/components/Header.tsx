@@ -12,6 +12,7 @@ const navItems = [
   { to: '/articles', label: '风吹散的页', end: false },
   { to: '/sunset', label: '日落', end: false, small: true },
   { to: '/about', label: '关于', end: false },
+  { to: '/universe', label: '宇宙', end: false, small: true },
 ]
 
 export function Header() {
