@@ -12,6 +12,7 @@ const pages = [
   '/forgot',
   '/sunset',
   '/universe',
+  '/github-lab',
   '/u/deepseek',
 ]
 const themes = ['light', 'dark']

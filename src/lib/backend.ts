@@ -133,6 +133,19 @@ export const authApi = {
     }),
 }
 
+export interface GithubRepo {
+  id: number
+  name: string
+  fullName: string
+  owner: string
+  url: string
+  stars: number
+  forks: number
+  language: string | null
+  description: string
+  topics: string[]
+}
+
 export interface UserStats {
   postCount: number
   wordCount: number
@@ -188,6 +201,13 @@ export const reviewApi = {
       method: 'PATCH',
       body: JSON.stringify({ action, note }),
     }),
+}
+
+export const githubApi = {
+  leaderboard: (query = '') =>
+    apiFetch<{ items: GithubRepo[]; query: string; updatedAt: string }>(
+      `/api/github/leaderboard${query ? `?q=${encodeURIComponent(query)}` : ''}`,
+    ),
 }
 
 export const widgetsApi = {

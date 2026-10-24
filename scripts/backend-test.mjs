@@ -160,7 +160,17 @@ try {
   assert.equal(widgets.location.city, '杭州')
   assert.equal(widgets.weather === null || typeof widgets.weather.temperature === 'number', true)
 
-  console.log(JSON.stringify({ ok: true, email, username, checks: 30 }, null, 2))
+  response = await anon.get('/api/github/leaderboard')
+  assert.equal(response.status(), 200)
+  const github = await json(response)
+  assert.equal(github.items.length, 10, 'leaderboard should contain ten repositories')
+  assert.equal(
+    github.items.every((item, index, list) => index === 0 || list[index - 1].stars >= item.stars),
+    true,
+    'leaderboard should be sorted by stars',
+  )
+
+  console.log(JSON.stringify({ ok: true, email, username, checks: 31 }, null, 2))
 } finally {
   await api.dispose()
   await admin.dispose()

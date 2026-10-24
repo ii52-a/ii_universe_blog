@@ -18,7 +18,8 @@
     { "prefix": "/articles", "text": "慢慢翻，不着急。" },
     { "prefix": "/space", "text": "你的房间开着灯。" },
     { "prefix": "/review", "text": "有页在等你看。" },
-    { "prefix": "/universe", "text": "从中心往外走吧。" }
+    { "prefix": "/github-lab", "text": "星标榜，随便看看。" },
+    { "prefix": "/universe", "text": "这里没有中心，随便走。" }
   ],
   "fallback": "随便逛逛吧。",
   "returned": "我又回来了。"

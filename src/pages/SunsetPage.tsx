@@ -4,6 +4,7 @@ import {
   ArrowUpRight,
   ClipboardCheck,
   Feather,
+  Github,
   KeyRound,
   Lock,
   Orbit,
@@ -25,6 +26,7 @@ const icons = {
   sparkles: Sparkles,
   orbit: Orbit,
   archive: Archive,
+  github: Github,
   lock: Lock,
 } as const
 

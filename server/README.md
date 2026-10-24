@@ -57,6 +57,7 @@ npm run dev
 | GET | `/api/review` | 管理员 | 待审核队列 |
 | PATCH | `/api/review/:slug` | 管理员 | `approve` / `reject` |
 | GET | `/api/widgets` | - | 服务端时间、杭州、真实天气；取不到为 null |
+| GET | `/api/github/leaderboard` | - | GitHub 星标前十 / `?q=` 仓库搜索，缓存五分钟 |
 
 ## 快速验证
 

@@ -2,7 +2,7 @@
 
 一个以白色、纸张感和玩具感为基调的个人博客。内容围绕散步、旧物、食物和普通的日常，页面以紧凑的 bento 网格组织，日期、天气、时钟、在线状态、跟屏玩偶小满等小组件填满边角。
 
-当前版本：**v1.9.0**
+当前版本：**v2.0.0**
 
 仓库：**https://github.com/ii52-a/ii_universe_blog**
 
@@ -62,7 +62,7 @@ node scripts/backend-test.mjs  # 后端 API 集成测试（先启动 server）
 ### 首页
 
 - 12 栏 bento 布局：主视觉、窗边座位、日历、时钟、天气、在线状态
-- 时间、地点、天气由 `/api/widgets` 提供（杭州 / 西湖区 / Open-Meteo），失败时回退
+- 时间、地点、天气由 `/api/widgets` 提供（杭州 / 西湖区 / Open-Meteo），取不到时显示不可用
 - 「窗边的座位」：未登录时是空头像占位，登录后显示头像、姓名、收藏数与空间入口
 - 跟屏玩偶「小满」：不再嵌在卡片里，跟随视窗移动；眼睛跟随鼠标，滚动时天线晃动、身体倾斜，点一下跳起来换台词；可随时让它休息
 - 文章推荐、随手短句、床头书单、慢信订阅
@@ -118,20 +118,31 @@ node scripts/backend-test.mjs  # 后端 API 集成测试（先启动 server）
 - 密码 bcrypt 哈希；登录只发 JWT Cookie
 - 统一错误格式、Zod 校验、验证码限流、接口限流
 - 文章 CRUD、作者权限、管理员审核、cursor 分页
-- `/api/widgets` 聚合服务端时间、杭州地点、天气，并做 10 分钟缓存
+- `/api/widgets` 聚合服务端时间、杭州地点、真实天气，并做 10 分钟缓存
+- `/api/github/leaderboard` 代理 GitHub 搜索，星标榜与关键词搜索共用，缓存五分钟
 
 ### 导航
 
-- `/universe`：纯文字分类导航，无背景装饰
+- `/universe`：纯文字分类导航
+- 大标题：手写感花字 `ii universe`
+- 背景三条缓慢移动的线，不做星图或卡片
 - 分类：博客、工具、链接、实验
 - 博客「半日」只是普通链接，没有单独权重
-- 无卡片、图标、搜索、标签和规则线条
+- 分类标题加粗；实验列包含「GitHub 研究所」
 - 顶栏和页脚保留「宇宙」入口
+
+### GitHub 研究所
+
+- `/github-lab`：自动拉取 GitHub 星标前十
+- 支持按关键词或 `owner/repo` 搜索仓库
+- 常用入口：GitHub、Trending、Explore、Status
+- 登录且资料填了 GitHub 时，显示「我的 GitHub」
+- 后端代理 GitHub 搜索并缓存五分钟
 
 ### 日落与版本
 
 - 顶栏小标题「日落」进入 `/sunset`
-- 只保留 v1.9 / v1.8 修改记录和版本索引
+- 只保留 v2.0 / v1.9 修改记录和版本索引
 - 去掉每条修改的小标题，直接记一句话
 - 日期、标签、版本号、印章等元信息不可选中
 - 下一次改版继续追加在这里
@@ -163,6 +174,7 @@ node scripts/backend-test.mjs  # 后端 API 集成测试（先启动 server）
 | `/topics/:topic` | 标签 / 分类话题页 |
 | `/sunset` | 日落与版本更新 |
 | `/universe` | 纯文字分类导航 |
+| `/github-lab` | GitHub 星标榜与仓库搜索 |
 | `/u/:handle` | 公开岛民主页 |
 | `/space` | 登录后的个人空间 |
 | `/review` | 特权账号审核队列 |
@@ -193,7 +205,8 @@ node scripts/backend-test.mjs  # 后端 API 集成测试（先启动 server）
 | GET / PATCH / DELETE | `/api/posts/:slug` | 详情 / 修改 / 删除（作者权限） |
 | GET | `/api/review` | 管理员待审核队列 |
 | PATCH | `/api/review/:slug` | 管理员通过 / 退回 |
-| GET | `/api/widgets` | 时间、地点、天气 |
+| GET | `/api/widgets` | 时间、地点、真实天气 |
+| GET | `/api/github/leaderboard` | GitHub 星标前十 / 仓库搜索 |
 
 数据库表：`users`、`verification_codes`、`posts`。`users.role` 区分普通 / 特权；`posts.status` 为 `draft / pending / published / rejected`。开发环境 `server/.data/halfday` 是 PGlite 数据目录，生产环境设置 `DATABASE_URL` 即可。
 
@@ -213,7 +226,7 @@ node scripts/backend-test.mjs  # 后端 API 集成测试（先启动 server）
 
 浏览器端：
 
-- `src/lib/backend.ts`：`authApi`、`postsApi`、`widgetsApi`，统一 `credentials: include`
+- `src/lib/backend.ts`：`authApi`、`postsApi`、`githubApi`、`widgetsApi`，统一 `credentials: include`
 - `src/context/AuthContext.tsx`：JWT 恢复、登录、注册、资料更新
 - `src/context/WidgetsContext.tsx`：服务端时间偏移、地点、天气
 - `src/lib/postsStore.ts`：列表缓存、发布 / 更新 / 删除后刷新
@@ -252,29 +265,30 @@ node scripts/backend-test.mjs  # 后端 API 集成测试（先启动 server）
 
 ## 截图
 
-- `screenshots/v19-home-light.png`
-- `screenshots/v19-home-dark.png`
-- `screenshots/v19-home-light-full.png`
-- `screenshots/v19-home-mobile.png`
-- `screenshots/v19-universe-light.png`
-- `screenshots/v19-universe-mobile.png`
-- `screenshots/v19-space-light.png`
-- `screenshots/v19-review-light.png`
-- `screenshots/v19-profile-light.png`
-- `screenshots/v19-login-light.png`
-- `screenshots/v19-login-dark.png`
-- `screenshots/v19-login-mobile.png`
-- `screenshots/v19-forgot-light.png`
-- `screenshots/v19-write-light.png`
-- `screenshots/v19-write-mobile.png`
-- `screenshots/v19-articles-light.png`
-- `screenshots/v19-article-light.png`
-- `screenshots/v19-article-dark.png`
-- `screenshots/v19-sunset-light.png`
-- `screenshots/v19-sunset-dark.png`
-- `screenshots/v19-user-light.png`
-- `screenshots/v19-user-dark.png`
-- `screenshots/v19-mobile-menu.png`
-- `screenshots/v19-mobile-admin-menu.png`
+- `screenshots/v20-home-light.png`
+- `screenshots/v20-home-dark.png`
+- `screenshots/v20-home-light-full.png`
+- `screenshots/v20-home-mobile.png`
+- `screenshots/v20-universe-light.png`
+- `screenshots/v20-universe-mobile.png`
+- `screenshots/v20-space-light.png`
+- `screenshots/v20-review-light.png`
+- `screenshots/v20-profile-light.png`
+- `screenshots/v20-login-light.png`
+- `screenshots/v20-login-dark.png`
+- `screenshots/v20-login-mobile.png`
+- `screenshots/v20-forgot-light.png`
+- `screenshots/v20-write-light.png`
+- `screenshots/v20-write-mobile.png`
+- `screenshots/v20-articles-light.png`
+- `screenshots/v20-article-light.png`
+- `screenshots/v20-article-dark.png`
+- `screenshots/v20-sunset-light.png`
+- `screenshots/v20-sunset-dark.png`
+- `screenshots/v20-user-light.png`
+- `screenshots/v20-github-lab.png`
+- `screenshots/v20-user-dark.png`
+- `screenshots/v20-mobile-menu.png`
+- `screenshots/v20-mobile-admin-menu.png`
 - `screenshots/v13-article-dark.png`
 - `screenshots/v13-login-dark.png`

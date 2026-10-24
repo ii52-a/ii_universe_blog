@@ -18,6 +18,7 @@ import { WritePage } from './pages/WritePage'
 import { SpacePage } from './pages/SpacePage'
 import { ReviewPage } from './pages/ReviewPage'
 import { UniversePage } from './pages/UniversePage'
+import { GithubLabPage } from './pages/GithubLabPage'
 import { ForgotPasswordPage } from './pages/ForgotPasswordPage'
 import { NotFoundPage } from './pages/NotFoundPage'
 
@@ -39,6 +40,7 @@ export default function App() {
                   <Route path="/topics/:topic" element={<TopicPage />} />
                   <Route path="/about" element={<AboutPage />} />
                   <Route path="/sunset" element={<SunsetPage />} />
+                  <Route path="/github-lab" element={<GithubLabPage />} />
                   <Route path="/login" element={<LoginPage />} />
                   <Route path="/forgot" element={<ForgotPasswordPage />} />
                   <Route path="/me" element={<ProfilePage />} />

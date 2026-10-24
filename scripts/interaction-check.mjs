@@ -187,9 +187,14 @@ assert.equal(menuText.includes('写一页'), true)
 await mobile.goto(`${base}/universe`, { waitUntil: 'networkidle' })
 await mobile.locator('.plain-nav__group').first().waitFor()
 assert.equal(await mobile.locator('.plain-nav__group').count(), 4)
-assert.equal(await mobile.getByRole('link', { name: '半日' }).count(), 1)
-assert.equal(await mobile.getByRole('link', { name: 'GitHub' }).count(), 1)
+assert.equal(await mobile.getByRole('link', { name: '半日', exact: true }).count(), 1)
+assert.equal(await mobile.getByRole('link', { name: 'GitHub', exact: true }).count(), 1)
 assert.equal(await mobile.locator('.plain-nav__soon').count(), 3)
+
+await mobile.goto(`${base}/github-lab`, { waitUntil: 'networkidle' })
+await mobile.locator('.lab-repo').first().waitFor({ timeout: 20000 })
+assert.equal(await mobile.locator('.lab-repo').count(), 10)
+assert.equal((await mobile.locator('.lab-board').innerText()).includes('星标前十'), true)
 
 await mobile.goto(`${base}/sunset`, { waitUntil: 'networkidle' })
 const sunsetMetaSelect = await mobile.evaluate(

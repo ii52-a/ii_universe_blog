@@ -31,6 +31,7 @@
       "id": "lab",
       "title": "实验",
       "links": [
+        { "label": "GitHub 研究所", "href": "/github-lab" },
         { "label": "星图", "status": "soon" },
         { "label": "电台", "status": "soon" },
         { "label": "旧物仓", "status": "soon" }

@@ -2,40 +2,40 @@
   "eyebrow": "日落 · 版本记录",
   "title": ["太阳先下班，", "我们晚一点。"],
   "intro": "只记改过什么，不开发布会。",
-  "version": "v1.9.0",
+  "version": "v2.0.0",
   "date": "2026 年 10 月 24 日",
   "location": "杭州",
-  "seal": { "version": "1.9", "date": "oct. 2026" },
+  "seal": { "version": "2.0", "date": "oct. 2026" },
   "latest": {
     "note": "本次更新 · 2026.10.24",
-    "version": "v1.9.0",
+    "version": "v2.0.0",
     "date": "2026-10-24",
     "short": "10.24",
     "items": [
       {
         "tag": "导航",
-        "text": "去掉背景、卡片、图标、搜索和标签，只留分类与文字链接。",
+        "text": "大标题改成 ii universe，背景加三条缓慢移动的线。",
         "icon": "orbit",
         "date": "2026-10-24",
         "short": "10.24"
       },
       {
         "tag": "分类",
-        "text": "导航分为博客、工具、链接、实验。",
+        "text": "分类标题加粗，实验新增 GitHub 研究所。",
         "icon": "archive",
         "date": "2026-10-24",
         "short": "10.24"
       },
       {
-        "tag": "博客",
-        "text": "博客只保留一个普通链接。",
-        "icon": "feather",
+        "tag": "GitHub",
+        "text": "新增 /github-lab：星标前十、仓库搜索、常用入口。",
+        "icon": "github",
         "date": "2026-10-24",
         "short": "10.24"
       },
       {
-        "tag": "样式",
-        "text": "去掉规则线条和多余说明，留白排版。",
+        "tag": "接口",
+        "text": "后端代理 GitHub 搜索，结果缓存五分钟。",
         "icon": "sparkles",
         "date": "2026-10-24",
         "short": "10.24"
@@ -44,23 +44,18 @@
   },
   "previous": {
     "note": "更早一点",
-    "version": "v1.8.0",
-    "date": "2026-10-23",
+    "version": "v1.9.0",
+    "date": "2026-10-24",
     "items": [
       {
-        "tag": "主页",
-        "text": "个人主页补齐使用记录、常去和发布文章，数据来自后端。",
-        "icon": "user"
+        "tag": "导航",
+        "text": "去掉背景、卡片、图标、搜索和标签，只留分类与文字链接。",
+        "icon": "orbit"
       },
       {
-        "tag": "资料",
-        "text": "去掉账号和收藏，保留退出登录；个人网站换成 GitHub。",
-        "icon": "archive"
-      },
-      {
-        "tag": "安全",
-        "text": "外部 URL 先弹出无责声明。",
-        "icon": "shield"
+        "tag": "样式",
+        "text": "去掉规则线条和多余说明，留白排版。",
+        "icon": "feather"
       }
     ]
   },
@@ -68,6 +63,7 @@
     "title": "版本索引",
     "note": "从新到旧",
     "items": [
+      { "version": "v2.0.0", "date": "2026-10-24", "short": "10.24" },
       { "version": "v1.9.0", "date": "2026-10-24", "short": "10.24" },
       { "version": "v1.8.0", "date": "2026-10-23", "short": "10.23" },
       { "version": "v1.7.0", "date": "2026-10-23", "short": "10.23" },
@@ -82,7 +78,7 @@
     ]
   },
   "note": {
-    "stamp": "v1.9",
+    "stamp": "v2.0",
     "title": "为什么放在日落",
     "body": "白天忙，日落前后正好翻一翻。",
     "link": "回首页",
