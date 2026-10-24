@@ -146,6 +146,18 @@ export interface GithubRepo {
   topics: string[]
 }
 
+export interface GithubRepoDetail extends GithubRepo {
+  homepage: string
+  updatedAt: string
+  summary: string
+  summaryLang: 'zh' | 'en'
+  readme: {
+    text: string
+    htmlUrl: string
+    truncated: boolean
+  }
+}
+
 export interface UserStats {
   postCount: number
   wordCount: number
@@ -204,9 +216,18 @@ export const reviewApi = {
 }
 
 export const githubApi = {
-  leaderboard: (query = '') =>
-    apiFetch<{ items: GithubRepo[]; query: string; updatedAt: string }>(
-      `/api/github/leaderboard${query ? `?q=${encodeURIComponent(query)}` : ''}`,
+  leaderboard: (query = '', language = '') => {
+    const params = new URLSearchParams()
+    if (query) params.set('q', query)
+    if (language) params.set('language', language)
+    const suffix = params.toString()
+    return apiFetch<{ items: GithubRepo[]; query: string; language: string; updatedAt: string }>(
+      `/api/github/leaderboard${suffix ? `?${suffix}` : ''}`,
+    )
+  },
+  repo: (owner: string, name: string) =>
+    apiFetch<GithubRepoDetail>(
+      `/api/github/repo?owner=${encodeURIComponent(owner)}&repo=${encodeURIComponent(name)}`,
     ),
 }
 

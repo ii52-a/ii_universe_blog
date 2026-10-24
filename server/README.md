@@ -22,6 +22,7 @@ npm run dev
 | `JWT_SECRET` | 本地演示值 | **生产必须替换** |
 | `EXPOSE_DEV_CODE` | `true` | 演示项目把验证码返回给前端；生产接邮件后设为 `false` |
 | `WEATHER_LAT` / `WEATHER_LON` | 杭州 | 天气坐标 |
+| `GITHUB_TOKEN` | 空 | 可选，提高 GitHub 搜索额度 |
 | `WEATHER_CITY` / `WEATHER_DISTRICT` | 杭州 / 西湖区 | 地点显示 |
 
 ## 表
@@ -57,7 +58,8 @@ npm run dev
 | GET | `/api/review` | 管理员 | 待审核队列 |
 | PATCH | `/api/review/:slug` | 管理员 | `approve` / `reject` |
 | GET | `/api/widgets` | - | 服务端时间、杭州、真实天气；取不到为 null |
-| GET | `/api/github/leaderboard` | - | GitHub 星标前十 / `?q=` 仓库搜索，缓存五分钟 |
+| GET | `/api/github/leaderboard` | - | GitHub 星标前十 / `?q=` 搜索 / `?language=`，缓存五分钟 |
+| GET | `/api/github/repo` | - | 仓库详情、中文/英文简介、README 预览 |
 
 ## 快速验证
 
@@ -77,7 +79,7 @@ curl -X POST http://127.0.0.1:3001/api/auth/code \
 node scripts/backend-test.mjs
 ```
 
-测试覆盖验证码注册、JWT 登录、`/me`、文章 CRUD、审核通过 / 退回、管理员直发、重置密码、退出、天气接口。
+测试覆盖验证码注册、JWT 登录、`/me`、文章 CRUD、审核通过 / 退回、管理员直发、重置密码、退出、天气、GitHub 排行与仓库详情。
 
 ## 安全说明
 

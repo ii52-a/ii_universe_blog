@@ -9,9 +9,11 @@ import {
   KeyRound,
   Lock,
   Orbit,
+  Search,
   Server,
   ShieldCheck,
   Sparkles,
+  Star,
   UserRound,
 } from 'lucide-react'
 import content from '../content/sunset.json'
@@ -29,6 +31,8 @@ const icons = {
   archive: Archive,
   github: Github,
   image: ImageIcon,
+  search: Search,
+  star: Star,
   lock: Lock,
 } as const
 

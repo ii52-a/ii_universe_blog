@@ -2,7 +2,7 @@
 
 一个以白色、纸张感和玩具感为基调的个人博客。内容围绕散步、旧物、食物和普通的日常，页面以紧凑的 bento 网格组织，日期、天气、时钟、在线状态、跟屏玩偶小满等小组件填满边角。
 
-当前版本：**v2.1.0**
+当前版本：**v2.2.0**
 
 仓库：**https://github.com/ii52-a/ii_universe_blog**
 
@@ -120,7 +120,8 @@ node scripts/backend-test.mjs  # 后端 API 集成测试（先启动 server）
 - 统一错误格式、Zod 校验、验证码限流、接口限流
 - 文章 CRUD、作者权限、管理员审核、cursor 分页
 - `/api/widgets` 聚合服务端时间、杭州地点、真实天气，并做 10 分钟缓存
-- `/api/github/leaderboard` 代理 GitHub 搜索，星标榜与关键词搜索共用，缓存五分钟
+- `/api/github/leaderboard` 代理 GitHub 搜索，支持语言筛选，缓存五分钟
+- `/api/github/repo` 获取仓库介绍、README 预览和中文/英文简介
 
 ### 导航
 
@@ -135,12 +136,13 @@ node scripts/backend-test.mjs  # 后端 API 集成测试（先启动 server）
 
 ### GitHub 研究所
 
-- `/github-lab`：独立子功能，不套用 blog 的页头、页脚和玩偶
-- 自动拉取 GitHub 星标前十
-- 支持按关键词或 `owner/repo` 搜索仓库
-- 常用入口：GitHub、Trending、Explore、Status
-- 登录且资料填了 GitHub 时，显示「我的 GitHub」
-- 后端代理 GitHub 搜索并缓存五分钟
+- `/github-lab`：独立子功能，版本 `v0.1 alpha`
+- 首页是搜索式布局：标题、仓库搜索、星标前十
+- 语言筛选：全部、JavaScript、TypeScript、Python、Go、Rust、C++
+- 仓库详情在站内打开：`/github-lab/:owner/:repo`
+- 详情页显示中文简介，没有中文时显示英文；带 README 预览和留言
+- 收藏保存在本机，位于排行榜下方
+- 后端代理 GitHub 搜索与仓库详情，缓存五分钟
 
 ### 结构
 
@@ -151,7 +153,7 @@ node scripts/backend-test.mjs  # 后端 API 集成测试（先启动 server）
 ### 日落与版本
 
 - 顶栏小标题「日落」进入 `/sunset`
-- 只保留 v2.1 / v2.0 修改记录和版本索引
+- 只保留 v2.2 / v2.1 修改记录和版本索引
 - 去掉每条修改的小标题，直接记一句话
 - 日期、标签、版本号、印章等元信息不可选中
 - 下一次改版继续追加在这里
@@ -184,6 +186,7 @@ node scripts/backend-test.mjs  # 后端 API 集成测试（先启动 server）
 | `/sunset` | 日落与版本更新 |
 | `/universe` | 纯文字分类导航 |
 | `/github-lab` | GitHub 星标榜与仓库搜索 |
+| `/github-lab/:owner/:repo` | GitHub 仓库站内预览与评论 |
 | `/u/:handle` | 公开岛民主页 |
 | `/space` | 登录后的个人空间 |
 | `/review` | 特权账号审核队列 |
@@ -216,6 +219,7 @@ node scripts/backend-test.mjs  # 后端 API 集成测试（先启动 server）
 | PATCH | `/api/review/:slug` | 管理员通过 / 退回 |
 | GET | `/api/widgets` | 时间、地点、真实天气 |
 | GET | `/api/github/leaderboard` | GitHub 星标前十 / 仓库搜索 |
+| GET | `/api/github/repo` | GitHub 仓库详情、简介与 README |
 
 数据库表：`users`、`verification_codes`、`posts`。`users.role` 区分普通 / 特权；`posts.status` 为 `draft / pending / published / rejected`。开发环境 `server/.data/halfday` 是 PGlite 数据目录，生产环境设置 `DATABASE_URL` 即可。
 
@@ -275,31 +279,32 @@ node scripts/backend-test.mjs  # 后端 API 集成测试（先启动 server）
 
 ## 截图
 
-- `screenshots/v21-home-light.png`
-- `screenshots/v21-home-dark.png`
-- `screenshots/v21-home-light-full.png`
-- `screenshots/v21-home-mobile.png`
-- `screenshots/v21-universe-light.png`
-- `screenshots/v21-universe-mobile.png`
-- `screenshots/v21-space-light.png`
-- `screenshots/v21-review-light.png`
-- `screenshots/v21-profile-light.png`
-- `screenshots/v21-login-light.png`
-- `screenshots/v21-login-dark.png`
-- `screenshots/v21-login-mobile.png`
-- `screenshots/v21-forgot-light.png`
-- `screenshots/v21-write-light.png`
-- `screenshots/v21-write-mobile.png`
-- `screenshots/v21-articles-light.png`
-- `screenshots/v21-article-light.png`
-- `screenshots/v21-article-dark.png`
-- `screenshots/v21-sunset-light.png`
-- `screenshots/v21-sunset-dark.png`
-- `screenshots/v21-user-light.png`
-- `screenshots/v21-github-lab.png`
-- `screenshots/v21-external-guard.png`
-- `screenshots/v21-user-dark.png`
-- `screenshots/v21-mobile-menu.png`
-- `screenshots/v21-mobile-admin-menu.png`
+- `screenshots/v22-home-light.png`
+- `screenshots/v22-home-dark.png`
+- `screenshots/v22-home-light-full.png`
+- `screenshots/v22-home-mobile.png`
+- `screenshots/v22-universe-light.png`
+- `screenshots/v22-universe-mobile.png`
+- `screenshots/v22-space-light.png`
+- `screenshots/v22-review-light.png`
+- `screenshots/v22-profile-light.png`
+- `screenshots/v22-login-light.png`
+- `screenshots/v22-login-dark.png`
+- `screenshots/v22-login-mobile.png`
+- `screenshots/v22-forgot-light.png`
+- `screenshots/v22-write-light.png`
+- `screenshots/v22-write-mobile.png`
+- `screenshots/v22-articles-light.png`
+- `screenshots/v22-article-light.png`
+- `screenshots/v22-article-dark.png`
+- `screenshots/v22-sunset-light.png`
+- `screenshots/v22-sunset-dark.png`
+- `screenshots/v22-user-light.png`
+- `screenshots/v22-github-lab.png`
+- `screenshots/v22-github-repo.png`
+- `screenshots/v22-external-guard.png`
+- `screenshots/v22-user-dark.png`
+- `screenshots/v22-mobile-menu.png`
+- `screenshots/v22-mobile-admin-menu.png`
 - `screenshots/v13-article-dark.png`
 - `screenshots/v13-login-dark.png`

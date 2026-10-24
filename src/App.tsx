@@ -19,6 +19,7 @@ import { SpacePage } from './pages/SpacePage'
 import { ReviewPage } from './pages/ReviewPage'
 import { UniversePage } from './pages/UniversePage'
 import { GithubLabPage } from './pages/GithubLabPage'
+import { GithubRepoPage } from './pages/GithubRepoPage'
 import { ForgotPasswordPage } from './pages/ForgotPasswordPage'
 import { NotFoundPage } from './pages/NotFoundPage'
 
@@ -33,6 +34,7 @@ export default function App() {
               <Routes>
                 <Route path="/universe" element={<UniversePage />} />
                 <Route path="/github-lab" element={<GithubLabPage />} />
+                <Route path="/github-lab/:owner/:repo" element={<GithubRepoPage />} />
                 <Route element={<Layout />}>
                   <Route path="/" element={<HomePage />} />
                   <Route path="/articles" element={<ArticlesPage />} />

@@ -170,7 +170,20 @@ try {
     'leaderboard should be sorted by stars',
   )
 
-  console.log(JSON.stringify({ ok: true, email, username, checks: 31 }, null, 2))
+  response = await anon.get('/api/github/leaderboard?language=Python')
+  assert.equal(response.status(), 200)
+  const python = await json(response)
+  assert.equal(python.items.length, 10)
+  assert.equal(python.items.every((item) => item.language === 'Python'), true)
+
+  response = await anon.get('/api/github/repo?owner=codecrafters-io&repo=build-your-own-x')
+  assert.equal(response.status(), 200)
+  const repoDetail = await json(response)
+  assert.equal(repoDetail.fullName, 'codecrafters-io/build-your-own-x')
+  assert.equal(repoDetail.summary.length > 10, true)
+  assert.equal(repoDetail.readme.text.length > 100, true)
+
+  console.log(JSON.stringify({ ok: true, email, username, checks: 33 }, null, 2))
 } finally {
   await api.dispose()
   await admin.dispose()

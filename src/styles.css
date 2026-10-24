@@ -11061,14 +11061,20 @@ main:focus {
 
 /* ---------- github lab ---------- */
 .lab-page {
-  padding: 42px 0 110px;
+  min-height: 100vh;
+  padding: 42px 0 100px;
+  background: var(--canvas);
+}
+
+.lab-page .page-container {
+  max-width: 980px;
 }
 
 .lab-top {
   display: flex;
   align-items: baseline;
   gap: 14px;
-  margin-bottom: 58px;
+  margin-bottom: 42px;
 }
 
 .lab-top a {
@@ -11080,54 +11086,50 @@ main:focus {
   text-decoration: none;
 }
 
-.lab-top span {
+.lab-top span,
+.lab-top a + a {
   color: var(--muted-light);
+  font-family: var(--sans);
   font-size: 10px;
+  font-style: normal;
+  letter-spacing: 0;
 }
 
-.lab-head {
+.lab-hero {
+  padding-top: 7vh;
+  text-align: center;
+}
+
+.lab-hero h1 {
   display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 24px;
-}
-
-.lab-head h1 {
+  align-items: baseline;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px;
   margin: 0;
   font-family: var(--serif);
-  font-size: clamp(38px, 5vw, 58px);
+  font-size: clamp(40px, 6vw, 64px);
   font-weight: 600;
-  letter-spacing: -0.06em;
+  letter-spacing: -0.065em;
   line-height: 1;
 }
 
-.lab-refresh {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  border: 0;
-  background: none;
+.lab-version {
+  padding: 4px 8px;
+  border: 1px solid var(--line-dark);
+  border-radius: 999px;
   color: var(--muted);
-  font-size: 11px;
-  cursor: pointer;
-}
-
-.lab-refresh:hover {
-  color: var(--ink);
-}
-
-.lab-refresh:disabled {
-  opacity: 0.5;
+  font-family: var(--mono);
+  font-size: 9px;
+  font-weight: 400;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
 }
 
 .lab-search {
   display: flex;
   align-items: center;
   gap: 10px;
-  max-width: 760px;
-  margin: 38px 0 56px;
-  padding-bottom: 10px;
-  border-bottom: 1px solid var(--line-dark);
   color: var(--muted);
 }
 
@@ -11136,28 +11138,81 @@ main:focus {
   flex: 1;
   border: 0;
   outline: 0;
-  background: none;
+  background: transparent;
   color: var(--ink);
   font-family: var(--sans);
-  font-size: 15px;
+  font-size: 14px;
+  appearance: none;
 }
 
 .lab-search input::placeholder {
   color: var(--muted-light);
 }
 
+.lab-search--hero {
+  max-width: 640px;
+  margin: 32px auto 0;
+  padding: 8px 10px 8px 18px;
+  border: 1px solid var(--line-dark);
+  border-radius: 999px;
+  background: var(--paper);
+  box-shadow: var(--shadow-sm);
+}
+
+.lab-search--hero input {
+  padding: 8px 0;
+  font-size: 14px;
+}
+
 .lab-search__submit {
   border: 0;
-  background: none;
-  color: var(--ink);
+  border-radius: 999px;
+  background: var(--ink);
+  color: var(--canvas);
+  padding: 8px 14px;
   font-size: 11px;
   cursor: pointer;
 }
 
-.lab-body {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 210px;
-  gap: 64px;
+.lab-search__submit:disabled {
+  opacity: 0.5;
+}
+
+.lab-langs {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  margin-top: 18px;
+}
+
+.lab-langs button {
+  padding: 3px 0;
+  border: 0;
+  border-bottom: 1px solid transparent;
+  background: none;
+  color: var(--muted);
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.lab-langs button:hover {
+  color: var(--ink);
+}
+
+.lab-langs button.is-active {
+  border-bottom-color: var(--ink);
+  color: var(--ink);
+}
+
+.lab-board,
+.lab-favorites {
+  max-width: 860px;
+  margin: 54px auto 0;
+}
+
+.lab-favorites {
+  margin-top: 48px;
 }
 
 .lab-board__head {
@@ -11165,7 +11220,7 @@ main:focus {
   align-items: baseline;
   justify-content: space-between;
   gap: 16px;
-  margin-bottom: 18px;
+  margin-bottom: 14px;
 }
 
 .lab-board__head h2 {
@@ -11187,16 +11242,11 @@ main:focus {
 
 .lab-repo {
   display: grid;
-  grid-template-columns: 32px minmax(0, 1fr) auto;
+  grid-template-columns: 30px minmax(0, 1fr) auto;
   gap: 10px;
   align-items: center;
   padding: 12px 0;
   color: var(--ink);
-  text-decoration: none;
-}
-
-.lab-repo:hover .lab-repo__main strong {
-  color: var(--blue);
 }
 
 .lab-repo__rank {
@@ -11210,6 +11260,8 @@ main:focus {
   min-width: 0;
   flex-direction: column;
   gap: 3px;
+  color: var(--ink);
+  text-decoration: none;
 }
 
 .lab-repo__main strong {
@@ -11228,10 +11280,14 @@ main:focus {
   white-space: nowrap;
 }
 
+.lab-repo:hover .lab-repo__main strong {
+  color: var(--blue);
+}
+
 .lab-repo__meta {
   display: flex;
   align-items: center;
-  gap: 9px;
+  gap: 8px;
   color: var(--muted);
   font-size: 9.5px;
   white-space: nowrap;
@@ -11242,48 +11298,30 @@ main:focus {
   font-style: normal;
 }
 
-.lab-repo__meta svg {
+.lab-star {
+  display: grid;
+  place-items: center;
+  width: 25px;
+  height: 25px;
+  border: 0;
+  border-radius: 50%;
+  background: none;
   color: var(--muted-light);
+  cursor: pointer;
 }
 
-.lab-side h2 {
-  margin-bottom: 10px;
-  font-size: 11px;
-  font-weight: 700;
-}
-
-.lab-side h2:not(:first-child) {
-  margin-top: 30px;
-}
-
-.lab-side nav {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.lab-side nav a {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  color: var(--ink-soft);
-  font-size: 12px;
-  text-decoration: none;
-}
-
-.lab-side nav a:hover {
+.lab-star:hover {
   color: var(--ink);
 }
 
-.lab-back {
-  margin-top: 30px;
-  border: 0;
-  background: none;
-  color: var(--muted);
+.lab-star.is-favorite {
+  color: var(--butter-deep, #c49a26);
+}
+
+.lab-favorites__empty {
+  padding: 22px 0;
+  color: var(--muted-light);
   font-size: 11px;
-  text-decoration: underline;
-  text-underline-offset: 3px;
-  cursor: pointer;
 }
 
 .lab-empty {
@@ -11322,54 +11360,250 @@ main:focus {
   }
 }
 
-@media (max-width: 900px) {
-  .lab-body {
-    grid-template-columns: 1fr;
-    gap: 44px;
-  }
-
-  .lab-side {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px 32px;
-  }
-
-  .lab-side h2,
-  .lab-side h2:not(:first-child) {
-    width: 100%;
-    margin: 0;
-  }
-
-  .lab-side nav {
-    flex-direction: row;
-    flex-wrap: wrap;
-    gap: 8px 20px;
-  }
-
-  .lab-back {
-    margin-top: 4px;
-  }
+.lab-foot {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 12px 22px;
+  margin-top: 52px;
 }
 
-@media (max-width: 600px) {
-  .lab-page {
-    padding: 48px 0 80px;
+.lab-foot a {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  color: var(--muted-light);
+  font-size: 10px;
+  text-decoration: none;
+}
+
+.lab-foot a:hover {
+  color: var(--ink);
+}
+
+/* ---------- github repo detail ---------- */
+.repo-page {
+  min-height: 100vh;
+  padding: 42px 0 100px;
+  background: var(--canvas);
+}
+
+.repo-page .page-container {
+  max-width: 820px;
+}
+
+.repo-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 16px;
+  color: var(--muted);
+  font-size: 10px;
+  text-decoration: none;
+}
+
+.repo-back:hover {
+  color: var(--ink);
+}
+
+.repo-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 22px;
+  margin-top: 22px;
+}
+
+.repo-owner {
+  color: var(--muted-light);
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.06em;
+}
+
+.repo-head h1 {
+  margin-top: 4px;
+  font-family: var(--serif);
+  font-size: clamp(38px, 5vw, 58px);
+  font-weight: 600;
+  letter-spacing: -0.06em;
+  line-height: 1;
+}
+
+.repo-favorite {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  border: 1px solid var(--line-dark);
+  border-radius: 999px;
+  background: var(--paper);
+  color: var(--muted);
+  padding: 8px 13px;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.repo-favorite.is-favorite {
+  border-color: var(--ink);
+  color: var(--ink);
+}
+
+.repo-intro {
+  margin-top: 38px;
+  padding-top: 18px;
+  border-top: 1px solid var(--line);
+}
+
+.repo-section-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.repo-section-head h2 {
+  font-family: var(--serif);
+  font-size: 23px;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+}
+
+.repo-section-head span {
+  color: var(--muted-light);
+  font-family: var(--mono);
+  font-size: 8px;
+}
+
+.repo-intro > p {
+  max-width: 700px;
+  margin-top: 10px;
+  color: var(--ink-soft);
+  font-size: 13px;
+  line-height: 1.95;
+}
+
+.repo-intro__note {
+  color: var(--muted-light) !important;
+  font-size: 10px !important;
+}
+
+.repo-meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 7px 16px;
+  margin-top: 20px;
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.repo-meta a {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  margin-left: auto;
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.repo-meta a:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.repo-readme {
+  margin-top: 44px;
+  padding-top: 18px;
+  border-top: 1px solid var(--line);
+}
+
+.repo-readme__text {
+  margin-top: 12px;
+}
+
+.repo-readme__text p {
+  max-width: 720px;
+  margin-bottom: 13px;
+  color: var(--ink-soft);
+  font-size: 12.5px;
+  line-height: 1.95;
+  white-space: pre-wrap;
+}
+
+.repo-readme__empty {
+  margin-top: 12px;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.repo-comments {
+  margin-top: 56px;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+}
+
+.repo-empty {
+  padding: 80px 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.repo-empty .text-link {
+  margin-top: 12px;
+}
+
+@media (max-width: 700px) {
+  .lab-page,
+  .repo-page {
+    padding: 26px 0 64px;
   }
 
-  .lab-search {
-    margin: 28px 0 40px;
+  .lab-hero {
+    padding-top: 8vh;
+  }
+
+  .lab-search--hero {
+    margin-top: 24px;
+  }
+
+  .lab-board,
+  .lab-favorites {
+    margin-top: 40px;
   }
 
   .lab-repo {
-    grid-template-columns: 24px minmax(0, 1fr);
+    grid-template-columns: 22px minmax(0, 1fr);
   }
 
   .lab-repo__meta {
     grid-column: 2;
     justify-content: flex-start;
   }
+
+  .lab-top {
+    margin-bottom: 24px;
+  }
+
+  .repo-head {
+    align-items: flex-start;
+  }
+
+  .repo-head h1 {
+    font-size: 36px;
+  }
+
+  .repo-favorite {
+    margin-top: 12px;
+  }
+
+  .repo-meta a {
+    width: 100%;
+    margin-left: 0;
+  }
 }
 
+/* ---------- night mode ---------- */
 /* ---------- night mode ---------- */
 /* ---------- night mode ---------- */
 :root[data-theme='dark'] {

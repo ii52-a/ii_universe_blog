@@ -1,9 +1,20 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
-import { ArrowUpRight, RefreshCw, Search } from 'lucide-react'
+import { ArrowUpRight, Search, Star } from 'lucide-react'
 import { githubApi, type GithubRepo } from '../lib/backend'
-import { useAuth } from '../context/AuthContext'
+import { readGithubFavorites, toggleGithubFavorite } from '../lib/githubFavorites'
 import { usePageTitle } from '../hooks/usePageTitle'
+import { useToast } from '../context/ToastContext'
+
+const languages = [
+  { label: '全部', value: '' },
+  { label: 'JavaScript', value: 'JavaScript' },
+  { label: 'TypeScript', value: 'TypeScript' },
+  { label: 'Python', value: 'Python' },
+  { label: 'Go', value: 'Go' },
+  { label: 'Rust', value: 'Rust' },
+  { label: 'C++', value: 'C++' },
+]
 
 function formatStars(value: number) {
   if (value >= 10000) return `${(value / 10000).toFixed(1)} 万`
@@ -18,24 +29,63 @@ function formatTime(value: string) {
   }).format(new Date(value))
 }
 
+function RepoRow({
+  repo,
+  index,
+  favorite,
+  onFavorite,
+}: {
+  repo: GithubRepo
+  index: number
+  favorite: boolean
+  onFavorite: (repo: GithubRepo) => void
+}) {
+  return (
+    <div className="lab-repo">
+      <span className="lab-repo__rank">{String(index + 1).padStart(2, '0')}</span>
+      <Link className="lab-repo__main" to={`/github-lab/${repo.owner}/${repo.name}`}>
+        <strong>{repo.fullName}</strong>
+        {repo.description && <span>{repo.description}</span>}
+      </Link>
+      <span className="lab-repo__meta">
+        {repo.language && <em>{repo.language}</em>}
+        <span>★ {formatStars(repo.stars)}</span>
+        <button
+          type="button"
+          className={`lab-star${favorite ? ' is-favorite' : ''}`}
+          onClick={() => onFavorite(repo)}
+          aria-label={favorite ? `取消收藏 ${repo.fullName}` : `收藏 ${repo.fullName}`}
+          aria-pressed={favorite}
+        >
+          <Star size={13} fill={favorite ? 'currentColor' : 'none'} aria-hidden="true" />
+        </button>
+      </span>
+    </div>
+  )
+}
+
 export function GithubLabPage() {
   usePageTitle('GitHub 研究所')
-  const { user } = useAuth()
+  const { showToast } = useToast()
   const [repos, setRepos] = useState<GithubRepo[]>([])
+  const [favorites, setFavorites] = useState<GithubRepo[]>(() => readGithubFavorites())
   const [query, setQuery] = useState('')
+  const [language, setLanguage] = useState('')
   const [activeQuery, setActiveQuery] = useState('')
+  const [activeLanguage, setActiveLanguage] = useState('')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [updatedAt, setUpdatedAt] = useState('')
 
-  const load = async (keyword = activeQuery) => {
+  const load = async (keyword = '', lang = '') => {
     setLoading(true)
     setError('')
     try {
-      const data = await githubApi.leaderboard(keyword)
+      const data = await githubApi.leaderboard(keyword, lang)
       setRepos(data.items)
       setUpdatedAt(data.updatedAt)
       setActiveQuery(keyword)
+      setActiveLanguage(lang)
     } catch (caught) {
       const message = caught instanceof Error ? caught.message : 'GitHub 暂时没有响应。'
       setError(message)
@@ -45,146 +95,148 @@ export function GithubLabPage() {
   }
 
   useEffect(() => {
-    void load('')
-    // The leaderboard is fetched once on mount; refresh and search are explicit.
+    void load()
+    // The leaderboard is fetched once on mount; search and filters are explicit.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const submit = (event: FormEvent) => {
     event.preventDefault()
-    void load(query.trim())
+    void load(query.trim(), language)
   }
 
-  const github = user?.github
-    ? /^https?:\/\//.test(user.github)
-      ? user.github
-      : `https://${user.github}`
-    : ''
+  const chooseLanguage = (value: string) => {
+    setQuery('')
+    setLanguage(value)
+    void load('', value)
+  }
+
+  const favorite = (repo: GithubRepo) => {
+    const added = toggleGithubFavorite(repo)
+    setFavorites(readGithubFavorites())
+    showToast(added ? '已放进收藏。' : '已从收藏里移除。', 'info')
+  }
+
+  const heading = activeQuery
+    ? `“${activeQuery}” 的结果`
+    : activeLanguage
+      ? `${activeLanguage} 星标前十`
+      : '星标前十'
 
   return (
-    <div className="lab-page">
+    <div className="lab-page lab-home">
       <div className="page-container">
         <header className="lab-top">
           <Link to="/universe">ii universe</Link>
           <span>GitHub 研究所</span>
         </header>
 
-        <header className="lab-head">
-          <div>
-            <h1>GitHub 研究所</h1>
-          </div>
-          <button className="lab-refresh" type="button" onClick={() => void load(activeQuery)} disabled={loading}>
-            <RefreshCw size={14} aria-hidden="true" />
-            刷新
-          </button>
-        </header>
+        <section className="lab-hero">
+          <h1>
+            GitHub 研究所
+            <span className="lab-version">v0.1 alpha</span>
+          </h1>
 
-        <form className="lab-search" onSubmit={submit} role="search">
-          <Search size={17} aria-hidden="true" />
-          <input
-            type="search"
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-            placeholder="搜仓库、owner/repo 或关键词"
-            aria-label="搜索 GitHub 仓库"
-          />
-          <button type="submit" className="lab-search__submit" disabled={loading}>
-            搜仓库
-          </button>
-        </form>
+          <form className="lab-search lab-search--hero" onSubmit={submit} role="search">
+            <Search size={18} aria-hidden="true" />
+            <input
+              type="search"
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder="搜仓库、owner/repo 或关键词"
+              aria-label="搜索 GitHub 仓库"
+            />
+            <button type="submit" className="lab-search__submit" disabled={loading}>
+              搜仓库
+            </button>
+          </form>
 
-        <div className="lab-body">
-          <section className="lab-board" aria-labelledby="lab-board-title">
-            <div className="lab-board__head">
-              <h2 id="lab-board-title">{activeQuery ? `“${activeQuery}” 的结果` : '星标前十'}</h2>
-              <span>
-                {loading ? '读取中…' : updatedAt ? `${formatTime(updatedAt)} 更新` : ''}
-              </span>
-            </div>
-
-            {error ? (
-              <div className="lab-empty">
-                <p>{error}</p>
-                <button type="button" className="text-button" onClick={() => void load(activeQuery)}>
-                  再试一次
-                </button>
-              </div>
-            ) : loading && repos.length === 0 ? (
-              <div className="lab-loading" role="status" aria-label="正在读取 GitHub">
-                {Array.from({ length: 6 }, (_, index) => (
-                  <span key={index} />
-                ))}
-              </div>
-            ) : repos.length === 0 ? (
-              <div className="lab-empty">
-                <p>没有找到仓库。</p>
-                {activeQuery && (
-                  <button type="button" className="text-button" onClick={() => void load('')}>
-                    回到星标前十
-                  </button>
-                )}
-              </div>
-            ) : (
-              <div className="lab-repos">
-                {repos.map((repo, index) => (
-                  <a
-                    className="lab-repo"
-                    key={repo.id}
-                    href={repo.url}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    <span className="lab-repo__rank">{String(index + 1).padStart(2, '0')}</span>
-                    <span className="lab-repo__main">
-                      <strong>{repo.fullName}</strong>
-                      {repo.description && <span>{repo.description}</span>}
-                    </span>
-                    <span className="lab-repo__meta">
-                      {repo.language && <em>{repo.language}</em>}
-                      <span>★ {formatStars(repo.stars)}</span>
-                      <ArrowUpRight size={12} aria-hidden="true" />
-                    </span>
-                  </a>
-                ))}
-              </div>
-            )}
-          </section>
-
-          <aside className="lab-side">
-            <h2>常用</h2>
-            <nav aria-label="GitHub 常用入口">
-              <a href="https://github.com" target="_blank" rel="noreferrer">
-                GitHub <ArrowUpRight size={11} aria-hidden="true" />
-              </a>
-              <a href="https://github.com/trending" target="_blank" rel="noreferrer">
-                Trending <ArrowUpRight size={11} aria-hidden="true" />
-              </a>
-              <a href="https://github.com/explore" target="_blank" rel="noreferrer">
-                Explore <ArrowUpRight size={11} aria-hidden="true" />
-              </a>
-              <a href="https://www.githubstatus.com" target="_blank" rel="noreferrer">
-                Status <ArrowUpRight size={11} aria-hidden="true" />
-              </a>
-            </nav>
-
-            {github && (
-              <>
-                <h2>我的</h2>
-                <nav aria-label="我的 GitHub">
-                  <a href={github} target="_blank" rel="noreferrer">
-                    我的 GitHub <ArrowUpRight size={11} aria-hidden="true" />
-                  </a>
-                </nav>
-              </>
-            )}
-
-            {activeQuery && (
-              <button type="button" className="lab-back" onClick={() => void load('')}>
-                回到星标前十
+          <div className="lab-langs" aria-label="按语言筛选">
+            {languages.map((item) => (
+              <button
+                key={item.value || 'all'}
+                type="button"
+                className={language === item.value ? 'is-active' : ''}
+                onClick={() => chooseLanguage(item.value)}
+                aria-pressed={language === item.value}
+              >
+                {item.label}
               </button>
-            )}
-          </aside>
-        </div>
+            ))}
+          </div>
+        </section>
+
+        <section className="lab-board" aria-labelledby="lab-board-title">
+          <div className="lab-board__head">
+            <h2 id="lab-board-title">{heading}</h2>
+            <span>{loading ? '读取中…' : updatedAt ? `${formatTime(updatedAt)} 更新` : ''}</span>
+          </div>
+
+          {error ? (
+            <div className="lab-empty">
+              <p>{error}</p>
+              <button type="button" className="text-button" onClick={() => void load(activeQuery, activeLanguage)}>
+                再试一次
+              </button>
+            </div>
+          ) : loading && repos.length === 0 ? (
+            <div className="lab-loading" role="status" aria-label="正在读取 GitHub">
+              {Array.from({ length: 6 }, (_, index) => (
+                <span key={index} />
+              ))}
+            </div>
+          ) : repos.length === 0 ? (
+            <div className="lab-empty">
+              <p>没有找到仓库。</p>
+            </div>
+          ) : (
+            <div className="lab-repos">
+              {repos.map((repo, index) => (
+                <RepoRow
+                  key={repo.id}
+                  repo={repo}
+                  index={index}
+                  favorite={favorites.some((item) => item.fullName === repo.fullName)}
+                  onFavorite={favorite}
+                />
+              ))}
+            </div>
+          )}
+        </section>
+
+        <section className="lab-favorites" aria-labelledby="lab-favorites-title">
+          <div className="lab-board__head">
+            <h2 id="lab-favorites-title">收藏</h2>
+            <span>{favorites.length} 个仓库</span>
+          </div>
+          {favorites.length > 0 ? (
+            <div className="lab-repos">
+              {favorites.map((repo, index) => (
+                <RepoRow
+                  key={repo.id}
+                  repo={repo}
+                  index={index}
+                  favorite
+                  onFavorite={favorite}
+                />
+              ))}
+            </div>
+          ) : (
+            <p className="lab-favorites__empty">点仓库旁边的星，会留在这里。</p>
+          )}
+        </section>
+
+        <footer className="lab-foot">
+          <a href="https://github.com" target="_blank" rel="noreferrer">
+            GitHub <ArrowUpRight size={11} aria-hidden="true" />
+          </a>
+          <a href="https://github.com/trending" target="_blank" rel="noreferrer">
+            Trending <ArrowUpRight size={11} aria-hidden="true" />
+          </a>
+          <a href="https://github.com/explore" target="_blank" rel="noreferrer">
+            Explore <ArrowUpRight size={11} aria-hidden="true" />
+          </a>
+        </footer>
       </div>
     </div>
   )

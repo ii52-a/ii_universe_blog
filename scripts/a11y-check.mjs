@@ -13,6 +13,7 @@ const pages = [
   '/sunset',
   '/universe',
   '/github-lab',
+  '/github-lab/codecrafters-io/build-your-own-x',
   '/u/deepseek',
 ]
 const themes = ['light', 'dark']
