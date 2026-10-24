@@ -52,8 +52,13 @@ export function ExternalLinkGuard() {
 
   return (
     <div className="external-guard" role="presentation" onMouseDown={() => setOpen(false)}>
+      <div className="external-guard__orbit" aria-hidden="true">
+        <span />
+        <span />
+        <span />
+      </div>
       <div
-        className="external-guard__card"
+        className="external-guard__content"
         role="dialog"
         aria-modal="true"
         aria-labelledby="external-guard-title"
@@ -61,16 +66,20 @@ export function ExternalLinkGuard() {
         onMouseDown={(event) => event.stopPropagation()}
       >
         <span className="external-guard__mark" aria-hidden="true">
-          <ShieldAlert size={18} />
+          <ShieldAlert size={16} />
         </span>
         <span className="external-guard__eyebrow">EXTERNAL ROUTE</span>
-        <h2 id="external-guard-title">走入黑夜中，小道分叉。</h2>
+        <h2 id="external-guard-title">
+          走入黑夜中，
+          <br />
+          小道分叉。
+        </h2>
         <p id="external-guard-desc">请保护个人财产和账号安全。</p>
         <code>{host}</code>
         <div className="external-guard__actions">
           <button
             type="button"
-            className="button button--ink button--small"
+            className="external-guard__go"
             ref={confirmRef}
             onClick={() => {
               window.open(target, '_blank', 'noopener,noreferrer')
@@ -79,7 +88,7 @@ export function ExternalLinkGuard() {
           >
             继续前往 <ArrowUpRight size={14} aria-hidden="true" />
           </button>
-          <button type="button" className="text-button" onClick={() => setOpen(false)}>
+          <button type="button" className="external-guard__stay" onClick={() => setOpen(false)}>
             留在半日
           </button>
         </div>

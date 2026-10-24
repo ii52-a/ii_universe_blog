@@ -2,7 +2,7 @@
 
 一个以白色、纸张感和玩具感为基调的个人博客。内容围绕散步、旧物、食物和普通的日常，页面以紧凑的 bento 网格组织，日期、天气、时钟、在线状态、跟屏玩偶小满等小组件填满边角。
 
-当前版本：**v2.0.0**
+当前版本：**v2.1.0**
 
 仓库：**https://github.com/ii52-a/ii_universe_blog**
 
@@ -101,6 +101,7 @@ node scripts/backend-test.mjs  # 后端 API 集成测试（先启动 server）
 ### 交互与安全
 
 - 点击外部链接先弹出无责声明，可选择继续或留在半日
+- 弹窗使用全屏平面中心排版，四周淡模糊、无提示卡
 - 小满台词集中在 `src/content/mascot.json`
 - 天气只显示 Open-Meteo 真实数据；不可用时不伪造温度
 
@@ -123,7 +124,8 @@ node scripts/backend-test.mjs  # 后端 API 集成测试（先启动 server）
 
 ### 导航
 
-- `/universe`：纯文字分类导航
+- `/universe`：ii universe 的入口，不是 blog 的子页面
+- 背景：解包的 Wallpaper Engine 场景《星空》，2560×1440，JPG / WebP
 - 大标题：手写感花字 `ii universe`
 - 背景三条缓慢移动的线，不做星图或卡片
 - 分类：博客、工具、链接、实验
@@ -133,16 +135,23 @@ node scripts/backend-test.mjs  # 后端 API 集成测试（先启动 server）
 
 ### GitHub 研究所
 
-- `/github-lab`：自动拉取 GitHub 星标前十
+- `/github-lab`：独立子功能，不套用 blog 的页头、页脚和玩偶
+- 自动拉取 GitHub 星标前十
 - 支持按关键词或 `owner/repo` 搜索仓库
 - 常用入口：GitHub、Trending、Explore、Status
 - 登录且资料填了 GitHub 时，显示「我的 GitHub」
 - 后端代理 GitHub 搜索并缓存五分钟
 
+### 结构
+
+- blog 是 ii universe 的一个子功能
+- ii universe 子功能彼此独立：导航、GitHub 研究所、blog 各自使用自己的页面结构
+- 子功能之间只通过链接跳转，不共享应用外壳
+
 ### 日落与版本
 
 - 顶栏小标题「日落」进入 `/sunset`
-- 只保留 v2.0 / v1.9 修改记录和版本索引
+- 只保留 v2.1 / v2.0 修改记录和版本索引
 - 去掉每条修改的小标题，直接记一句话
 - 日期、标签、版本号、印章等元信息不可选中
 - 下一次改版继续追加在这里
@@ -258,6 +267,7 @@ node scripts/backend-test.mjs  # 后端 API 集成测试（先启动 server）
 - UI 方法参考见 [`.skills/README.md`](.skills/README.md)
 - 首页参考与下载来源见 [`.references/README.md`](.references/README.md)
 - 页面插画（便利店、椅子、雨路、小票、桌面、旧书、棒冰、公交、散步地图）均为本项目的内联 SVG，没有使用第三方图片素材
+- ii universe 背景来自用户提供的 Wallpaper Engine 场景《星空》（Steam 创意工坊 `1680051146`），用 [RePKG](https://github.com/notscuffed/repkg) 解包；站点只使用静态背景图
 
 ## 版本记录
 
@@ -265,30 +275,31 @@ node scripts/backend-test.mjs  # 后端 API 集成测试（先启动 server）
 
 ## 截图
 
-- `screenshots/v20-home-light.png`
-- `screenshots/v20-home-dark.png`
-- `screenshots/v20-home-light-full.png`
-- `screenshots/v20-home-mobile.png`
-- `screenshots/v20-universe-light.png`
-- `screenshots/v20-universe-mobile.png`
-- `screenshots/v20-space-light.png`
-- `screenshots/v20-review-light.png`
-- `screenshots/v20-profile-light.png`
-- `screenshots/v20-login-light.png`
-- `screenshots/v20-login-dark.png`
-- `screenshots/v20-login-mobile.png`
-- `screenshots/v20-forgot-light.png`
-- `screenshots/v20-write-light.png`
-- `screenshots/v20-write-mobile.png`
-- `screenshots/v20-articles-light.png`
-- `screenshots/v20-article-light.png`
-- `screenshots/v20-article-dark.png`
-- `screenshots/v20-sunset-light.png`
-- `screenshots/v20-sunset-dark.png`
-- `screenshots/v20-user-light.png`
-- `screenshots/v20-github-lab.png`
-- `screenshots/v20-user-dark.png`
-- `screenshots/v20-mobile-menu.png`
-- `screenshots/v20-mobile-admin-menu.png`
+- `screenshots/v21-home-light.png`
+- `screenshots/v21-home-dark.png`
+- `screenshots/v21-home-light-full.png`
+- `screenshots/v21-home-mobile.png`
+- `screenshots/v21-universe-light.png`
+- `screenshots/v21-universe-mobile.png`
+- `screenshots/v21-space-light.png`
+- `screenshots/v21-review-light.png`
+- `screenshots/v21-profile-light.png`
+- `screenshots/v21-login-light.png`
+- `screenshots/v21-login-dark.png`
+- `screenshots/v21-login-mobile.png`
+- `screenshots/v21-forgot-light.png`
+- `screenshots/v21-write-light.png`
+- `screenshots/v21-write-mobile.png`
+- `screenshots/v21-articles-light.png`
+- `screenshots/v21-article-light.png`
+- `screenshots/v21-article-dark.png`
+- `screenshots/v21-sunset-light.png`
+- `screenshots/v21-sunset-dark.png`
+- `screenshots/v21-user-light.png`
+- `screenshots/v21-github-lab.png`
+- `screenshots/v21-external-guard.png`
+- `screenshots/v21-user-dark.png`
+- `screenshots/v21-mobile-menu.png`
+- `screenshots/v21-mobile-admin-menu.png`
 - `screenshots/v13-article-dark.png`
 - `screenshots/v13-login-dark.png`

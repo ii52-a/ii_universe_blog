@@ -5,6 +5,7 @@ import {
   ClipboardCheck,
   Feather,
   Github,
+  Image as ImageIcon,
   KeyRound,
   Lock,
   Orbit,
@@ -27,6 +28,7 @@ const icons = {
   orbit: Orbit,
   archive: Archive,
   github: Github,
+  image: ImageIcon,
   lock: Lock,
 } as const
 

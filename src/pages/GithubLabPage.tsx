@@ -1,4 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react'
+import { Link } from 'react-router-dom'
 import { ArrowUpRight, RefreshCw, Search } from 'lucide-react'
 import { githubApi, type GithubRepo } from '../lib/backend'
 import { useAuth } from '../context/AuthContext'
@@ -63,9 +64,13 @@ export function GithubLabPage() {
   return (
     <div className="lab-page">
       <div className="page-container">
+        <header className="lab-top">
+          <Link to="/universe">ii universe</Link>
+          <span>GitHub 研究所</span>
+        </header>
+
         <header className="lab-head">
           <div>
-            <span className="page-hero__note">GitHub / LAB</span>
             <h1>GitHub 研究所</h1>
           </div>
           <button className="lab-refresh" type="button" onClick={() => void load(activeQuery)} disabled={loading}>

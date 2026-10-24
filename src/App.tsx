@@ -32,6 +32,7 @@ export default function App() {
             <ToastProvider>
               <Routes>
                 <Route path="/universe" element={<UniversePage />} />
+                <Route path="/github-lab" element={<GithubLabPage />} />
                 <Route element={<Layout />}>
                   <Route path="/" element={<HomePage />} />
                   <Route path="/articles" element={<ArticlesPage />} />
@@ -40,7 +41,6 @@ export default function App() {
                   <Route path="/topics/:topic" element={<TopicPage />} />
                   <Route path="/about" element={<AboutPage />} />
                   <Route path="/sunset" element={<SunsetPage />} />
-                  <Route path="/github-lab" element={<GithubLabPage />} />
                   <Route path="/login" element={<LoginPage />} />
                   <Route path="/forgot" element={<ForgotPasswordPage />} />
                   <Route path="/me" element={<ProfilePage />} />

@@ -2,41 +2,41 @@
   "eyebrow": "日落 · 版本记录",
   "title": ["太阳先下班，", "我们晚一点。"],
   "intro": "只记改过什么，不开发布会。",
-  "version": "v2.0.0",
+  "version": "v2.1.0",
   "date": "2026 年 10 月 24 日",
   "location": "杭州",
-  "seal": { "version": "2.0", "date": "oct. 2026" },
+  "seal": { "version": "2.1", "date": "oct. 2026" },
   "latest": {
     "note": "本次更新 · 2026.10.24",
-    "version": "v2.0.0",
+    "version": "v2.1.0",
     "date": "2026-10-24",
     "short": "10.24",
     "items": [
       {
-        "tag": "导航",
-        "text": "大标题改成 ii universe，背景加三条缓慢移动的线。",
-        "icon": "orbit",
+        "tag": "背景",
+        "text": "解包 Steam 场景《星空》，换成 ii universe 的背景。",
+        "icon": "image",
         "date": "2026-10-24",
         "short": "10.24"
       },
       {
-        "tag": "分类",
-        "text": "分类标题加粗，实验新增 GitHub 研究所。",
-        "icon": "archive",
-        "date": "2026-10-24",
-        "short": "10.24"
-      },
-      {
-        "tag": "GitHub",
-        "text": "新增 /github-lab：星标前十、仓库搜索、常用入口。",
+        "tag": "结构",
+        "text": "GitHub 研究所移出 blog，使用独立页面和独立顶栏。",
         "icon": "github",
         "date": "2026-10-24",
         "short": "10.24"
       },
       {
-        "tag": "接口",
-        "text": "后端代理 GitHub 搜索，结果缓存五分钟。",
-        "icon": "sparkles",
+        "tag": "弹窗",
+        "text": "外链提示改成居中平面，四周淡模糊，去掉提示卡。",
+        "icon": "shield",
+        "date": "2026-10-24",
+        "short": "10.24"
+      },
+      {
+        "tag": "目录",
+        "text": "blog 只是 ii universe 的一个子功能，子功能彼此独立。",
+        "icon": "orbit",
         "date": "2026-10-24",
         "short": "10.24"
       }
@@ -44,18 +44,18 @@
   },
   "previous": {
     "note": "更早一点",
-    "version": "v1.9.0",
+    "version": "v2.0.0",
     "date": "2026-10-24",
     "items": [
       {
         "tag": "导航",
-        "text": "去掉背景、卡片、图标、搜索和标签，只留分类与文字链接。",
+        "text": "大标题改成 ii universe，背景加三条缓慢移动的线。",
         "icon": "orbit"
       },
       {
-        "tag": "样式",
-        "text": "去掉规则线条和多余说明，留白排版。",
-        "icon": "feather"
+        "tag": "GitHub",
+        "text": "新增 /github-lab：星标前十、仓库搜索、常用入口。",
+        "icon": "github"
       }
     ]
   },
@@ -63,6 +63,7 @@
     "title": "版本索引",
     "note": "从新到旧",
     "items": [
+      { "version": "v2.1.0", "date": "2026-10-24", "short": "10.24" },
       { "version": "v2.0.0", "date": "2026-10-24", "short": "10.24" },
       { "version": "v1.9.0", "date": "2026-10-24", "short": "10.24" },
       { "version": "v1.8.0", "date": "2026-10-23", "short": "10.23" },
@@ -78,7 +79,7 @@
     ]
   },
   "note": {
-    "stamp": "v2.0",
+    "stamp": "v2.1",
     "title": "为什么放在日落",
     "body": "白天忙，日落前后正好翻一翻。",
     "link": "回首页",
