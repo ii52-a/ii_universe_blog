@@ -158,6 +158,22 @@ export interface GithubRepoDetail extends GithubRepo {
   }
 }
 
+export interface GithubTool {
+  id: string
+  repoFullName: string
+  repoUrl: string
+  description: string
+  experience: string
+  createdAt: string
+  updatedAt: string
+}
+
+export interface GithubToolInput {
+  url: string
+  description: string
+  experience: string
+}
+
 export interface UserStats {
   postCount: number
   wordCount: number
@@ -229,6 +245,24 @@ export const githubApi = {
     apiFetch<GithubRepoDetail>(
       `/api/github/repo?owner=${encodeURIComponent(owner)}&repo=${encodeURIComponent(name)}`,
     ),
+  tools: (repo = '') =>
+    apiFetch<{ tools: GithubTool[] }>(
+      `/api/github/tools${repo ? `?repo=${encodeURIComponent(repo)}` : ''}`,
+    ),
+  createTool: (input: GithubToolInput) =>
+    apiFetch<{ tool: GithubTool }>('/api/github/tools', {
+      method: 'POST',
+      body: JSON.stringify(input),
+    }),
+  updateTool: (id: string, input: GithubToolInput) =>
+    apiFetch<{ tool: GithubTool }>(`/api/github/tools/${encodeURIComponent(id)}`, {
+      method: 'PATCH',
+      body: JSON.stringify(input),
+    }),
+  removeTool: (id: string) =>
+    apiFetch<{ ok: true }>(`/api/github/tools/${encodeURIComponent(id)}`, {
+      method: 'DELETE',
+    }),
 }
 
 export const widgetsApi = {

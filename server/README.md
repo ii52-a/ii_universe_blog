@@ -30,6 +30,7 @@ npm run dev
 - `users`：邮箱、用户名、handle、bcrypt 密码、`role`（member / admin）、简介、地点、GitHub、头像
 - `verification_codes`：注册 / 重置验证码，SHA-256 摘要、10 分钟过期、尝试次数
 - `posts`：标题、摘要、正文、JSON 内容块、分类、标签、封面、状态、审核原因、作者、时间
+- `github_tools`：ii tool 的仓库、描述、使用体验与维护人
 
 账号：
 
@@ -60,6 +61,10 @@ npm run dev
 | GET | `/api/widgets` | - | 服务端时间、杭州、真实天气；取不到为 null |
 | GET | `/api/github/leaderboard` | - | GitHub 星标前十 / `?q=` 搜索 / `?language=`，缓存五分钟 |
 | GET | `/api/github/repo` | - | 仓库详情、中文/英文简介、README 预览 |
+| GET | `/api/github/tools` | - | ii tool 列表 / `?repo=owner/name` |
+| POST | `/api/github/tools` | 管理员 | 新增 ii tool |
+| PATCH | `/api/github/tools/:id` | 管理员 | 编辑 ii tool |
+| DELETE | `/api/github/tools/:id` | 管理员 | 删除 ii tool |
 
 ## 快速验证
 

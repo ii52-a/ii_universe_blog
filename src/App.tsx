@@ -19,6 +19,9 @@ import { SpacePage } from './pages/SpacePage'
 import { ReviewPage } from './pages/ReviewPage'
 import { UniversePage } from './pages/UniversePage'
 import { GithubLabPage } from './pages/GithubLabPage'
+import { GithubTopPage } from './pages/GithubTopPage'
+import { GithubFavoritesPage } from './pages/GithubFavoritesPage'
+import { GithubToolsPage } from './pages/GithubToolsPage'
 import { GithubRepoPage } from './pages/GithubRepoPage'
 import { ForgotPasswordPage } from './pages/ForgotPasswordPage'
 import { NotFoundPage } from './pages/NotFoundPage'
@@ -34,6 +37,9 @@ export default function App() {
               <Routes>
                 <Route path="/universe" element={<UniversePage />} />
                 <Route path="/github-lab" element={<GithubLabPage />} />
+                <Route path="/github-lab/top" element={<GithubTopPage />} />
+                <Route path="/github-lab/favorites" element={<GithubFavoritesPage />} />
+                <Route path="/github-lab/tools" element={<GithubToolsPage />} />
                 <Route path="/github-lab/:owner/:repo" element={<GithubRepoPage />} />
                 <Route element={<Layout />}>
                   <Route path="/" element={<HomePage />} />

@@ -160,6 +160,23 @@ const seedUsers: SeedUser[] = [
   },
 ]
 
+const seedGithubTools = [
+  {
+    id: '00000000-0000-4000-8000-000000000201',
+    repoFullName: 'morluto/rea',
+    repoUrl: 'https://github.com/morluto/rea',
+    description: '面向 Agent 的逆向工程工具，从应用行为一路分析到原生二进制。',
+    experience: '适合先摸清结构再动手。这个仓库也是当前 REA 工作流的正版入口。',
+  },
+  {
+    id: '00000000-0000-4000-8000-000000000202',
+    repoFullName: 'notscuffed/repkg',
+    repoUrl: 'https://github.com/notscuffed/repkg',
+    description: 'Wallpaper Engine 的 PKG 解包与 TEX 转图片工具。',
+    experience: 'ii universe 的星空背景就是用它拆的，命令行直接，够用。',
+  },
+]
+
 function blocksToMarkdown(blocks: ContentBlock[]) {
   return blocks
     .map((block) => {
@@ -194,6 +211,22 @@ export async function seedDatabase(db: DbClient) {
         user.github ?? '',
         user.color,
         user.joinedAt,
+      ],
+    )
+  }
+
+  for (const tool of seedGithubTools) {
+    await db.query(
+      `INSERT INTO github_tools (id, repo_full_name, repo_url, description, experience, created_by)
+       VALUES ($1, $2, $3, $4, $5, $6)
+       ON CONFLICT (repo_full_name) DO NOTHING`,
+      [
+        tool.id,
+        tool.repoFullName,
+        tool.repoUrl,
+        tool.description,
+        tool.experience,
+        ADMIN_USER_ID,
       ],
     )
   }

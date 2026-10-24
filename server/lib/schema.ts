@@ -63,4 +63,15 @@ export const schemaStatements = [
   `CREATE INDEX IF NOT EXISTS posts_author_idx ON posts (author_id, published_at DESC)`,
   `CREATE INDEX IF NOT EXISTS posts_category_idx ON posts (category, published_at DESC)`,
   `CREATE INDEX IF NOT EXISTS posts_slug_idx ON posts (slug)`,
+  `CREATE TABLE IF NOT EXISTS github_tools (
+    id uuid PRIMARY KEY,
+    repo_full_name text NOT NULL UNIQUE,
+    repo_url text NOT NULL,
+    description text NOT NULL DEFAULT '',
+    experience text NOT NULL DEFAULT '',
+    created_by uuid,
+    created_at timestamptz NOT NULL DEFAULT now(),
+    updated_at timestamptz NOT NULL DEFAULT now()
+  )`,
+  `CREATE INDEX IF NOT EXISTS github_tools_updated_idx ON github_tools (updated_at DESC)`,
 ]

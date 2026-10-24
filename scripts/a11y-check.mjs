@@ -13,6 +13,9 @@ const pages = [
   '/sunset',
   '/universe',
   '/github-lab',
+  '/github-lab/top',
+  '/github-lab/favorites',
+  '/github-lab/tools',
   '/github-lab/codecrafters-io/build-your-own-x',
   '/u/deepseek',
 ]

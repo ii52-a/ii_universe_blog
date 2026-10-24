@@ -2,48 +2,41 @@
   "eyebrow": "日落 · 版本记录",
   "title": ["太阳先下班，", "我们晚一点。"],
   "intro": "只记改过什么，不开发布会。",
-  "version": "v2.2.0",
+  "version": "v2.3.0",
   "date": "2026 年 10 月 24 日",
   "location": "杭州",
-  "seal": { "version": "2.2", "date": "oct. 2026" },
+  "seal": { "version": "2.3", "date": "oct. 2026" },
   "latest": {
     "note": "本次更新 · 2026.10.24",
-    "version": "v2.2.0",
+    "version": "v2.3.0",
     "date": "2026-10-24",
     "short": "10.24",
     "items": [
       {
-        "tag": "GitHub",
-        "text": "GitHub 研究所标为 v0.1 alpha，不改更新专栏。",
-        "icon": "github",
+        "tag": "入口",
+        "text": "GitHub 首页只留搜索，top 排行榜、收藏、ii tool 分开进入。",
+        "icon": "orbit",
         "date": "2026-10-24",
         "short": "10.24"
       },
       {
-        "tag": "首页",
-        "text": "首页改成搜索式：标题、搜索框、星标前十。",
-        "icon": "search",
-        "date": "2026-10-24",
-        "short": "10.24"
-      },
-      {
-        "tag": "排行",
-        "text": "支持按语言看前十；仓库改为站内详情，不直接外跳。",
+        "tag": "ii tool",
+        "text": "新增 ii tool，ii52A1 可以新增和编辑仓库、描述与使用体验。",
         "icon": "archive",
         "date": "2026-10-24",
         "short": "10.24"
       },
       {
         "tag": "仓库",
-        "text": "详情页放简介、README 预览和留言，没有中文简介时显示英文。",
-        "icon": "feather",
+        "text": "先收 REA 与 repkg；工具卡进入同一套仓库简介页。",
+        "icon": "github",
         "date": "2026-10-24",
         "short": "10.24"
       },
       {
-        "tag": "收藏",
-        "text": "排行榜后新增收藏，保存在本机。",
-        "icon": "star",
+        "tag": "详情",
+        "text": "仓库简介页增加 ii tool 段，显示描述和使用体验。",
+        "icon": "feather",
         "date": "2026-10-24",
         "short": "10.24"
       }
@@ -51,23 +44,23 @@
   },
   "previous": {
     "note": "更早一点",
-    "version": "v2.1.0",
+    "version": "v2.2.0",
     "date": "2026-10-24",
     "items": [
       {
-        "tag": "背景",
-        "text": "解包 Steam 场景《星空》，换成 ii universe 的背景。",
-        "icon": "image"
+        "tag": "首页",
+        "text": "GitHub 研究所改成搜索式首页。",
+        "icon": "search"
       },
       {
-        "tag": "结构",
-        "text": "GitHub 研究所移出 blog，使用独立页面和独立顶栏。",
-        "icon": "github"
+        "tag": "排行",
+        "text": "支持语言前十；仓库改为站内详情。",
+        "icon": "archive"
       },
       {
-        "tag": "弹窗",
-        "text": "外链提示改成居中平面，四周淡模糊，去掉提示卡。",
-        "icon": "shield"
+        "tag": "收藏",
+        "text": "排行榜后新增收藏，保存在本机。",
+        "icon": "star"
       }
     ]
   },
@@ -75,6 +68,7 @@
     "title": "版本索引",
     "note": "从新到旧",
     "items": [
+      { "version": "v2.3.0", "date": "2026-10-24", "short": "10.24" },
       { "version": "v2.2.0", "date": "2026-10-24", "short": "10.24" },
       { "version": "v2.1.0", "date": "2026-10-24", "short": "10.24" },
       { "version": "v2.0.0", "date": "2026-10-24", "short": "10.24" },
@@ -92,7 +86,7 @@
     ]
   },
   "note": {
-    "stamp": "v2.2",
+    "stamp": "v2.3",
     "title": "为什么放在日落",
     "body": "白天忙，日落前后正好翻一翻。",
     "link": "回首页",

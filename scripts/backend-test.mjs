@@ -183,7 +183,35 @@ try {
   assert.equal(repoDetail.summary.length > 10, true)
   assert.equal(repoDetail.readme.text.length > 100, true)
 
-  console.log(JSON.stringify({ ok: true, email, username, checks: 33 }, null, 2))
+  response = await anon.get('/api/github/tools')
+  assert.equal(response.status(), 200)
+  assert.equal((await json(response)).tools.length, 2, 'seed should include two ii tools')
+
+  response = await admin.post('/api/github/tools', {
+    data: {
+      url: 'https://github.com/octocat/Hello-World',
+      description: '接口测试用仓库',
+      experience: '创建后立即修改，再删除。',
+    },
+  })
+  assert.equal(response.status(), 201)
+  const createdTool = (await json(response)).tool
+  assert.equal(createdTool.repoFullName, 'octocat/Hello-World')
+
+  response = await admin.patch(`/api/github/tools/${createdTool.id}`, {
+    data: {
+      url: 'https://github.com/octocat/Hello-World',
+      description: '接口测试用仓库，已修改',
+      experience: '更新成功。',
+    },
+  })
+  assert.equal(response.status(), 200)
+  assert.equal((await json(response)).tool.description, '接口测试用仓库，已修改')
+
+  response = await admin.delete(`/api/github/tools/${createdTool.id}`)
+  assert.equal(response.status(), 200)
+
+  console.log(JSON.stringify({ ok: true, email, username, checks: 37 }, null, 2))
 } finally {
   await api.dispose()
   await admin.dispose()

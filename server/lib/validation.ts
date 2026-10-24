@@ -74,6 +74,12 @@ export const reviewSchema = z.object({
   note: z.string().trim().max(200).optional(),
 })
 
+export const githubToolSchema = z.object({
+  url: z.string().trim().min(10).max(300),
+  description: z.string().trim().min(2).max(240),
+  experience: z.string().trim().max(600).optional().default(''),
+})
+
 export type RegisterInput = z.infer<typeof registerSchema>
 export type LoginInput = z.infer<typeof loginSchema>
 export type PostCreateInput = z.infer<typeof postCreateSchema>

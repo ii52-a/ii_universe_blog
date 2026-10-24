@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { ArrowLeft, ArrowUpRight, Star } from 'lucide-react'
 import { CommentSection } from '../components/CommentSection'
-import { githubApi, type GithubRepoDetail } from '../lib/backend'
+import { githubApi, type GithubRepoDetail, type GithubTool } from '../lib/backend'
 import { isGithubFavorite, toggleGithubFavorite } from '../lib/githubFavorites'
 import { usePageTitle } from '../hooks/usePageTitle'
 import { useToast } from '../context/ToastContext'
@@ -16,6 +16,7 @@ export function GithubRepoPage() {
   const { owner = '', repo: name = '' } = useParams()
   const { showToast } = useToast()
   const [repo, setRepo] = useState<GithubRepoDetail | null>(null)
+  const [tool, setTool] = useState<GithubTool | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [favorite, setFavorite] = useState(false)
@@ -32,6 +33,14 @@ export function GithubRepoPage() {
         if (cancelled) return
         setRepo(data)
         setFavorite(isGithubFavorite(data.fullName))
+        githubApi
+          .tools(data.fullName)
+          .then((result) => {
+            if (!cancelled) setTool(result.tools[0] ?? null)
+          })
+          .catch(() => {
+            if (!cancelled) setTool(null)
+          })
       })
       .catch((caught) => {
         if (!cancelled) {
@@ -115,6 +124,22 @@ export function GithubRepoPage() {
                 </p>
               )}
             </section>
+
+            {tool && (
+              <section className="repo-tool" aria-labelledby="repo-tool-title">
+                <div className="repo-section-head">
+                  <h2 id="repo-tool-title">ii tool</h2>
+                  <span>由 ii52A1 维护</span>
+                </div>
+                <p>{tool.description}</p>
+                {tool.experience && (
+                  <div className="repo-tool__experience">
+                    <span>使用体验</span>
+                    <p>{tool.experience}</p>
+                  </div>
+                )}
+              </section>
+            )}
 
             <div className="repo-meta">
               <span>★ {formatStars(repo.stars)}</span>
