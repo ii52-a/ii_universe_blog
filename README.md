@@ -2,7 +2,7 @@
 
 一个以白色、纸张感和玩具感为基调的个人博客。内容围绕散步、旧物、食物和普通的日常，页面以紧凑的 bento 网格组织，日期、天气、时钟、在线状态、跟屏玩偶小满等小组件填满边角。
 
-当前版本：**v1.8.0**
+当前版本：**v1.9.0**
 
 仓库：**https://github.com/ii52-a/ii_universe_blog**
 
@@ -120,19 +120,18 @@ node scripts/backend-test.mjs  # 后端 API 集成测试（先启动 server）
 - 文章 CRUD、作者权限、管理员审核、cursor 分页
 - `/api/widgets` 聚合服务端时间、杭州地点、天气，并做 10 分钟缓存
 
-### 宇宙导航
+### 导航
 
-- `/universe`：参考 51kim 的浏览器主页格式
-- 顶部搜索、分类标签、左侧分组、右侧图标链接
-- 三组：常用、链接、实验；实验保留 `SOON`
-- 博客「半日」只是常用组里的普通链接，没有单独权重
-- 黑蓝射线、十字光束、同心环从中心向外辐射
-- 顶栏和页脚新增「宇宙」入口
+- `/universe`：纯文字分类导航，无背景装饰
+- 分类：博客、工具、链接、实验
+- 博客「半日」只是普通链接，没有单独权重
+- 无卡片、图标、搜索、标签和规则线条
+- 顶栏和页脚保留「宇宙」入口
 
 ### 日落与版本
 
 - 顶栏小标题「日落」进入 `/sunset`
-- 只保留 v1.7 / v1.6 修改记录和版本索引
+- 只保留 v1.9 / v1.8 修改记录和版本索引
 - 去掉每条修改的小标题，直接记一句话
 - 日期、标签、版本号、印章等元信息不可选中
 - 下一次改版继续追加在这里
@@ -163,7 +162,7 @@ node scripts/backend-test.mjs  # 后端 API 集成测试（先启动 server）
 | `/write` | 撰写共同文章（登录后） |
 | `/topics/:topic` | 标签 / 分类话题页 |
 | `/sunset` | 日落与版本更新 |
-| `/universe` | 宇宙风格导航 |
+| `/universe` | 纯文字分类导航 |
 | `/u/:handle` | 公开岛民主页 |
 | `/space` | 登录后的个人空间 |
 | `/review` | 特权账号审核队列 |
@@ -245,7 +244,6 @@ node scripts/backend-test.mjs  # 后端 API 集成测试（先启动 server）
 
 - UI 方法参考见 [`.skills/README.md`](.skills/README.md)
 - 首页参考与下载来源见 [`.references/README.md`](.references/README.md)
-- 宇宙导航参考：[51kim 氪主页](https://www.51kim.com/) 的分类面板格式、[Link Hub 的目录式链接索引](https://gsapvault.com/templates/link-hub-template)、[SpaceX 的 mission-control 深色排版](https://geoffreymanda.github.io/design-atlas/styles/spacex.html)
 - 页面插画（便利店、椅子、雨路、小票、桌面、旧书、棒冰、公交、散步地图）均为本项目的内联 SVG，没有使用第三方图片素材
 
 ## 版本记录
@@ -254,29 +252,29 @@ node scripts/backend-test.mjs  # 后端 API 集成测试（先启动 server）
 
 ## 截图
 
-- `screenshots/v18-home-light.png`
-- `screenshots/v18-home-dark.png`
-- `screenshots/v18-home-light-full.png`
-- `screenshots/v18-home-mobile.png`
-- `screenshots/v18-universe-light.png`
-- `screenshots/v18-universe-mobile.png`
-- `screenshots/v18-space-light.png`
-- `screenshots/v18-review-light.png`
-- `screenshots/v18-profile-light.png`
-- `screenshots/v18-login-light.png`
-- `screenshots/v18-login-dark.png`
-- `screenshots/v18-login-mobile.png`
-- `screenshots/v18-forgot-light.png`
-- `screenshots/v18-write-light.png`
-- `screenshots/v18-write-mobile.png`
-- `screenshots/v18-articles-light.png`
-- `screenshots/v18-article-light.png`
-- `screenshots/v18-article-dark.png`
-- `screenshots/v18-sunset-light.png`
-- `screenshots/v18-sunset-dark.png`
-- `screenshots/v18-user-light.png`
-- `screenshots/v18-user-dark.png`
-- `screenshots/v18-mobile-menu.png`
-- `screenshots/v18-mobile-admin-menu.png`
+- `screenshots/v19-home-light.png`
+- `screenshots/v19-home-dark.png`
+- `screenshots/v19-home-light-full.png`
+- `screenshots/v19-home-mobile.png`
+- `screenshots/v19-universe-light.png`
+- `screenshots/v19-universe-mobile.png`
+- `screenshots/v19-space-light.png`
+- `screenshots/v19-review-light.png`
+- `screenshots/v19-profile-light.png`
+- `screenshots/v19-login-light.png`
+- `screenshots/v19-login-dark.png`
+- `screenshots/v19-login-mobile.png`
+- `screenshots/v19-forgot-light.png`
+- `screenshots/v19-write-light.png`
+- `screenshots/v19-write-mobile.png`
+- `screenshots/v19-articles-light.png`
+- `screenshots/v19-article-light.png`
+- `screenshots/v19-article-dark.png`
+- `screenshots/v19-sunset-light.png`
+- `screenshots/v19-sunset-dark.png`
+- `screenshots/v19-user-light.png`
+- `screenshots/v19-user-dark.png`
+- `screenshots/v19-mobile-menu.png`
+- `screenshots/v19-mobile-admin-menu.png`
 - `screenshots/v13-article-dark.png`
 - `screenshots/v13-login-dark.png`
