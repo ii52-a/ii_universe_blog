@@ -189,7 +189,7 @@ export function LoginPage() {
               <ArrowLeft size={15} aria-hidden="true" />
               回到半日
             </Link>
-            <span>v2.5 · 时间线与分类</span>
+            <span>v2.6 · 标签与翻页</span>
           </div>
           <div className="login-art__card">
             <span className="tape" />

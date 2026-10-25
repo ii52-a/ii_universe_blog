@@ -2,7 +2,7 @@
 
 一个以白色、纸张感和玩具感为基调的个人博客。内容围绕散步、旧物、食物和普通的日常，页面以紧凑的 bento 网格组织，日期、天气、时钟、在线状态、跟屏玩偶小满等小组件填满边角。
 
-当前版本：**v2.5.0**
+当前版本：**v2.6.0**
 
 仓库：**https://github.com/ii52-a/ii_universe_blog**
 
@@ -156,7 +156,7 @@ node scripts/backend-test.mjs  # 后端 API 集成测试（先启动 server）
 ### 日落与版本
 
 - 顶栏小标题「日落」进入 `/sunset`
-- 只保留 v2.5 / v2.4 修改记录和版本索引
+- 只保留 v2.6 / v2.5 修改记录和版本索引
 - 去掉每条修改的小标题，直接记一句话
 - 日期、标签、版本号、印章等元信息不可选中
 - 下一次改版继续追加在这里
@@ -294,39 +294,39 @@ node scripts/backend-test.mjs  # 后端 API 集成测试（先启动 server）
 
 ## 截图
 
-- `screenshots/v25-home-light.png`
-- `screenshots/v25-home-dark.png`
-- `screenshots/v25-home-light-full.png`
-- `screenshots/v25-home-mobile.png`
-- `screenshots/v25-universe-light.png`
-- `screenshots/v25-universe-mobile.png`
-- `screenshots/v25-space-light.png`
-- `screenshots/v25-space-admin.png`
-- `screenshots/v25-review-light.png`
-- `screenshots/v25-profile-light.png`
-- `screenshots/v25-login-light.png`
-- `screenshots/v25-login-dark.png`
-- `screenshots/v25-login-mobile.png`
-- `screenshots/v25-forgot-light.png`
-- `screenshots/v25-write-light.png`
-- `screenshots/v25-write-mobile.png`
-- `screenshots/v25-articles-light.png`
-- `screenshots/v25-articles-admin.png`
-- `screenshots/v25-article-light.png`
-- `screenshots/v25-article-dark.png`
-- `screenshots/v25-sunset-light.png`
-- `screenshots/v25-sunset-dark.png`
-- `screenshots/v25-user-light.png`
-- `screenshots/v25-github-lab.png`
-- `screenshots/v25-github-top.png`
-- `screenshots/v25-github-favorites.png`
-- `screenshots/v25-github-tools.png`
-- `screenshots/v25-github-tools-admin.png`
-- `screenshots/v25-github-repo.png`
-- `screenshots/v25-github-repo-tool.png`
-- `screenshots/v25-external-guard.png`
-- `screenshots/v25-user-dark.png`
-- `screenshots/v25-mobile-menu.png`
-- `screenshots/v25-mobile-admin-menu.png`
+- `screenshots/v26-home-light.png`
+- `screenshots/v26-home-dark.png`
+- `screenshots/v26-home-light-full.png`
+- `screenshots/v26-home-mobile.png`
+- `screenshots/v26-universe-light.png`
+- `screenshots/v26-universe-mobile.png`
+- `screenshots/v26-space-light.png`
+- `screenshots/v26-space-admin.png`
+- `screenshots/v26-review-light.png`
+- `screenshots/v26-profile-light.png`
+- `screenshots/v26-login-light.png`
+- `screenshots/v26-login-dark.png`
+- `screenshots/v26-login-mobile.png`
+- `screenshots/v26-forgot-light.png`
+- `screenshots/v26-write-light.png`
+- `screenshots/v26-write-mobile.png`
+- `screenshots/v26-articles-light.png`
+- `screenshots/v26-articles-admin.png`
+- `screenshots/v26-article-light.png`
+- `screenshots/v26-article-dark.png`
+- `screenshots/v26-sunset-light.png`
+- `screenshots/v26-sunset-dark.png`
+- `screenshots/v26-user-light.png`
+- `screenshots/v26-github-lab.png`
+- `screenshots/v26-github-top.png`
+- `screenshots/v26-github-favorites.png`
+- `screenshots/v26-github-tools.png`
+- `screenshots/v26-github-tools-admin.png`
+- `screenshots/v26-github-repo.png`
+- `screenshots/v26-github-repo-tool.png`
+- `screenshots/v26-external-guard.png`
+- `screenshots/v26-user-dark.png`
+- `screenshots/v26-mobile-menu.png`
+- `screenshots/v26-mobile-admin-menu.png`
 - `screenshots/v13-article-dark.png`
 - `screenshots/v13-login-dark.png`

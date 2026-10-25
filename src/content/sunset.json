@@ -5,45 +5,45 @@
     "我们晚一点。"
   ],
   "intro": "只记改过什么，不开发布会。",
-  "version": "v2.5.0",
+  "version": "v2.6.0",
   "date": "2026 年 10 月 25 日",
   "location": "杭州",
   "seal": {
-    "version": "2.5",
+    "version": "2.6",
     "date": "oct. 2026"
   },
   "latest": {
     "note": "本次更新 · 2026.10.25",
-    "version": "v2.5.0",
+    "version": "v2.6.0",
     "date": "2026-10-25",
     "short": "10.25",
     "items": [
       {
-        "text": "文章按月份罗列，每页 10 篇。",
-        "icon": "archive",
-        "date": "2026-10-25",
-        "short": "10.25"
-      },
-      {
-        "text": "文章页可增删标签，新增只看博主。",
-        "icon": "archive",
-        "date": "2026-10-25",
-        "short": "10.25"
-      },
-      {
-        "text": "ii tool 分类与添加时间。",
-        "icon": "github",
-        "date": "2026-10-25",
-        "short": "10.25"
-      },
-      {
-        "text": "空文案不显示。",
+        "text": "修改了blog文字映射json规则。",
         "icon": "feather",
         "date": "2026-10-25",
         "short": "10.25"
       },
       {
-        "text": "演示账号一键登录，管理员密码在 .env。",
+        "text": "修改了ii tool分类和时间。",
+        "icon": "github",
+        "date": "2026-10-25",
+        "short": "10.25"
+      },
+      {
+        "text": "修改了文章列表的排序和翻页。",
+        "icon": "archive",
+        "date": "2026-10-25",
+        "short": "10.25"
+      },
+      {
+        "text": "修改了文章分类的管理位置。",
+        "icon": "archive",
+        "date": "2026-10-25",
+        "short": "10.25"
+      },
+      {
+        "text": "修改了演示账号和管理员登录。",
         "icon": "lock",
         "date": "2026-10-25",
         "short": "10.25"
@@ -52,24 +52,20 @@
   },
   "previous": {
     "note": "更早一点",
-    "version": "v2.4.0",
+    "version": "v2.5.0",
     "date": "2026-10-25",
     "items": [
       {
-        "text": "空文案不显示。",
-        "icon": "feather"
-      },
-      {
-        "text": "ii tool 分类与时间。",
+        "text": "修改了文章时间线和翻页。",
         "icon": "archive"
       },
       {
-        "text": "文章分类在文章页管理。",
-        "icon": "archive"
+        "text": "修改了ii tool分类和时间。",
+        "icon": "github"
       },
       {
-        "text": "演示账号一键登录。",
-        "icon": "key"
+        "text": "修改了文章分类管理位置。",
+        "icon": "archive"
       }
     ]
   },
@@ -77,6 +73,11 @@
     "title": "版本索引",
     "note": "从新到旧",
     "items": [
+      {
+        "version": "v2.6.0",
+        "date": "2026-10-25",
+        "short": "10.25"
+      },
       {
         "version": "v2.5.0",
         "date": "2026-10-25",
@@ -165,7 +166,7 @@
     ]
   },
   "note": {
-    "stamp": "v2.5",
+    "stamp": "v2.6",
     "title": "为什么放在日落",
     "body": "白天忙，日落前后正好翻一翻。",
     "link": "回首页",
