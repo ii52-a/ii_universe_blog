@@ -71,7 +71,7 @@ const seedUsers: SeedUser[] = [
     email: 'ii52a1@halfday.club',
     username: ADMIN_USERNAME,
     handle: 'ii52a1',
-    password: 'ii52A1pass',
+    password: 'env:ADMIN_PASSWORD',
     role: 'admin',
     bio: '半日的管理员，负责把门开着。',
     location: '杭州',
@@ -167,6 +167,7 @@ const seedGithubTools = [
     repoUrl: 'https://github.com/morluto/rea',
     description: '面向 Agent 的逆向工程工具，从应用行为一路分析到原生二进制。',
     experience: '适合先摸清结构再动手。这个仓库也是当前 REA 工作流的正版入口。',
+    categoryId: '00000000-0000-4000-8000-000000000411',
   },
   {
     id: '00000000-0000-4000-8000-000000000202',
@@ -174,7 +175,24 @@ const seedGithubTools = [
     repoUrl: 'https://github.com/notscuffed/repkg',
     description: 'Wallpaper Engine 的 PKG 解包与 TEX 转图片工具。',
     experience: 'ii universe 的星空背景就是用它拆的，命令行直接，够用。',
+    categoryId: '00000000-0000-4000-8000-000000000412',
   },
+]
+
+const seedArticleCategories = [
+  { id: '00000000-0000-4000-8000-000000000401', name: '城市' },
+  { id: '00000000-0000-4000-8000-000000000402', name: '旧物' },
+  { id: '00000000-0000-4000-8000-000000000403', name: '散步' },
+  { id: '00000000-0000-4000-8000-000000000404', name: '收集' },
+  { id: '00000000-0000-4000-8000-000000000405', name: '日常' },
+  { id: '00000000-0000-4000-8000-000000000406', name: '阅读' },
+  { id: '00000000-0000-4000-8000-000000000407', name: '饮食' },
+]
+
+const seedGithubToolCategories = [
+  { id: '00000000-0000-4000-8000-000000000411', name: '逆向工程' },
+  { id: '00000000-0000-4000-8000-000000000412', name: '解包' },
+  { id: '00000000-0000-4000-8000-000000000413', name: '插件' },
 ]
 
 function blocksToMarkdown(blocks: ContentBlock[]) {
@@ -191,7 +209,7 @@ function blocksToMarkdown(blocks: ContentBlock[]) {
 
 export async function seedDatabase(db: DbClient) {
   const memberHash = await hash('halfday', 10)
-  const adminHash = await hash('ii52A1pass', 10)
+  const adminHash = await hash(process.env.ADMIN_PASSWORD ?? '0000', 10)
 
   for (const user of seedUsers) {
     await db.query(
@@ -215,10 +233,28 @@ export async function seedDatabase(db: DbClient) {
     )
   }
 
+  for (const category of seedArticleCategories) {
+    await db.query(
+      `INSERT INTO categories (id, name)
+       VALUES ($1, $2)
+       ON CONFLICT (name) DO NOTHING`,
+      [category.id, category.name],
+    )
+  }
+
+  for (const category of seedGithubToolCategories) {
+    await db.query(
+      `INSERT INTO github_tool_categories (id, name)
+       VALUES ($1, $2)
+       ON CONFLICT (name) DO NOTHING`,
+      [category.id, category.name],
+    )
+  }
+
   for (const tool of seedGithubTools) {
     await db.query(
-      `INSERT INTO github_tools (id, repo_full_name, repo_url, description, experience, created_by)
-       VALUES ($1, $2, $3, $4, $5, $6)
+      `INSERT INTO github_tools (id, repo_full_name, repo_url, description, experience, category_id, created_by)
+       VALUES ($1, $2, $3, $4, $5, $6, $7)
        ON CONFLICT (repo_full_name) DO NOTHING`,
       [
         tool.id,
@@ -226,6 +262,7 @@ export async function seedDatabase(db: DbClient) {
         tool.repoUrl,
         tool.description,
         tool.experience,
+        tool.categoryId,
         ADMIN_USER_ID,
       ],
     )

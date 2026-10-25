@@ -80,7 +80,7 @@ try {
   assert.equal(response.status(), 403, 'members cannot review')
 
   response = await admin.post('/api/auth/login', {
-    data: { identifier: 'ii52A1', password: 'ii52A1pass', remember: true },
+    data: { identifier: 'ii52A1', password: '0000', remember: true },
   })
   assert.equal(response.status(), 200)
   assert.equal((await json(response)).user.role, 'admin')
@@ -187,11 +187,38 @@ try {
   assert.equal(response.status(), 200)
   assert.equal((await json(response)).tools.length, 2, 'seed should include two ii tools')
 
+  response = await anon.get('/api/categories')
+  assert.equal(response.status(), 200)
+  assert.equal((await json(response)).categories.length, 7)
+
+  response = await admin.post('/api/categories', { data: { name: '测试分类' } })
+  assert.equal(response.status(), 201)
+  const testCategory = (await json(response)).category
+  response = await admin.patch(`/api/categories/${testCategory.id}`, {
+    data: { name: '测试分类改' },
+  })
+  assert.equal(response.status(), 200)
+  response = await admin.delete(`/api/categories/${testCategory.id}`)
+  assert.equal(response.status(), 200)
+
+  response = await anon.get('/api/github/tools/categories')
+  assert.equal(response.status(), 200)
+  assert.equal((await json(response)).categories.length, 3)
+
+  response = await admin.post('/api/github/tools/categories', { data: { name: '测试工具分类' } })
+  assert.equal(response.status(), 201)
+  const testToolCategory = (await json(response)).category
+  response = await admin.patch(`/api/github/tools/categories/${testToolCategory.id}`, {
+    data: { name: '测试工具分类改' },
+  })
+  assert.equal(response.status(), 200)
+
   response = await admin.post('/api/github/tools', {
     data: {
       url: 'https://github.com/octocat/Hello-World',
       description: '接口测试用仓库',
       experience: '创建后立即修改，再删除。',
+      categoryId: testToolCategory.id,
     },
   })
   assert.equal(response.status(), 201)
@@ -203,6 +230,7 @@ try {
       url: 'https://github.com/octocat/Hello-World',
       description: '接口测试用仓库，已修改',
       experience: '更新成功。',
+      categoryId: testToolCategory.id,
     },
   })
   assert.equal(response.status(), 200)
@@ -211,7 +239,10 @@ try {
   response = await admin.delete(`/api/github/tools/${createdTool.id}`)
   assert.equal(response.status(), 200)
 
-  console.log(JSON.stringify({ ok: true, email, username, checks: 37 }, null, 2))
+  response = await admin.delete(`/api/github/tools/categories/${testToolCategory.id}`)
+  assert.equal(response.status(), 200)
+
+  console.log(JSON.stringify({ ok: true, email, username, checks: 45 }, null, 2))
 } finally {
   await api.dispose()
   await admin.dispose()

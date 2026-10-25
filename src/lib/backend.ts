@@ -158,12 +158,25 @@ export interface GithubRepoDetail extends GithubRepo {
   }
 }
 
+export interface GithubToolCategory {
+  id: string
+  name: string
+}
+
+export interface Category {
+  id: string
+  name: string
+  createdAt: string
+}
+
 export interface GithubTool {
   id: string
   repoFullName: string
   repoUrl: string
   description: string
   experience: string
+  categoryId: string | null
+  categoryName: string | null
   createdAt: string
   updatedAt: string
 }
@@ -172,6 +185,7 @@ export interface GithubToolInput {
   url: string
   description: string
   experience: string
+  categoryId?: string | null
 }
 
 export interface UserStats {
@@ -261,6 +275,40 @@ export const githubApi = {
     }),
   removeTool: (id: string) =>
     apiFetch<{ ok: true }>(`/api/github/tools/${encodeURIComponent(id)}`, {
+      method: 'DELETE',
+    }),
+  toolCategories: () =>
+    apiFetch<{ categories: GithubToolCategory[] }>('/api/github/tools/categories'),
+  createToolCategory: (name: string) =>
+    apiFetch<{ category: GithubToolCategory }>('/api/github/tools/categories', {
+      method: 'POST',
+      body: JSON.stringify({ name }),
+    }),
+  updateToolCategory: (id: string, name: string) =>
+    apiFetch<{ category: GithubToolCategory }>(
+      `/api/github/tools/categories/${encodeURIComponent(id)}`,
+      { method: 'PATCH', body: JSON.stringify({ name }) },
+    ),
+  removeToolCategory: (id: string) =>
+    apiFetch<{ ok: true }>(`/api/github/tools/categories/${encodeURIComponent(id)}`, {
+      method: 'DELETE',
+    }),
+}
+
+export const categoriesApi = {
+  list: () => apiFetch<{ categories: Category[] }>('/api/categories'),
+  create: (name: string) =>
+    apiFetch<{ category: Category }>('/api/categories', {
+      method: 'POST',
+      body: JSON.stringify({ name }),
+    }),
+  update: (id: string, name: string) =>
+    apiFetch<{ category: Category }>(`/api/categories/${encodeURIComponent(id)}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ name }),
+    }),
+  remove: (id: string) =>
+    apiFetch<{ ok: true }>(`/api/categories/${encodeURIComponent(id)}`, {
       method: 'DELETE',
     }),
 }

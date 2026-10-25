@@ -44,6 +44,20 @@ export function LoginPage() {
   const fromParam = params.get('from')
   const from = fromParam && fromParam.startsWith('/') ? fromParam : '/space'
 
+  const demoLogin = async () => {
+    setMode('login')
+    setSubmitting(true)
+    try {
+      const nextUser = await login('hello@halfday.club', 'halfday', { remember: true })
+      showToast(`欢迎回来，${nextUser.name}。`)
+      navigate(from, { replace: true })
+    } catch (error) {
+      showToast(error instanceof Error ? error.message : '演示账号暂时进不来。', 'error')
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
   useEffect(() => {
     const remembered = rememberedEmail()
     if (remembered) {
@@ -175,7 +189,7 @@ export function LoginPage() {
               <ArrowLeft size={15} aria-hidden="true" />
               回到半日
             </Link>
-            <span>v2.3 · ii tool 与独立入口</span>
+            <span>v2.4 · 分类与留白</span>
           </div>
           <div className="login-art__card">
             <span className="tape" />
@@ -403,35 +417,19 @@ export function LoginPage() {
           <div className="demo-account">
             <div>
               <strong>只想看看？</strong>
-              <span>用演示账号进来。</span>
+              <span>直接进演示账号。</span>
             </div>
             <div className="demo-account__actions">
               <button
                 type="button"
                 className="text-button"
-                onClick={() => {
-                  setMode('login')
-                  setIdentifier('hello@halfday.club')
-                  setPassword('halfday')
-                  setErrors({})
-                }}
+                onClick={() => void demoLogin()}
+                disabled={submitting}
               >
-                演示账号
-              </button>
-              <button
-                type="button"
-                className="text-button"
-                onClick={() => {
-                  setMode('login')
-                  setIdentifier('ii52A1')
-                  setPassword('ii52A1pass')
-                  setErrors({})
-                }}
-              >
-                管理员
+                {submitting ? '正在进入…' : '演示账号'}
               </button>
             </div>
-            <small>hello@halfday.club / halfday · ii52A1 / ii52A1pass</small>
+            <small>hello@halfday.club / halfday</small>
           </div>
 
           <div className="auth-card__foot">

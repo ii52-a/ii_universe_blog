@@ -2,7 +2,7 @@
 
 一个以白色、纸张感和玩具感为基调的个人博客。内容围绕散步、旧物、食物和普通的日常，页面以紧凑的 bento 网格组织，日期、天气、时钟、在线状态、跟屏玩偶小满等小组件填满边角。
 
-当前版本：**v2.3.0**
+当前版本：**v2.4.0**
 
 仓库：**https://github.com/ii52-a/ii_universe_blog**
 
@@ -53,9 +53,9 @@ node scripts/backend-test.mjs  # 后端 API 集成测试（先启动 server）
 ## 演示账号
 
 - 普通账号：`hello@halfday.club` / `halfday`
-- 特权账号：`ii52A1` / `ii52A1pass`（直接发布 + 审核）
+- 特权账号：`ii52A1` / `0000`（直接发布 + 审核；密码由 `server/.env` 的 `ADMIN_PASSWORD` 提供）
 
-登录页点「演示账号」或「管理员」可以直接填入。账号、文章、验证码和审核状态由 Next.js API 写入 PostgreSQL / PGlite；头像和草稿仍保存在本机。
+登录页点「演示账号」可以一键进入普通演示账号；管理员没有快捷登录，需要手动填写账号和 `.env` 里的密码。账号、文章、验证码和审核状态由 Next.js API 写入 PostgreSQL / PGlite；头像和草稿仍保存在本机。
 
 ## 已实现
 
@@ -74,6 +74,7 @@ node scripts/backend-test.mjs  # 后端 API 集成测试（先启动 server）
 - 只有 DeepS 自己写的两页署 **DeepS先生（@deepseek）**；其他种子页分属迟迟、小野、木木、Nana、陈皮
 - 文章归档页：分类筛选、关键词搜索，筛选状态写入 URL
 - 文章详情：阅读进度、目录跟随、点赞、收藏、分享、标签话题页，并署名实际作者
+- 分类由后端提供；ii52A1 可在 `/space` 新增、改名、删除分类
 - 撰写页 `/write`：标题、摘要、分类、标签、封面、正文、实时预览、自动草稿
 - 作者可以编辑、删除自己的文章；地址在编辑后保持不变
 - 评论：发表、点赞、删除自己的评论；空状态、加载骨架、错误反馈
@@ -140,7 +141,8 @@ node scripts/backend-test.mjs  # 后端 API 集成测试（先启动 server）
 - 首页只有标题、搜索框、空段和三个入口：top 排行榜 / 收藏 / ii tool
 - `top 排行榜`：按语言看前十，仓库详情在站内打开
 - `收藏`：独立子页面，收藏保存在本机
-- `ii tool`：GitHub 插件仓库介绍，ii52A1 可新增和编辑
+- `ii tool`：GitHub 插件仓库介绍；按分类分组，显示添加 / 最后修改时间
+- ii52A1 可新增/删除工具分类，新增/编辑仓库并归档
 - 仓库详情：`/github-lab/:owner/:repo`，中文简介（无中文时英文）、README 预览、留言
 - 首批 ii tool：`morluto/rea`、`notscuffed/repkg`
 - 后端代理 GitHub 搜索与仓库详情，缓存五分钟
@@ -154,7 +156,7 @@ node scripts/backend-test.mjs  # 后端 API 集成测试（先启动 server）
 ### 日落与版本
 
 - 顶栏小标题「日落」进入 `/sunset`
-- 只保留 v2.3 / v2.2 修改记录和版本索引
+- 只保留 v2.4 / v2.3 修改记录和版本索引
 - 去掉每条修改的小标题，直接记一句话
 - 日期、标签、版本号、印章等元信息不可选中
 - 下一次改版继续追加在这里
@@ -225,16 +227,22 @@ node scripts/backend-test.mjs  # 后端 API 集成测试（先启动 server）
 | GET | `/api/github/leaderboard` | GitHub 星标前十 / 仓库搜索 |
 | GET | `/api/github/repo` | GitHub 仓库详情、简介与 README |
 | GET | `/api/github/tools` | ii tool 列表 |
+| GET | `/api/github/tools/categories` | ii tool 分类 |
+| POST | `/api/github/tools/categories` | ii52A1 新增工具分类 |
+| PATCH / DELETE | `/api/github/tools/categories/:id` | ii52A1 改名 / 删除工具分类 |
 | POST | `/api/github/tools` | ii52A1 新增 ii tool |
 | PATCH / DELETE | `/api/github/tools/:id` | ii52A1 编辑 / 删除 ii tool |
+| GET | `/api/categories` | 文章分类 |
+| POST | `/api/categories` | ii52A1 新增文章分类 |
+| PATCH / DELETE | `/api/categories/:id` | ii52A1 改名 / 删除文章分类 |
 
-数据库表：`users`、`verification_codes`、`posts`。`users.role` 区分普通 / 特权；`posts.status` 为 `draft / pending / published / rejected`。开发环境 `server/.data/halfday` 是 PGlite 数据目录，生产环境设置 `DATABASE_URL` 即可。
+数据库表：`users`、`verification_codes`、`posts`、`categories`、`github_tools`、`github_tool_categories`。`users.role` 区分普通 / 特权；`posts.status` 为 `draft / pending / published / rejected`。开发环境 `server/.data/halfday` 是 PGlite 数据目录，生产环境设置 `DATABASE_URL` 即可。
 
 ## 内容文件
 
 页面内容与视图分开，直接改 JSON 即可：
 
-- `src/content/site.json`：首页、归档、关于文案
+- `src/content/site.json`：首页、归档、关于文案；字段为空字符串时对应盒子不渲染
 - `src/content/sunset.json`：日落版本记录
 - `src/content/navigation.json`：宇宙导航分类与卡片
 - `src/content/mascot.json`：小满台词
@@ -286,36 +294,37 @@ node scripts/backend-test.mjs  # 后端 API 集成测试（先启动 server）
 
 ## 截图
 
-- `screenshots/v23-home-light.png`
-- `screenshots/v23-home-dark.png`
-- `screenshots/v23-home-light-full.png`
-- `screenshots/v23-home-mobile.png`
-- `screenshots/v23-universe-light.png`
-- `screenshots/v23-universe-mobile.png`
-- `screenshots/v23-space-light.png`
-- `screenshots/v23-review-light.png`
-- `screenshots/v23-profile-light.png`
-- `screenshots/v23-login-light.png`
-- `screenshots/v23-login-dark.png`
-- `screenshots/v23-login-mobile.png`
-- `screenshots/v23-forgot-light.png`
-- `screenshots/v23-write-light.png`
-- `screenshots/v23-write-mobile.png`
-- `screenshots/v23-articles-light.png`
-- `screenshots/v23-article-light.png`
-- `screenshots/v23-article-dark.png`
-- `screenshots/v23-sunset-light.png`
-- `screenshots/v23-sunset-dark.png`
-- `screenshots/v23-user-light.png`
-- `screenshots/v23-github-lab.png`
-- `screenshots/v23-github-top.png`
-- `screenshots/v23-github-favorites.png`
-- `screenshots/v23-github-tools.png`
-- `screenshots/v23-github-tools-admin.png`
-- `screenshots/v23-github-repo.png`
-- `screenshots/v23-external-guard.png`
-- `screenshots/v23-user-dark.png`
-- `screenshots/v23-mobile-menu.png`
-- `screenshots/v23-mobile-admin-menu.png`
+- `screenshots/v24-home-light.png`
+- `screenshots/v24-home-dark.png`
+- `screenshots/v24-home-light-full.png`
+- `screenshots/v24-home-mobile.png`
+- `screenshots/v24-universe-light.png`
+- `screenshots/v24-universe-mobile.png`
+- `screenshots/v24-space-light.png`
+- `screenshots/v24-space-admin.png`
+- `screenshots/v24-review-light.png`
+- `screenshots/v24-profile-light.png`
+- `screenshots/v24-login-light.png`
+- `screenshots/v24-login-dark.png`
+- `screenshots/v24-login-mobile.png`
+- `screenshots/v24-forgot-light.png`
+- `screenshots/v24-write-light.png`
+- `screenshots/v24-write-mobile.png`
+- `screenshots/v24-articles-light.png`
+- `screenshots/v24-article-light.png`
+- `screenshots/v24-article-dark.png`
+- `screenshots/v24-sunset-light.png`
+- `screenshots/v24-sunset-dark.png`
+- `screenshots/v24-user-light.png`
+- `screenshots/v24-github-lab.png`
+- `screenshots/v24-github-top.png`
+- `screenshots/v24-github-favorites.png`
+- `screenshots/v24-github-tools.png`
+- `screenshots/v24-github-tools-admin.png`
+- `screenshots/v24-github-repo.png`
+- `screenshots/v24-external-guard.png`
+- `screenshots/v24-user-dark.png`
+- `screenshots/v24-mobile-menu.png`
+- `screenshots/v24-mobile-admin-menu.png`
 - `screenshots/v13-article-dark.png`
 - `screenshots/v13-login-dark.png`

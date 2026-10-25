@@ -82,7 +82,7 @@ assert.equal(await page.locator('.article-state--pending').innerText().then((tex
 await page.goto(`${base}/space`, { waitUntil: 'networkidle' })
 
 await logout()
-await login('ii52A1', 'ii52A1pass')
+await login('ii52A1', '0000')
 assert.equal(
   await page.getByRole('button', { name: /ii52A1/ }).count() > 0,
   true,
@@ -116,7 +116,7 @@ await page.waitForURL('**/space', { timeout: 15000 })
 await page.locator('.space-status--pending').first().waitFor()
 
 await logout()
-await login('ii52A1', 'ii52A1pass')
+await login('ii52A1', '0000')
 await approveFirst()
 
 await logout()
@@ -133,7 +133,7 @@ await page.waitForTimeout(800)
 assert.equal(await page.locator('.space-post').count(), 0)
 
 await logout()
-await login('ii52A1', 'ii52A1pass')
+await login('ii52A1', '0000')
 await page.goto(`${base}/write`, { waitUntil: 'networkidle' })
 await page.locator('#write-title').fill('管理员直接发布的一页')
 await page.locator('#write-excerpt').fill('管理员发页不需要审核，这条用于验证发布路径。')
@@ -216,7 +216,8 @@ assert.equal(await mobile.locator('.lab-board .lab-repo').count(), 1)
 await mobile.goto(`${base}/github-lab/tools`, { waitUntil: 'networkidle' })
 await mobile.locator('.tool-card').first().waitFor({ timeout: 20000 })
 assert.equal(await mobile.locator('.tool-card').count(), 2)
-assert.equal((await mobile.locator('.tool-list').innerText()).includes('repkg'), true)
+assert.equal(await mobile.locator('.tool-group').count(), 2)
+assert.equal((await mobile.locator('.tool-groups').innerText()).includes('repkg'), true)
 
 await mobile.goto(`${base}/sunset`, { waitUntil: 'networkidle' })
 const sunsetMetaSelect = await mobile.evaluate(

@@ -11499,7 +11499,8 @@ main:focus {
 }
 
 .tool-form input,
-.tool-form textarea {
+.tool-form textarea,
+.tool-form select {
   width: 100%;
   border: 1px solid var(--line-dark);
   border-radius: 8px;
@@ -11513,8 +11514,13 @@ main:focus {
   resize: vertical;
 }
 
+.tool-form select {
+  resize: none;
+}
+
 .tool-form input:focus,
-.tool-form textarea:focus {
+.tool-form textarea:focus,
+.tool-form select:focus {
   border-color: var(--ink);
 }
 
@@ -11522,6 +11528,225 @@ main:focus {
   display: flex;
   align-items: center;
   gap: 14px;
+}
+
+.tool-category-admin {
+  max-width: 860px;
+  margin: 34px auto 0;
+  padding: 18px 0;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+
+.tool-category-admin__add {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  max-width: 420px;
+  margin-top: 12px;
+}
+
+.tool-category-admin__add input {
+  min-width: 0;
+  flex: 1;
+  border: 1px solid var(--line-dark);
+  border-radius: 8px;
+  background: var(--canvas);
+  color: var(--ink);
+  padding: 8px 10px;
+  font-size: 12px;
+  outline: 0;
+}
+
+.tool-category-admin__add input:focus {
+  border-color: var(--ink);
+}
+
+.tool-category-admin__list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-top: 13px;
+}
+
+.tool-category-admin__list > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 7px 4px 10px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--ink-soft);
+  font-size: 10px;
+}
+
+.tool-category-admin__list button {
+  display: grid;
+  place-items: center;
+  width: 17px;
+  height: 17px;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  color: var(--muted-light);
+  cursor: pointer;
+}
+
+.tool-category-admin__list button:hover {
+  background: var(--paper-soft);
+  color: var(--ink);
+}
+
+.tool-groups {
+  max-width: 860px;
+  margin: 34px auto 0;
+}
+
+.tool-group {
+  margin-top: 28px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+}
+
+.tool-group:first-child {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: 0;
+}
+
+.tool-group__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.tool-group__head h2 {
+  font-family: var(--serif);
+  font-size: 23px;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+}
+
+.tool-group__head span {
+  color: var(--muted-light);
+  font-size: 9px;
+}
+
+.tool-card__date {
+  margin-top: 11px;
+  color: var(--muted-light);
+  font-size: 9px;
+}
+
+/* ---------- blog category manager ---------- */
+.category-manager {
+  max-width: 980px;
+  margin: 28px auto 0;
+  padding: 20px 22px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--paper);
+}
+
+.category-manager__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.category-manager__head h2 {
+  font-family: var(--serif);
+  font-size: 22px;
+  font-weight: 600;
+}
+
+.category-manager__head p {
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.category-manager__head > span {
+  color: var(--muted-light);
+  font-size: 9px;
+}
+
+.category-manager__add {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 380px;
+  margin-top: 14px;
+}
+
+.category-manager__add input,
+.category-manager__list input {
+  min-width: 0;
+  flex: 1;
+  border: 1px solid var(--line-dark);
+  border-radius: 7px;
+  background: var(--canvas);
+  color: var(--ink);
+  padding: 7px 9px;
+  font-size: 11px;
+  outline: 0;
+}
+
+.category-manager__list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 12px;
+  padding: 0;
+  list-style: none;
+}
+
+.category-manager__list li {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 5px 4px 9px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  font-size: 10px;
+}
+
+.category-manager__list strong {
+  font-weight: 500;
+  color: var(--ink-soft);
+}
+
+.category-manager__icon,
+.category-manager__remove {
+  border: 0;
+  background: none;
+  color: var(--muted-light);
+  cursor: pointer;
+}
+
+.category-manager__icon {
+  display: grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  padding: 0;
+}
+
+.category-manager__icon:hover {
+  background: var(--paper-soft);
+  color: var(--ink);
+}
+
+.category-manager__remove {
+  padding: 0 4px;
+  font-size: 9px;
+}
+
+.category-manager__remove:hover {
+  color: var(--coral);
 }
 
 .tool-list {

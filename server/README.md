@@ -20,6 +20,7 @@ npm run dev
 | `DATABASE_URL` | 空 | 设置后使用真实 PostgreSQL；为空时使用 PGlite |
 | `PGLITE_DIR` | `./.data/halfday` | PGlite 数据目录 |
 | `JWT_SECRET` | 本地演示值 | **生产必须替换** |
+| `ADMIN_PASSWORD` | `0000`（开发） | ii52A1 的密码，写入 `.env` |
 | `EXPOSE_DEV_CODE` | `true` | 演示项目把验证码返回给前端；生产接邮件后设为 `false` |
 | `WEATHER_LAT` / `WEATHER_LON` | 杭州 | 天气坐标 |
 | `GITHUB_TOKEN` | 空 | 可选，提高 GitHub 搜索额度 |
@@ -30,12 +31,14 @@ npm run dev
 - `users`：邮箱、用户名、handle、bcrypt 密码、`role`（member / admin）、简介、地点、GitHub、头像
 - `verification_codes`：注册 / 重置验证码，SHA-256 摘要、10 分钟过期、尝试次数
 - `posts`：标题、摘要、正文、JSON 内容块、分类、标签、封面、状态、审核原因、作者、时间
-- `github_tools`：ii tool 的仓库、描述、使用体验与维护人
+- `github_tools`：ii tool 的仓库、描述、使用体验、分类与维护人
+- `github_tool_categories`：ii tool 分类
+- `categories`：文章分类
 
 账号：
 
 - 普通：`hello@halfday.club` / `halfday`
-- 特权：`ii52A1` / `ii52A1pass`
+- 特权：`ii52A1` / `0000`
 
 ## 接口
 
@@ -62,9 +65,15 @@ npm run dev
 | GET | `/api/github/leaderboard` | - | GitHub 星标前十 / `?q=` 搜索 / `?language=`，缓存五分钟 |
 | GET | `/api/github/repo` | - | 仓库详情、中文/英文简介、README 预览 |
 | GET | `/api/github/tools` | - | ii tool 列表 / `?repo=owner/name` |
+| GET | `/api/github/tools/categories` | - | ii tool 分类 |
+| POST | `/api/github/tools/categories` | 管理员 | 新增 ii tool 分类 |
+| PATCH / DELETE | `/api/github/tools/categories/:id` | 管理员 | 改名 / 删除 ii tool 分类 |
 | POST | `/api/github/tools` | 管理员 | 新增 ii tool |
 | PATCH | `/api/github/tools/:id` | 管理员 | 编辑 ii tool |
 | DELETE | `/api/github/tools/:id` | 管理员 | 删除 ii tool |
+| GET | `/api/categories` | - | 文章分类 |
+| POST | `/api/categories` | 管理员 | 新增文章分类 |
+| PATCH / DELETE | `/api/categories/:id` | 管理员 | 改名 / 删除文章分类 |
 
 ## 快速验证
 

@@ -6,16 +6,20 @@ export interface GithubTool {
   repoUrl: string
   description: string
   experience: string
+  categoryId: string | null
+  categoryName: string | null
   createdAt: string
   updatedAt: string
 }
 
-interface GithubToolRow extends Record<string, unknown> {
+export interface GithubToolRow extends Record<string, unknown> {
   id: string
   repo_full_name: string
   repo_url: string
   description: string
   experience: string
+  category_id: string | null
+  category_name?: string | null
   created_at: string
   updated_at: string
 }
@@ -41,32 +45,28 @@ export function parseGithubRepoUrl(value: string) {
   }
 }
 
-function mapTool(row: GithubToolRow): GithubTool {
+export function mapGithubTool(row: GithubToolRow): GithubTool {
   return {
     id: row.id,
     repoFullName: row.repo_full_name,
     repoUrl: row.repo_url,
     description: row.description,
     experience: row.experience,
+    categoryId: row.category_id,
+    categoryName: row.category_name ?? null,
     createdAt: new Date(row.created_at).toISOString(),
     updatedAt: new Date(row.updated_at).toISOString(),
   }
 }
 
 export async function listGithubTools(db: DbClient, fullName?: string) {
+  const base = `SELECT t.*, c.name AS category_name
+    FROM github_tools t
+    LEFT JOIN github_tool_categories c ON c.id = t.category_id`
   const result = fullName
-    ? await db.query<GithubToolRow>(
-        'SELECT * FROM github_tools WHERE lower(repo_full_name) = lower($1) LIMIT 1',
-        [fullName],
-      )
-    : await db.query<GithubToolRow>('SELECT * FROM github_tools ORDER BY updated_at DESC')
-  return result.rows.map(mapTool)
-}
-
-export async function findGithubTool(db: DbClient, id: string) {
-  const result = await db.query<GithubToolRow>(
-    'SELECT * FROM github_tools WHERE id = $1 LIMIT 1',
-    [id],
-  )
-  return result.rows[0] ? mapTool(result.rows[0]) : null
+    ? await db.query<GithubToolRow>(`${base} WHERE lower(t.repo_full_name) = lower($1) LIMIT 1`, [
+        fullName,
+      ])
+    : await db.query<GithubToolRow>(`${base} ORDER BY t.updated_at DESC`)
+  return result.rows.map(mapGithubTool)
 }

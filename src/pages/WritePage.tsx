@@ -2,6 +2,8 @@ import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
 import { Link, Navigate, useNavigate, useSearchParams } from 'react-router-dom'
 import { ArrowLeft, Check, Eye, Image, PenLine, Plus } from 'lucide-react'
 import type { CoverVariant } from '../data/posts'
+import { categories as fallbackCategories } from '../data/posts'
+import { useCategories } from '../hooks/useCategories'
 import { parseArticleBody, countCharacters, stringifyArticleBody } from '../lib/markdown'
 import { publishPost, updatePost } from '../lib/postsStore'
 import { postsApi, BackendError } from '../lib/backend'
@@ -23,8 +25,6 @@ const coverOptions: Array<{ value: CoverVariant; label: string }> = [
   { value: 'bus', label: '车窗' },
   { value: 'map', label: '一张地图' },
 ]
-
-const categories = ['散步', '城市', '旧物', '收集', '日常', '阅读', '饮食']
 
 interface Draft {
   title: string
@@ -51,6 +51,8 @@ export function WritePage() {
   const editingSlug = params.get('edit')
   usePageTitle(editingSlug ? '改一页' : '写一页')
   const { user, ready } = useAuth()
+  const { names } = useCategories()
+  const categories = names.length > 0 ? names : [...fallbackCategories]
   const { showToast } = useToast()
   const navigate = useNavigate()
   const [form, setForm] = useState<Draft>(() => readStorage<Draft>('write-draft.v1', emptyDraft))
@@ -60,6 +62,12 @@ export function WritePage() {
   const [editError, setEditError] = useState('')
   const [draftState, setDraftState] = useState<'idle' | 'saved'>('idle')
   const textareaRef = useRef<HTMLTextAreaElement>(null)
+
+  useEffect(() => {
+    if (names.length > 0 && !names.includes(form.category)) {
+      setForm((current) => ({ ...current, category: names[0] }))
+    }
+  }, [names, form.category])
 
   const blocks = useMemo(() => parseArticleBody(form.body), [form.body])
   const characters = useMemo(() => countCharacters(blocks), [blocks])

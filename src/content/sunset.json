@@ -2,65 +2,67 @@
   "eyebrow": "日落 · 版本记录",
   "title": ["太阳先下班，", "我们晚一点。"],
   "intro": "只记改过什么，不开发布会。",
-  "version": "v2.3.0",
-  "date": "2026 年 10 月 24 日",
+  "version": "v2.4.0",
+  "date": "2026 年 10 月 25 日",
   "location": "杭州",
-  "seal": { "version": "2.3", "date": "oct. 2026" },
+  "seal": { "version": "2.4", "date": "oct. 2026" },
   "latest": {
-    "note": "本次更新 · 2026.10.24",
-    "version": "v2.3.0",
-    "date": "2026-10-24",
-    "short": "10.24",
+    "note": "本次更新 · 2026.10.25",
+    "version": "v2.4.0",
+    "date": "2026-10-25",
+    "short": "10.25",
     "items": [
       {
-        "tag": "入口",
-        "text": "GitHub 首页只留搜索，top 排行榜、收藏、ii tool 分开进入。",
-        "icon": "orbit",
-        "date": "2026-10-24",
-        "short": "10.24"
+        "tag": "留白",
+        "text": "文字描述 JSON 里为空的内容，对应的盒子不再显示。",
+        "icon": "feather",
+        "date": "2026-10-25",
+        "short": "10.25"
       },
       {
         "tag": "ii tool",
-        "text": "新增 ii tool，ii52A1 可以新增和编辑仓库、描述与使用体验。",
+        "text": "新增分类管理、仓库归档和添加/修改时间。",
         "icon": "archive",
-        "date": "2026-10-24",
-        "short": "10.24"
+        "date": "2026-10-25",
+        "short": "10.25"
       },
       {
-        "tag": "仓库",
-        "text": "先收 REA 与 repkg；工具卡进入同一套仓库简介页。",
-        "icon": "github",
-        "date": "2026-10-24",
-        "short": "10.24"
+        "tag": "分类",
+        "text": "ii52A1 可以新增、改名、删除文章分类。",
+        "icon": "archive",
+        "date": "2026-10-25",
+        "short": "10.25"
       },
       {
-        "tag": "详情",
-        "text": "仓库简介页增加 ii tool 段，显示描述和使用体验。",
-        "icon": "feather",
-        "date": "2026-10-24",
-        "short": "10.24"
+        "tag": "登录",
+        "text": "演示账号可以一键进入；移除管理员快捷登录。",
+        "icon": "key",
+        "date": "2026-10-25",
+        "short": "10.25"
+      },
+      {
+        "tag": "环境",
+        "text": "ii52A1 密码移入 .env，测试期为 0000。",
+        "icon": "lock",
+        "date": "2026-10-25",
+        "short": "10.25"
       }
     ]
   },
   "previous": {
     "note": "更早一点",
-    "version": "v2.2.0",
+    "version": "v2.3.0",
     "date": "2026-10-24",
     "items": [
       {
-        "tag": "首页",
-        "text": "GitHub 研究所改成搜索式首页。",
-        "icon": "search"
+        "tag": "入口",
+        "text": "GitHub 首页只留搜索，top 排行榜、收藏、ii tool 分开进入。",
+        "icon": "orbit"
       },
       {
-        "tag": "排行",
-        "text": "支持语言前十；仓库改为站内详情。",
+        "tag": "ii tool",
+        "text": "新增 ii tool，ii52A1 可以新增和编辑仓库、描述与使用体验。",
         "icon": "archive"
-      },
-      {
-        "tag": "收藏",
-        "text": "排行榜后新增收藏，保存在本机。",
-        "icon": "star"
       }
     ]
   },
@@ -68,6 +70,7 @@
     "title": "版本索引",
     "note": "从新到旧",
     "items": [
+      { "version": "v2.4.0", "date": "2026-10-25", "short": "10.25" },
       { "version": "v2.3.0", "date": "2026-10-24", "short": "10.24" },
       { "version": "v2.2.0", "date": "2026-10-24", "short": "10.24" },
       { "version": "v2.1.0", "date": "2026-10-24", "short": "10.24" },
@@ -86,7 +89,7 @@
     ]
   },
   "note": {
-    "stamp": "v2.3",
+    "stamp": "v2.4",
     "title": "为什么放在日落",
     "body": "白天忙，日落前后正好翻一翻。",
     "link": "回首页",

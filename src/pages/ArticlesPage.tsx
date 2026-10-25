@@ -1,9 +1,11 @@
 import { useDeferredValue, useEffect, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { PenLine, Search, X } from 'lucide-react'
-import { categories, postAuthor } from '../data/posts'
+import { categories as fallbackCategories, postAuthor } from '../data/posts'
 import site from '../content/site.json'
+import { useCategories } from '../hooks/useCategories'
 import { usePosts } from '../lib/postsStore'
+import { hasText } from '../lib/content'
 import { usePageTitle } from '../hooks/usePageTitle'
 import { PostRow } from '../components/PostCard'
 
@@ -11,6 +13,8 @@ export function ArticlesPage() {
   usePageTitle('风吹散的页')
   const content = site.articles
   const allPosts = usePosts()
+  const { names } = useCategories()
+  const categories = names.length > 0 ? names : [...fallbackCategories]
   const [params, setParams] = useSearchParams()
   const category = params.get('category') ?? '全部'
   const [query, setQuery] = useState(() => params.get('q') ?? '')
@@ -49,17 +53,21 @@ export function ArticlesPage() {
     <div className="page-container articles-page">
       <header className="page-hero">
         <div>
-          <h1>{content.title}</h1>
-          <p>{content.lede}</p>
-          <Link className="button button--ink page-hero__write" to="/write">
-            <PenLine size={15} aria-hidden="true" />
-            {content.write}
-          </Link>
+          {hasText(content.title) && <h1>{content.title}</h1>}
+          {hasText(content.lede) && <p>{content.lede}</p>}
+          {hasText(content.write) && (
+            <Link className="button button--ink page-hero__write" to="/write">
+              <PenLine size={15} aria-hidden="true" />
+              {content.write}
+            </Link>
+          )}
         </div>
-        <div className="page-hero__aside" aria-hidden="true">
-          <span className="page-hero__stamp">{content.stamp}</span>
-          <span className="page-hero__scribble">{content.scribble}</span>
-        </div>
+        {(hasText(content.stamp) || hasText(content.scribble)) && (
+          <div className="page-hero__aside" aria-hidden="true">
+            {hasText(content.stamp) && <span className="page-hero__stamp">{content.stamp}</span>}
+            {hasText(content.scribble) && <span className="page-hero__scribble">{content.scribble}</span>}
+          </div>
+        )}
       </header>
 
       <section className="archive" aria-label="文章筛选">

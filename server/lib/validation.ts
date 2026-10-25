@@ -78,6 +78,15 @@ export const githubToolSchema = z.object({
   url: z.string().trim().min(10).max(300),
   description: z.string().trim().min(2).max(240),
   experience: z.string().trim().max(600).optional().default(''),
+  categoryId: z.string().uuid().nullable().optional(),
+})
+
+export const categorySchema = z.object({
+  name: z.string().trim().min(1).max(24),
+})
+
+export const githubToolCategorySchema = z.object({
+  name: z.string().trim().min(1).max(24),
 })
 
 export type RegisterInput = z.infer<typeof registerSchema>

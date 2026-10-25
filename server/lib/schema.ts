@@ -69,9 +69,22 @@ export const schemaStatements = [
     repo_url text NOT NULL,
     description text NOT NULL DEFAULT '',
     experience text NOT NULL DEFAULT '',
+    category_id uuid,
     created_by uuid,
     created_at timestamptz NOT NULL DEFAULT now(),
     updated_at timestamptz NOT NULL DEFAULT now()
   )`,
   `CREATE INDEX IF NOT EXISTS github_tools_updated_idx ON github_tools (updated_at DESC)`,
+  `ALTER TABLE github_tools ADD COLUMN IF NOT EXISTS category_id uuid`,
+  `CREATE TABLE IF NOT EXISTS categories (
+    id uuid PRIMARY KEY,
+    name text NOT NULL UNIQUE,
+    created_at timestamptz NOT NULL DEFAULT now(),
+    updated_at timestamptz NOT NULL DEFAULT now()
+  )`,
+  `CREATE TABLE IF NOT EXISTS github_tool_categories (
+    id uuid PRIMARY KEY,
+    name text NOT NULL UNIQUE,
+    created_at timestamptz NOT NULL DEFAULT now()
+  )`,
 ]

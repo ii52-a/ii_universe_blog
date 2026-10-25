@@ -53,7 +53,7 @@ for (const theme of themes) {
 
   await page.goto(`${base}/login`, { waitUntil: 'networkidle' })
   await page.locator('#auth-identifier').fill('ii52A1')
-  await page.locator('#auth-password').fill('ii52A1pass')
+  await page.locator('#auth-password').fill('0000')
   await page.getByRole('button', { name: /进去坐坐/ }).click()
   await page.waitForURL('**/space')
   await page.goto(`${base}/write`, { waitUntil: 'networkidle' })

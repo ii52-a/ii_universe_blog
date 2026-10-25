@@ -129,7 +129,7 @@ export function GithubRepoPage() {
               <section className="repo-tool" aria-labelledby="repo-tool-title">
                 <div className="repo-section-head">
                   <h2 id="repo-tool-title">ii tool</h2>
-                  <span>由 ii52A1 维护</span>
+                  <span>{tool.categoryName ? `${tool.categoryName} · ` : ''}由 ii52A1 维护</span>
                 </div>
                 <p>{tool.description}</p>
                 {tool.experience && (
