@@ -59,14 +59,25 @@ export function mapGithubTool(row: GithubToolRow): GithubTool {
   }
 }
 
-export async function listGithubTools(db: DbClient, fullName?: string) {
+export async function listGithubTools(db: DbClient, fullName?: string, categoryId?: string) {
   const base = `SELECT t.*, c.name AS category_name
     FROM github_tools t
     LEFT JOIN github_tool_categories c ON c.id = t.category_id`
-  const result = fullName
-    ? await db.query<GithubToolRow>(`${base} WHERE lower(t.repo_full_name) = lower($1) LIMIT 1`, [
-        fullName,
-      ])
-    : await db.query<GithubToolRow>(`${base} ORDER BY t.updated_at DESC`)
+  const where: string[] = []
+  const params: unknown[] = []
+  if (fullName) {
+    params.push(fullName)
+    where.push(`lower(t.repo_full_name) = lower($${params.length})`)
+  }
+  if (categoryId) {
+    if (categoryId === 'uncategorized') {
+      where.push('t.category_id IS NULL')
+    } else {
+      params.push(categoryId)
+      where.push(`t.category_id = $${params.length}`)
+    }
+  }
+  const whereSql = where.length > 0 ? `WHERE ${where.join(' AND ')}` : ''
+  const result = await db.query<GithubToolRow>(`${base} ${whereSql} ORDER BY t.updated_at DESC`, params)
   return result.rows.map(mapGithubTool)
 }

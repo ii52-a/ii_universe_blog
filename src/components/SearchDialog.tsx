@@ -1,7 +1,7 @@
 import { useDeferredValue, useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { ArrowUpRight, Search } from 'lucide-react'
-import { postAuthor } from '../data/posts'
+import { displayTitle, postAuthor } from '../data/posts'
 import { usePosts } from '../lib/postsStore'
 import { CoverArt } from './CoverArt'
 
@@ -117,7 +117,7 @@ export function SearchDialog({ open, onClose }: SearchDialogProps) {
                       <CoverArt variant={post.cover} decorative />
                     </span>
                     <span className="search-results__copy">
-                      <strong>{post.title}</strong>
+                      <strong>{displayTitle(post)}</strong>
                       <small>
                         {postAuthor(post).name} · {post.category} ·{' '}
                         {new Date(post.publishedAt).getMonth() + 1} 月{' '}

@@ -73,8 +73,12 @@ export async function DELETE(
       'SELECT count(*)::int AS count FROM posts WHERE category = $1',
       [name],
     )
-    if (Number(used.rows[0]?.count ?? 0) > 0) {
+    const force = request.nextUrl.searchParams.get('force') === 'true'
+    if (Number(used.rows[0]?.count ?? 0) > 0 && !force) {
       throw new ApiError(409, 'CATEGORY_IN_USE', '还有文章在这个分类里，先移走再删')
+    }
+    if (force) {
+      await db.query("UPDATE posts SET category = '' WHERE category = $1", [name])
     }
     await db.query('DELETE FROM categories WHERE id = $1', [id])
     return NextResponse.json({ ok: true })

@@ -215,7 +215,7 @@ export const postsApi = {
     if (params.author) search.set('author', params.author)
     return apiFetch<{ posts: ApiPost[]; nextCursor: string | null }>(`/api/posts?${search.toString()}`)
   },
-  mine: () => apiFetch<{ posts: ApiPost[]; nextCursor: string | null }>('/api/posts?mine=true&limit=50'),
+  mine: () => apiFetch<{ posts: ApiPost[]; nextCursor: string | null }>('/api/posts?mine=true&limit=10'),
   get: (slug: string) => apiFetch<{ post: ApiPost }>(`/api/posts/${encodeURIComponent(slug)}`),
   create: (input: PostInput) =>
     apiFetch<{ post: ApiPost }>('/api/posts', {
@@ -259,10 +259,13 @@ export const githubApi = {
     apiFetch<GithubRepoDetail>(
       `/api/github/repo?owner=${encodeURIComponent(owner)}&repo=${encodeURIComponent(name)}`,
     ),
-  tools: (repo = '') =>
-    apiFetch<{ tools: GithubTool[] }>(
-      `/api/github/tools${repo ? `?repo=${encodeURIComponent(repo)}` : ''}`,
-    ),
+  tools: (repo = '', category = '') => {
+    const params = new URLSearchParams()
+    if (repo) params.set('repo', repo)
+    if (category) params.set('category', category)
+    const suffix = params.toString()
+    return apiFetch<{ tools: GithubTool[] }>(`/api/github/tools${suffix ? `?${suffix}` : ''}`)
+  },
   createTool: (input: GithubToolInput) =>
     apiFetch<{ tool: GithubTool }>('/api/github/tools', {
       method: 'POST',
@@ -307,10 +310,11 @@ export const categoriesApi = {
       method: 'PATCH',
       body: JSON.stringify({ name }),
     }),
-  remove: (id: string) =>
-    apiFetch<{ ok: true }>(`/api/categories/${encodeURIComponent(id)}`, {
-      method: 'DELETE',
-    }),
+  remove: (id: string, force = false) =>
+    apiFetch<{ ok: true }>(
+      `/api/categories/${encodeURIComponent(id)}${force ? '?force=true' : ''}`,
+      { method: 'DELETE' },
+    ),
 }
 
 export const widgetsApi = {

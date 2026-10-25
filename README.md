@@ -2,7 +2,7 @@
 
 一个以白色、纸张感和玩具感为基调的个人博客。内容围绕散步、旧物、食物和普通的日常，页面以紧凑的 bento 网格组织，日期、天气、时钟、在线状态、跟屏玩偶小满等小组件填满边角。
 
-当前版本：**v2.4.0**
+当前版本：**v2.5.0**
 
 仓库：**https://github.com/ii52-a/ii_universe_blog**
 
@@ -72,10 +72,10 @@ node scripts/backend-test.mjs  # 后端 API 集成测试（先启动 server）
 
 - 顶栏的「文章」改叫「风吹散的页」，所有用户的文章放在同一处
 - 只有 DeepS 自己写的两页署 **DeepS先生（@deepseek）**；其他种子页分属迟迟、小野、木木、Nana、陈皮
-- 文章归档页：分类筛选、关键词搜索，筛选状态写入 URL
-- 文章详情：阅读进度、目录跟随、点赞、收藏、分享、标签话题页，并署名实际作者
-- 分类由后端提供；ii52A1 可在 `/space` 新增、改名、删除分类
-- 撰写页 `/write`：标题、摘要、分类、标签、封面、正文、实时预览、自动草稿
+- 文章归档页：分类筛选、关键词搜索、按月份时间线，每页 10 篇
+- 分类由后端提供；ii52A1 可在文章页增加 / 删除标签，悬停显示 X
+- 「只看博主」固定标签，只显示博主文章
+- 撰写页 `/write`：标题可留空，摘要、分类、标签、封面、正文、实时预览、自动草稿
 - 作者可以编辑、删除自己的文章；地址在编辑后保持不变
 - 评论：发表、点赞、删除自己的评论；空状态、加载骨架、错误反馈
 - 作者卡、上下篇推荐、RSS
@@ -141,7 +141,7 @@ node scripts/backend-test.mjs  # 后端 API 集成测试（先启动 server）
 - 首页只有标题、搜索框、空段和三个入口：top 排行榜 / 收藏 / ii tool
 - `top 排行榜`：按语言看前十，仓库详情在站内打开
 - `收藏`：独立子页面，收藏保存在本机
-- `ii tool`：GitHub 插件仓库介绍；按分类分组，显示添加 / 最后修改时间
+- `ii tool`：分类小标题，点击后请求该分类仓库；显示添加 / 最后修改时间
 - ii52A1 可新增/删除工具分类，新增/编辑仓库并归档
 - 仓库详情：`/github-lab/:owner/:repo`，中文简介（无中文时英文）、README 预览、留言
 - 首批 ii tool：`morluto/rea`、`notscuffed/repkg`
@@ -156,7 +156,7 @@ node scripts/backend-test.mjs  # 后端 API 集成测试（先启动 server）
 ### 日落与版本
 
 - 顶栏小标题「日落」进入 `/sunset`
-- 只保留 v2.4 / v2.3 修改记录和版本索引
+- 只保留 v2.5 / v2.4 修改记录和版本索引
 - 去掉每条修改的小标题，直接记一句话
 - 日期、标签、版本号、印章等元信息不可选中
 - 下一次改版继续追加在这里
@@ -219,7 +219,7 @@ node scripts/backend-test.mjs  # 后端 API 集成测试（先启动 server）
 | POST | `/api/auth/reset-password` | 验证码重置密码 |
 | GET / PATCH | `/api/users/me` | 当前用户资料 |
 | GET | `/api/users/:handle` | 公开用户与文章 |
-| GET / POST | `/api/posts` | 文章列表 / 新建 |
+| GET / POST | `/api/posts` | 文章列表（每页最多 10）/ 新建，标题可空 |
 | GET / PATCH / DELETE | `/api/posts/:slug` | 详情 / 修改 / 删除（作者权限） |
 | GET | `/api/review` | 管理员待审核队列 |
 | PATCH | `/api/review/:slug` | 管理员通过 / 退回 |
@@ -294,37 +294,39 @@ node scripts/backend-test.mjs  # 后端 API 集成测试（先启动 server）
 
 ## 截图
 
-- `screenshots/v24-home-light.png`
-- `screenshots/v24-home-dark.png`
-- `screenshots/v24-home-light-full.png`
-- `screenshots/v24-home-mobile.png`
-- `screenshots/v24-universe-light.png`
-- `screenshots/v24-universe-mobile.png`
-- `screenshots/v24-space-light.png`
-- `screenshots/v24-space-admin.png`
-- `screenshots/v24-review-light.png`
-- `screenshots/v24-profile-light.png`
-- `screenshots/v24-login-light.png`
-- `screenshots/v24-login-dark.png`
-- `screenshots/v24-login-mobile.png`
-- `screenshots/v24-forgot-light.png`
-- `screenshots/v24-write-light.png`
-- `screenshots/v24-write-mobile.png`
-- `screenshots/v24-articles-light.png`
-- `screenshots/v24-article-light.png`
-- `screenshots/v24-article-dark.png`
-- `screenshots/v24-sunset-light.png`
-- `screenshots/v24-sunset-dark.png`
-- `screenshots/v24-user-light.png`
-- `screenshots/v24-github-lab.png`
-- `screenshots/v24-github-top.png`
-- `screenshots/v24-github-favorites.png`
-- `screenshots/v24-github-tools.png`
-- `screenshots/v24-github-tools-admin.png`
-- `screenshots/v24-github-repo.png`
-- `screenshots/v24-external-guard.png`
-- `screenshots/v24-user-dark.png`
-- `screenshots/v24-mobile-menu.png`
-- `screenshots/v24-mobile-admin-menu.png`
+- `screenshots/v25-home-light.png`
+- `screenshots/v25-home-dark.png`
+- `screenshots/v25-home-light-full.png`
+- `screenshots/v25-home-mobile.png`
+- `screenshots/v25-universe-light.png`
+- `screenshots/v25-universe-mobile.png`
+- `screenshots/v25-space-light.png`
+- `screenshots/v25-space-admin.png`
+- `screenshots/v25-review-light.png`
+- `screenshots/v25-profile-light.png`
+- `screenshots/v25-login-light.png`
+- `screenshots/v25-login-dark.png`
+- `screenshots/v25-login-mobile.png`
+- `screenshots/v25-forgot-light.png`
+- `screenshots/v25-write-light.png`
+- `screenshots/v25-write-mobile.png`
+- `screenshots/v25-articles-light.png`
+- `screenshots/v25-articles-admin.png`
+- `screenshots/v25-article-light.png`
+- `screenshots/v25-article-dark.png`
+- `screenshots/v25-sunset-light.png`
+- `screenshots/v25-sunset-dark.png`
+- `screenshots/v25-user-light.png`
+- `screenshots/v25-github-lab.png`
+- `screenshots/v25-github-top.png`
+- `screenshots/v25-github-favorites.png`
+- `screenshots/v25-github-tools.png`
+- `screenshots/v25-github-tools-admin.png`
+- `screenshots/v25-github-repo.png`
+- `screenshots/v25-github-repo-tool.png`
+- `screenshots/v25-external-guard.png`
+- `screenshots/v25-user-dark.png`
+- `screenshots/v25-mobile-menu.png`
+- `screenshots/v25-mobile-admin-menu.png`
 - `screenshots/v13-article-dark.png`
 - `screenshots/v13-login-dark.png`

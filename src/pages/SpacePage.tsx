@@ -9,7 +9,7 @@ import {
   Trash2,
   UserRound,
 } from 'lucide-react'
-import type { CoverVariant } from '../data/posts'
+import { displayTitle, type CoverVariant } from '../data/posts'
 import { useAuth } from '../context/AuthContext'
 import { useToast } from '../context/ToastContext'
 import { usePageTitle } from '../hooks/usePageTitle'
@@ -17,7 +17,6 @@ import { postsApi, type ApiPost } from '../lib/backend'
 import { refreshPosts } from '../lib/postsStore'
 import { Avatar } from '../components/Avatar'
 import { CoverArt } from '../components/CoverArt'
-import { CategoryManager } from '../components/CategoryManager'
 
 function useCountUp(target: number) {
   const [value, setValue] = useState(0)
@@ -203,8 +202,6 @@ export function SpacePage() {
           </div>
         </header>
 
-        {user.role === 'admin' && <CategoryManager />}
-
         <div className="space-content">
           <section className="space-posts" aria-labelledby="space-posts-title">
             <div className="section-head">
@@ -258,7 +255,7 @@ export function SpacePage() {
                         <span>{post.readMinutes} 分钟</span>
                       </div>
                       <Link className="space-post__title" to={`/articles/${post.slug}`}>
-                        {post.title}
+                        {displayTitle(post)}
                       </Link>
                       <p>{post.excerpt}</p>
                     </div>

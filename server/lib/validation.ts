@@ -58,7 +58,7 @@ export const profileUpdateSchema = z.object({
 const cover = z.enum(['store', 'chair', 'walk', 'receipt', 'desk', 'book', 'ice', 'bus', 'map'])
 
 export const postCreateSchema = z.object({
-  title: z.string().trim().min(2, '标题至少 2 个字').max(80, '标题最多 80 个字'),
+  title: z.string().trim().max(80, '标题最多 80 个字').default(''),
   excerpt: z.string().trim().min(8, '摘要至少 8 个字').max(200, '摘要最多 200 个字'),
   body: z.string().min(20, '正文至少 20 个字').max(50000),
   content: z.array(z.unknown()).min(1, '正文不能为空').max(300),

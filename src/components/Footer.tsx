@@ -54,7 +54,6 @@ export function Footer() {
           <span className="site-footer__stamp" aria-hidden="true">
             慢
           </span>
-          <p>这里没有算法推荐。文章按时间排列，想看什么自己翻。</p>
           <button type="button" className="footer-top" onClick={backToTop}>
             回到顶部 <ArrowUp size={14} aria-hidden="true" />
           </button>
@@ -64,7 +63,7 @@ export function Footer() {
       <div className="site-footer__word" aria-hidden="true" />
 
       <div className="site-footer__bottom">
-        <span>© 2026 半日 · v2.4.0</span>
+        <span>© 2026 半日 · v2.5.0</span>
         <span>文字采用 CC BY-NC-SA 4.0</span>
         <span>用纸、茶和一点耐心做的</span>
       </div>

@@ -54,8 +54,8 @@ npm run dev
 | GET | `/api/users/me` | JWT | 当前用户资料 |
 | PATCH | `/api/users/me` | JWT | 改用户名、简介、城市、GitHub、头像 |
 | GET | `/api/users/:handle` | - | 公开用户、文章、使用统计 |
-| GET | `/api/posts` | 可选 | `limit` `cursor` `category` `q` `author` `mine` |
-| POST | `/api/posts` | JWT | 普通账号进入 `pending`，ii52A1 直接发布 |
+| GET | `/api/posts` | 可选 | `limit`（最大 10）`cursor` `category` `q` `author` `mine` |
+| POST | `/api/posts` | JWT | 普通账号进入 `pending`，ii52A1 直接发布；标题可空 |
 | GET | `/api/posts/:slug` | 可选 | 公开页；未发布仅作者 / 管理员可见 |
 | PATCH | `/api/posts/:slug` | JWT | 作者修改；普通账号重新进入审核 |
 | DELETE | `/api/posts/:slug` | JWT | 作者删除 |

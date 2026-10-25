@@ -62,10 +62,13 @@ export function GithubRepoPage() {
     showToast(added ? '已放进收藏。' : '已从收藏里移除。', 'info')
   }
 
+  const languageNames =
+    /English|简体中文|繁體中文|日本語|한국어|Türkçe|Русский|Tiếng Việt|ไทย|Deutsch|Español|Français|Українська|Polski|Português|العربية|Bahasa Indonesia|Italiano|Ελληνικά|עברית|اردو|Română/g
   const paragraphs = (repo?.readme.text ?? '')
     .split(/\n{2,}/)
     .map((part) => part.trim())
     .filter((part) => part.length >= 40 && (part.match(/\n/g)?.length ?? 0) <= 3)
+    .filter((part) => (part.match(languageNames)?.length ?? 0) < 3)
     .slice(0, 4)
     .map((part) => (part.length > 520 ? `${part.slice(0, 520)}…` : part))
 
@@ -115,29 +118,23 @@ export function GithubRepoPage() {
             <section className="repo-intro" aria-labelledby="repo-intro-title">
               <div className="repo-section-head">
                 <h2 id="repo-intro-title">简介</h2>
-                <span>{repo.summaryLang === 'zh' ? '中文' : 'English'}</span>
               </div>
               <p>{repo.summary || repo.description || '这个仓库还没有写简介。'}</p>
-              {repo.readme.htmlUrl && (
-                <p className="repo-intro__note">
-                  {repo.summaryLang === 'zh' ? '来自仓库介绍。' : '仓库没有中文简介，先显示英文介绍。'}
-                </p>
-              )}
             </section>
 
             {tool && (
               <section className="repo-tool" aria-labelledby="repo-tool-title">
                 <div className="repo-section-head">
                   <h2 id="repo-tool-title">ii tool</h2>
-                  <span>{tool.categoryName ? `${tool.categoryName} · ` : ''}由 ii52A1 维护</span>
                 </div>
                 <p>{tool.description}</p>
-                {tool.experience && (
-                  <div className="repo-tool__experience">
-                    <span>使用体验</span>
-                    <p>{tool.experience}</p>
-                  </div>
-                )}
+              </section>
+            )}
+
+            {tool?.experience && (
+              <section className="repo-experience" aria-labelledby="repo-experience-title">
+                <h2 id="repo-experience-title">使用体验</h2>
+                <p>{tool.experience}</p>
               </section>
             )}
 

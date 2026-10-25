@@ -30,11 +30,7 @@ export function TopicPage() {
       <header className="topic-hero">
         <span className="page-hero__note">关于这个小小的话题</span>
         <h1>「{topic}」</h1>
-        <p>
-          {matched.length > 0
-            ? `一共 ${matched.length} 篇，散在时间里。`
-            : '这个话题还没有文章。也许可以等等，或者先看看别的。'}
-        </p>
+        {matched.length === 0 && <p>这个话题还没有文章。</p>}
         <span className="topic-hero__star" aria-hidden="true">
           ✳
         </span>

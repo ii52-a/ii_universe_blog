@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
     if (mine && !user) throw new ApiError(401, 'UNAUTHORIZED', '请先登录')
 
     const result = await listPosts(db, {
-      limit: Number(params.get('limit') ?? 20),
+      limit: Math.min(10, Math.max(1, Number(params.get('limit') ?? 10))),
       cursor: params.get('cursor'),
       category: params.get('category'),
       q: params.get('q'),

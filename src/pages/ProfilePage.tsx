@@ -196,7 +196,6 @@ export function ProfilePage() {
             )}
           </div>
           <div className="profile-card__foot">
-            <span>资料保存在数据库</span>
             <Link className="text-button" to="/me#settings">
               改一改
             </Link>
@@ -208,7 +207,6 @@ export function ProfilePage() {
             <div className="profile-section__head">
               <div>
                 <h2 id="settings-title">资料</h2>
-                <p>会显示在留言和页头。</p>
               </div>
               {dirty && <span className="unsaved-dot">有改动还没保存</span>}
             </div>

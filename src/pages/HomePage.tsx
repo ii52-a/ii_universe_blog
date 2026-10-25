@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import { ArrowUpRight } from 'lucide-react'
 import site from '../content/site.json'
+import { displayTitle } from '../data/posts'
 import { usePageTitle } from '../hooks/usePageTitle'
 import { useClock } from '../hooks/useClock'
 import { usePosts } from '../lib/postsStore'
@@ -80,7 +81,7 @@ export function HomePage() {
                 <div className="hero-card__latest">
                   <span className="hero-card__latest-label">{content.latestLabel}</span>
                   <Link to={`/articles/${latest.slug}`}>
-                    <span>{latest.title}</span>
+                    <span>{displayTitle(latest)}</span>
                     <span>{latest.readMinutes} 分钟</span>
                   </Link>
                 </div>

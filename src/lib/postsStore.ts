@@ -57,7 +57,7 @@ export function getPostBySlug(slug?: string) {
 }
 
 export async function refreshPosts() {
-  const result = await postsApi.list({ limit: 50 })
+  const result = await postsApi.list({ limit: 10 })
   const next = result.posts.map(mapApiPost)
   loadError = null
   emit(next)

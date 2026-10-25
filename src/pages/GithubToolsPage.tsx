@@ -33,13 +33,14 @@ export function GithubToolsPage() {
   const [saving, setSaving] = useState(false)
   const [categoryName, setCategoryName] = useState('')
   const [categoryBusy, setCategoryBusy] = useState(false)
+  const [activeCategory, setActiveCategory] = useState('')
   const admin = user?.role === 'admin'
 
-  const load = async () => {
+  const load = async (category = activeCategory) => {
     setLoading(true)
     try {
       const [toolData, categoryData] = await Promise.all([
-        githubApi.tools(),
+        githubApi.tools('', category),
         githubApi.toolCategories(),
       ])
       setTools(toolData.tools)
@@ -53,8 +54,13 @@ export function GithubToolsPage() {
   }
 
   useEffect(() => {
-    void load()
+    void load('')
   }, [])
+
+  const selectCategory = (id: string) => {
+    setActiveCategory(id)
+    void load(id)
+  }
 
   const reset = () => {
     setForm(emptyForm)
@@ -89,7 +95,7 @@ export function GithubToolsPage() {
       }
       showToast(editingId ? 'ii tool 改好了。' : 'ii tool 加好了。')
       reset()
-      await load()
+      await load(activeCategory)
     } catch (caught) {
       showToast(caught instanceof Error ? caught.message : '没有保存成功。', 'error')
     } finally {
@@ -104,7 +110,7 @@ export function GithubToolsPage() {
     try {
       await githubApi.createToolCategory(categoryName.trim())
       setCategoryName('')
-      await load()
+      await load(activeCategory)
       showToast('分类加好了。')
     } catch (caught) {
       showToast(caught instanceof Error ? caught.message : '没有加上。', 'error')
@@ -118,7 +124,8 @@ export function GithubToolsPage() {
     setCategoryBusy(true)
     try {
       await githubApi.removeToolCategory(category.id)
-      await load()
+      if (activeCategory === category.id) setActiveCategory('')
+      await load(activeCategory === category.id ? '' : activeCategory)
       showToast('分类删掉了。')
     } catch (caught) {
       showToast(caught instanceof Error ? caught.message : '没有删掉。', 'error')
@@ -127,18 +134,11 @@ export function GithubToolsPage() {
     }
   }
 
-  const groups = [
-    ...categories.map((category) => ({
-      id: category.id,
-      name: category.name,
-      items: tools.filter((tool) => tool.categoryId === category.id),
-    })),
-    {
-      id: 'uncategorized',
-      name: '未分类',
-      items: tools.filter((tool) => !tool.categoryId),
-    },
-  ].filter((group) => group.items.length > 0)
+  const categoryTabs = [
+    { id: '', name: '全部' },
+    ...categories,
+    { id: 'uncategorized', name: '未分类' },
+  ]
 
   return (
     <div className="lab-page">
@@ -155,7 +155,6 @@ export function GithubToolsPage() {
 
         <header className="lab-subhead">
           <h1>ii tool</h1>
-          <span>由 ii52A1 维护</span>
         </header>
 
         {admin && (
@@ -163,7 +162,6 @@ export function GithubToolsPage() {
             <section className="tool-category-admin" aria-labelledby="tool-category-title">
               <div className="repo-section-head">
                 <h2 id="tool-category-title">分类</h2>
-                <span>{categories.length} 个</span>
               </div>
               <form className="tool-category-admin__add" onSubmit={addCategory}>
                 <input
@@ -254,6 +252,20 @@ export function GithubToolsPage() {
           </>
         )}
 
+        <nav className="tool-category-tabs" aria-label="ii tool 分类">
+          {categoryTabs.map((category) => (
+            <button
+              key={category.id || 'all'}
+              type="button"
+              className={activeCategory === category.id ? 'is-active' : ''}
+              onClick={() => selectCategory(category.id)}
+              aria-pressed={activeCategory === category.id}
+            >
+              {category.name}
+            </button>
+          ))}
+        </nav>
+
         {loading ? (
           <div className="lab-loading" role="status" aria-label="正在读取 ii tool">
             <span />
@@ -263,51 +275,40 @@ export function GithubToolsPage() {
           <div className="lab-empty">
             <p>{error}</p>
           </div>
-        ) : groups.length === 0 ? (
+        ) : tools.length === 0 ? (
           <div className="lab-empty">
             <p>还没有 ii tool。</p>
           </div>
         ) : (
-          <div className="tool-groups">
-            {groups.map((group) => (
-              <section className="tool-group" key={group.id} aria-labelledby={`tool-group-${group.id}`}>
-                <div className="tool-group__head">
-                  <h2 id={`tool-group-${group.id}`}>{group.name}</h2>
-                  <span>{group.items.length}</span>
-                </div>
-                <div className="tool-list">
-                  {group.items.map((tool) => {
-                    const [owner, repo] = tool.repoFullName.split('/')
-                    return (
-                      <article className="tool-card" key={tool.id}>
-                        <div className="tool-card__head">
-                          <Link to={`/github-lab/${owner}/${repo}`}>
-                            <strong>{tool.repoFullName}</strong>
-                            <span>查看仓库简介</span>
-                          </Link>
-                          {admin && (
-                            <button type="button" className="tool-edit" onClick={() => edit(tool)}>
-                              <Pencil size={12} aria-hidden="true" />
-                              编辑
-                            </button>
-                          )}
-                        </div>
-                        <p className="tool-card__description">{tool.description}</p>
-                        {tool.experience && (
-                          <div className="tool-card__experience">
-                            <span>使用体验</span>
-                            <p>{tool.experience}</p>
-                          </div>
-                        )}
-                        <p className="tool-card__date">
-                          添加 {formatDate(tool.createdAt)} · 最后修改 {formatDate(tool.updatedAt)}
-                        </p>
-                      </article>
-                    )
-                  })}
-                </div>
-              </section>
-            ))}
+          <div className="tool-list">
+            {tools.map((tool) => {
+              const [owner, repo] = tool.repoFullName.split('/')
+              return (
+                <article className="tool-card" key={tool.id}>
+                  <div className="tool-card__head">
+                    <Link to={`/github-lab/${owner}/${repo}`}>
+                      <strong>{tool.repoFullName}</strong>
+                    </Link>
+                    {admin && (
+                      <button type="button" className="tool-edit" onClick={() => edit(tool)}>
+                        <Pencil size={12} aria-hidden="true" />
+                        编辑
+                      </button>
+                    )}
+                  </div>
+                  <p className="tool-card__description">{tool.description}</p>
+                  {tool.experience && (
+                    <div className="tool-card__experience">
+                      <span>使用体验</span>
+                      <p>{tool.experience}</p>
+                    </div>
+                  )}
+                  <p className="tool-card__date">
+                    添加 {formatDate(tool.createdAt)} · 最后修改 {formatDate(tool.updatedAt)}
+                  </p>
+                </article>
+              )
+            })}
           </div>
         )}
       </div>

@@ -198,8 +198,6 @@ try {
     data: { name: '测试分类改' },
   })
   assert.equal(response.status(), 200)
-  response = await admin.delete(`/api/categories/${testCategory.id}`)
-  assert.equal(response.status(), 200)
 
   response = await anon.get('/api/github/tools/categories')
   assert.equal(response.status(), 200)
@@ -225,6 +223,24 @@ try {
   const createdTool = (await json(response)).tool
   assert.equal(createdTool.repoFullName, 'octocat/Hello-World')
 
+  response = await anon.get(`/api/github/tools?category=${testToolCategory.id}`)
+  assert.equal(response.status(), 200)
+  assert.equal((await json(response)).tools.length, 1)
+
+  response = await admin.post('/api/posts', {
+    data: {
+      ...postData,
+      title: '',
+      category: '测试分类改',
+    },
+  })
+  assert.equal(response.status(), 201)
+  const emptyTitlePost = (await json(response)).post
+  assert.equal(emptyTitlePost.title, '')
+
+  response = await admin.delete(`/api/categories/${testCategory.id}?force=true`)
+  assert.equal(response.status(), 200)
+
   response = await admin.patch(`/api/github/tools/${createdTool.id}`, {
     data: {
       url: 'https://github.com/octocat/Hello-World',
@@ -242,7 +258,10 @@ try {
   response = await admin.delete(`/api/github/tools/categories/${testToolCategory.id}`)
   assert.equal(response.status(), 200)
 
-  console.log(JSON.stringify({ ok: true, email, username, checks: 45 }, null, 2))
+  response = await admin.delete(`/api/posts/${emptyTitlePost.slug}`)
+  assert.equal(response.status(), 200)
+
+  console.log(JSON.stringify({ ok: true, email, username, checks: 49 }, null, 2))
 } finally {
   await api.dispose()
   await admin.dispose()

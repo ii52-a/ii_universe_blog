@@ -216,8 +216,11 @@ assert.equal(await mobile.locator('.lab-board .lab-repo').count(), 1)
 await mobile.goto(`${base}/github-lab/tools`, { waitUntil: 'networkidle' })
 await mobile.locator('.tool-card').first().waitFor({ timeout: 20000 })
 assert.equal(await mobile.locator('.tool-card').count(), 2)
-assert.equal(await mobile.locator('.tool-group').count(), 2)
-assert.equal((await mobile.locator('.tool-groups').innerText()).includes('repkg'), true)
+assert.equal(await mobile.locator('.tool-category-tabs button').count() >= 3, true)
+await mobile.getByRole('button', { name: '逆向工程' }).click()
+await mobile.waitForTimeout(600)
+assert.equal(await mobile.locator('.tool-card').count(), 1)
+assert.equal((await mobile.locator('.tool-list').innerText()).includes('rea'), true)
 
 await mobile.goto(`${base}/sunset`, { waitUntil: 'networkidle' })
 const sunsetMetaSelect = await mobile.evaluate(

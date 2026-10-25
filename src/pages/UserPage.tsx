@@ -13,7 +13,7 @@ import {
 } from 'lucide-react'
 import { commentsApi } from '../lib/api'
 import { mapApiPost, usePosts } from '../lib/postsStore'
-import { postAuthor, type Post } from '../data/posts'
+import { displayTitle, postAuthor, type Post } from '../data/posts'
 import type { Comment } from '../data/comments'
 import { useAuth, type User } from '../context/AuthContext'
 import { postsApi, type UserStats } from '../lib/backend'
@@ -275,7 +275,6 @@ export function UserPage() {
             <section className="user-posts" aria-labelledby="user-posts-title">
               <SectionHead
                 title="写过的页"
-                description={authored.length > 0 ? `${authored.length} 篇，和其他人的页放在一起。` : '还没有发布。'}
                 id="user-posts-title"
                 link={isMe ? '/write' : undefined}
                 linkLabel={isMe ? '写一页' : undefined}
@@ -302,7 +301,6 @@ export function UserPage() {
             <section className="user-traces" aria-labelledby="traces-title">
               <SectionHead
                 title="留下的句子"
-                description={loading ? '正在翻找…' : comments.length > 0 ? `一共 ${comments.length} 条，按时间排着。` : '还没留下什么。'}
                 id="traces-title"
               />
               {loading ? (
@@ -315,7 +313,7 @@ export function UserPage() {
                   {comments.map((comment) => {
                     const post = allPosts.find((item) => item.slug === comment.postId)
                     const to = post ? `/articles/${post.slug}` : '/#guestbook'
-                    const title = post ? post.title : guestbookLabel
+                    const title = post ? displayTitle(post) : guestbookLabel
                     return (
                       <Link className="user-trace" to={to} key={comment.id}>
                         <span className="user-trace__cover">
@@ -380,8 +378,7 @@ export function UserPage() {
             )}
 
             <div className="user-side__card">
-              <h2>关于这一页</h2>
-              <p>这里只放公开的东西：头像、名字、几句介绍，和留在半日的句子。邮箱不会出现在这里。</p>
+              <h2>资料</h2>
               <div className="user-side__facts">
                 <span>
                   <CalendarDays size={13} aria-hidden="true" />

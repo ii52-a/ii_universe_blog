@@ -179,7 +179,6 @@ export function WritePage() {
 
   const validate = () => {
     const next: Errors = {}
-    if (form.title.trim().length < 2) next.title = '标题至少写两个字。'
     if (form.title.trim().length > 60) next.title = '标题最多 60 个字。'
     if (form.excerpt.trim().length < 8) next.excerpt = '写一句摘要，至少 8 个字。'
     if (form.excerpt.trim().length > 120) next.excerpt = '摘要最多 120 个字。'
@@ -255,7 +254,7 @@ export function WritePage() {
                   maxLength={60}
                   value={form.title}
                   onChange={(event) => update('title', event.target.value)}
-                  placeholder="比如：傍晚在桥上站了一会儿"
+                  placeholder="标题可以留空"
                   aria-invalid={Boolean(errors.title)}
                   aria-describedby={errors.title ? 'write-title-error' : undefined}
                 />

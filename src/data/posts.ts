@@ -53,6 +53,10 @@ export const siteAuthor = {
 
 export const categories = ['城市', '旧物', '散步', '收集', '日常', '阅读', '饮食'] as const
 
+export function displayTitle(post: Pick<Post, 'title'>) {
+  return post.title.trim() || '无标题'
+}
+
 export function postAuthor(post: Post) {
   return {
     id: post.authorId ?? siteAuthor.id,

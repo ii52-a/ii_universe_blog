@@ -86,7 +86,6 @@ export function SunsetPage() {
                 </span>
                 <div className="release-item__copy">
                   <div className="release-item__meta is-unselectable">
-                    <span>{item.tag}</span>
                     <time dateTime={item.date}>{item.short}</time>
                   </div>
                   <p>{item.text}</p>
@@ -116,9 +115,6 @@ export function SunsetPage() {
                   <ReleaseIcon name={item.icon} />
                 </span>
                 <div className="release-item__copy">
-                  <div className="release-item__meta is-unselectable">
-                    <span>{item.tag}</span>
-                  </div>
                   <p>{item.text}</p>
                 </div>
               </article>

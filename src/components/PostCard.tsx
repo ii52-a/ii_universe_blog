@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
 import { ArrowUpRight } from 'lucide-react'
-import { formatShortDate, postAuthor, type Post } from '../data/posts'
+import { displayTitle, formatShortDate, postAuthor, type Post } from '../data/posts'
 import { CoverArt } from './CoverArt'
 
 interface PostCardProps {
@@ -21,7 +21,7 @@ export function PostCard({ post, variant = 'standard' }: PostCardProps) {
           <span>{formatShortDate(post.publishedAt)}</span>
           <span>{post.readMinutes} 分钟</span>
         </span>
-        <strong className="post-card__title">{post.title}</strong>
+        <strong className="post-card__title">{displayTitle(post)}</strong>
         <span className="post-card__excerpt">{post.excerpt}</span>
         <span className="post-card__foot">
           读这一篇
@@ -32,15 +32,15 @@ export function PostCard({ post, variant = 'standard' }: PostCardProps) {
   )
 }
 
-export function PostRow({ post }: { post: Post }) {
+export function PostRow({ post, hideDate = false }: { post: Post; hideDate?: boolean }) {
   return (
-    <Link className="post-row" to={`/articles/${post.slug}`}>
-      <span className="post-row__date">{formatShortDate(post.publishedAt)}</span>
+    <Link className={`post-row${hideDate ? ' post-row--no-date' : ''}`} to={`/articles/${post.slug}`}>
+      {!hideDate && <span className="post-row__date">{formatShortDate(post.publishedAt)}</span>}
       <span className="post-row__cover">
         <CoverArt variant={post.cover} decorative />
       </span>
       <span className="post-row__copy">
-        <strong>{post.title}</strong>
+        <strong>{displayTitle(post)}</strong>
         <span>{post.excerpt}</span>
       </span>
       <span className="post-row__meta">

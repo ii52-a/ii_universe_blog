@@ -33,7 +33,6 @@ export function GithubFavoritesPage() {
 
         <header className="lab-subhead">
           <h1>收藏</h1>
-          <span>{favorites.length} 个仓库</span>
         </header>
 
         {favorites.length > 0 ? (

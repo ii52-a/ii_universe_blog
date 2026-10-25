@@ -90,13 +90,6 @@ function hasChinese(value: string) {
   return /[\u4e00-\u9fff]/.test(value)
 }
 
-function chineseParagraph(value: string) {
-  return value
-    .split(/\n{2,}/)
-    .map((part) => part.trim())
-    .find((part) => part.length >= 30 && hasChinese(part))
-}
-
 function firstParagraph(value: string) {
   return value
     .split(/\n{2,}/)
@@ -199,12 +192,7 @@ export async function getGithubRepo(owner: string, repo: string): Promise<Github
 
   const readmeText = cleanReadme(rawReadme)
   const description = item.description ?? ''
-  const zhParagraph = chineseParagraph(readmeText)
-  const summary = hasChinese(description)
-    ? description
-    : zhParagraph
-      ? zhParagraph
-      : description || firstParagraph(readmeText) || ''
+  const summary = description || firstParagraph(readmeText) || ''
   const summaryLang: 'zh' | 'en' = hasChinese(summary) ? 'zh' : 'en'
   const data: GithubRepoDetail = {
     ...mapRepo(item),

@@ -7,6 +7,7 @@ import { usePageTitle } from '../hooks/usePageTitle'
 import { reviewApi, type ApiPost } from '../lib/backend'
 import { refreshPosts } from '../lib/postsStore'
 import { Avatar } from '../components/Avatar'
+import { displayTitle } from '../data/posts'
 
 export function ReviewPage() {
   usePageTitle('审核')
@@ -87,7 +88,6 @@ export function ReviewPage() {
           <div>
             <span className="page-hero__note">管理员 · 审核队列</span>
             <h1>等一等的页。</h1>
-            <p>只有 ii52A1 能直接发页，其他页先在这里停一下。</p>
           </div>
           <span className="review-count">
             <ClipboardCheck size={15} aria-hidden="true" />
@@ -133,7 +133,7 @@ export function ReviewPage() {
                         .replace('/', '.')}
                     </time>
                   </div>
-                  <h2>{post.title}</h2>
+                  <h2>{displayTitle(post)}</h2>
                   <p>{post.excerpt}</p>
                   <span className="review-card__tags">{post.category} · {post.readMinutes} 分钟</span>
                 </div>

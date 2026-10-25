@@ -13,7 +13,8 @@ export async function GET(request: NextRequest) {
     await ensureDatabase()
     const db = await getDatabase()
     const repo = request.nextUrl.searchParams.get('repo') ?? ''
-    const tools = await listGithubTools(db, repo || undefined)
+    const category = request.nextUrl.searchParams.get('category') ?? ''
+    const tools = await listGithubTools(db, repo || undefined, category || undefined)
     return NextResponse.json(
       { tools },
       { headers: { 'Cache-Control': 'no-store' } },

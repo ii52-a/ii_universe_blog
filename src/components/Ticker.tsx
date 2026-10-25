@@ -1,6 +1,6 @@
 import { useClock } from '../hooks/useClock'
 import { usePosts } from '../lib/postsStore'
-import { postAuthor } from '../data/posts'
+import { displayTitle, postAuthor } from '../data/posts'
 
 export function Ticker() {
   const clock = useClock()
@@ -8,7 +8,7 @@ export function Ticker() {
   const latest = allPosts[0]
   const items = [
     `${clock.monthLabel}${clock.dayLabel}，${clock.weekday}`,
-    latest ? `新文：${latest.title}` : '新文还在路上',
+    latest ? `新文：${displayTitle(latest)}` : '新文还在路上',
     latest ? `写这一页的人：${postAuthor(latest).name}` : '半日还在等第一页',
     `正在读《路上观察学》`,
     `小满说：${clock.greeting}`,

@@ -10,7 +10,7 @@ import {
   PencilLine,
   Trash2,
 } from 'lucide-react'
-import { type ContentBlock, type Post, postAuthor } from '../data/posts'
+import { displayTitle, type ContentBlock, type Post, postAuthor } from '../data/posts'
 import { usePageTitle } from '../hooks/usePageTitle'
 import { reactionsApi, commentsApi } from '../lib/api'
 import { deletePost, mapApiPost, usePosts } from '../lib/postsStore'
@@ -214,11 +214,7 @@ export function ArticlePage() {
         {post.status && post.status !== 'published' && (
           <div className={`article-state article-state--${post.status}`} role="status">
             <strong>{post.status === 'pending' ? '审核中' : '已退回'}</strong>
-            <span>
-              {post.status === 'pending'
-                ? '只有你和管理员能看这一页。'
-                : post.reviewNote || '按审核意见改一改，再提交一次。'}
-            </span>
+            {post.status === 'rejected' && post.reviewNote && <span>{post.reviewNote}</span>}
             {canManage && <Link to={`/write?edit=${post.slug}`}>继续修改</Link>}
           </div>
         )}
@@ -233,7 +229,7 @@ export function ArticlePage() {
             </time>
             <span>{post.readMinutes} 分钟读完</span>
           </div>
-          <h1>{post.title}</h1>
+          <h1>{displayTitle(post)}</h1>
           <p className="article-header__dek">{post.excerpt}</p>
           <div className="article-byline">
             <Avatar name={author.name} color={author.color} src={author.avatar} size="md" />
