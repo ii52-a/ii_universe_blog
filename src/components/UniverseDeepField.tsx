@@ -62,12 +62,13 @@ export function UniverseDeepField() {
           strokeWidth="1.35"
           strokeDasharray="4 5"
           filter="url(#deepConstellationGlow)"
+          transform="translate(70 40)"
         >
           <polyline points="480,410 570,350 660,405 750,330 820,420 700,530 590,510 480,410" />
           <polyline points="570,350 625,255 720,245 750,330" />
           <polyline points="590,510 545,620 660,675 700,530" />
         </g>
-        <g fill="#ffffff" filter="url(#deepConstellationGlow)">
+        <g fill="#ffffff" filter="url(#deepConstellationGlow)" transform="translate(70 40)">
           {[
             [570, 350, 4.4],
             [660, 405, 5.8],
