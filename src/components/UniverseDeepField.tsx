@@ -47,20 +47,35 @@ export function UniverseDeepField() {
       </div>
 
       <svg className="universe-text-deep__constellation" viewBox="0 0 1440 1000" preserveAspectRatio="xMidYMid slice">
-        <g fill="none" stroke="rgba(255, 255, 255, 0.16)" strokeWidth="0.9" strokeDasharray="3 6">
+        <defs>
+          <filter id="deepConstellationGlow" x="-30%" y="-30%" width="160%" height="160%">
+            <feGaussianBlur stdDeviation="2.2" result="blur" />
+            <feMerge>
+              <feMergeNode in="blur" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+        </defs>
+        <g
+          fill="none"
+          stroke="rgba(255, 255, 255, 0.52)"
+          strokeWidth="1.35"
+          strokeDasharray="4 5"
+          filter="url(#deepConstellationGlow)"
+        >
           <polyline points="480,410 570,350 660,405 750,330 820,420 700,530 590,510 480,410" />
           <polyline points="570,350 625,255 720,245 750,330" />
           <polyline points="590,510 545,620 660,675 700,530" />
         </g>
-        <g fill="#ffffff">
+        <g fill="#ffffff" filter="url(#deepConstellationGlow)">
           {[
-            [570, 350, 3.2],
-            [660, 405, 4.4],
-            [750, 330, 3],
-            [700, 530, 3.8],
-            [480, 410, 2.8],
-            [625, 255, 2.6],
-            [610, 480, 5],
+            [570, 350, 4.4],
+            [660, 405, 5.8],
+            [750, 330, 4.2],
+            [700, 530, 5],
+            [480, 410, 3.8],
+            [625, 255, 3.6],
+            [610, 480, 6.4],
           ].map(([x, y, radius], index) => (
             <circle key={index} cx={x} cy={y} r={radius} />
           ))}
