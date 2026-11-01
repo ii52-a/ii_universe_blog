@@ -1,5 +1,7 @@
 import { hash } from 'bcryptjs'
 import seedPosts from '../db/seed-posts.json'
+import seedReleases from '../db/seed-releases.json'
+import versions from '../../src/content/versions.json'
 import type { ContentBlock } from '../../src/data/posts'
 import type { DbClient } from './db'
 
@@ -180,13 +182,15 @@ const seedGithubTools = [
 ]
 
 const seedArticleCategories = [
-  { id: '00000000-0000-4000-8000-000000000401', name: '城市' },
-  { id: '00000000-0000-4000-8000-000000000402', name: '旧物' },
-  { id: '00000000-0000-4000-8000-000000000403', name: '散步' },
-  { id: '00000000-0000-4000-8000-000000000404', name: '收集' },
-  { id: '00000000-0000-4000-8000-000000000405', name: '日常' },
-  { id: '00000000-0000-4000-8000-000000000406', name: '阅读' },
-  { id: '00000000-0000-4000-8000-000000000407', name: '饮食' },
+  { id: '00000000-0000-4000-8000-000000000401', name: '城市', protected: false },
+  { id: '00000000-0000-4000-8000-000000000402', name: '旧物', protected: false },
+  { id: '00000000-0000-4000-8000-000000000403', name: '散步', protected: false },
+  { id: '00000000-0000-4000-8000-000000000404', name: '收集', protected: false },
+  { id: '00000000-0000-4000-8000-000000000405', name: '日常', protected: false },
+  { id: '00000000-0000-4000-8000-000000000406', name: '阅读', protected: false },
+  { id: '00000000-0000-4000-8000-000000000407', name: '饮食', protected: false },
+  { id: '00000000-0000-4000-8000-000000000408', name: '随笔', protected: false },
+  { id: '00000000-0000-4000-8000-000000000409', name: '胡思乱想', protected: true },
 ]
 
 const seedGithubToolCategories = [
@@ -233,12 +237,27 @@ export async function seedDatabase(db: DbClient) {
     )
   }
 
-  for (const category of seedArticleCategories) {
+  const categorySeed = await db.query<{ value: string }>(
+    "SELECT value FROM app_meta WHERE key = 'categories_seeded' LIMIT 1",
+  )
+  if (!categorySeed.rows[0]) {
+    const categoryCount = await db.query<{ count: number }>(
+      'SELECT count(*)::int AS count FROM categories',
+    )
+    if (Number(categoryCount.rows[0]?.count ?? 0) === 0) {
+      for (const category of seedArticleCategories) {
+        await db.query(
+          `INSERT INTO categories (id, name, protected)
+           VALUES ($1, $2, false)
+           ON CONFLICT (name) DO NOTHING`,
+          [category.id, category.name],
+        )
+      }
+    }
     await db.query(
-      `INSERT INTO categories (id, name)
-       VALUES ($1, $2)
-       ON CONFLICT (name) DO NOTHING`,
-      [category.id, category.name],
+      `INSERT INTO app_meta (key, value)
+       VALUES ('categories_seeded', '1')
+       ON CONFLICT (key) DO NOTHING`,
     )
   }
 
@@ -266,6 +285,69 @@ export async function seedDatabase(db: DbClient) {
         ADMIN_USER_ID,
       ],
     )
+  }
+
+  const radioEntries = [
+    {
+      id: '00000000-0000-4000-8000-000000000501',
+      title: '为什么叫半日？',
+      body: '半天用来忙，半天用来浪费。\n\n这是最初的想法，后来也没有改。',
+      createdAt: '2026-10-21T20:10:00+08:00',
+    },
+    {
+      id: '00000000-0000-4000-8000-000000000502',
+      title: '这里会写什么？',
+      body: '散步、旧物、食物，和一些没忘掉的小事。\n\n不追热点，也不保证更新。',
+      createdAt: '2026-10-23T21:40:00+08:00',
+    },
+    {
+      id: '00000000-0000-4000-8000-000000000503',
+      title: '星图里的链接是怎么选的？',
+      body: '大多是平时会反复打开的地方：找参考、读长文、听电台。\n\n没有排名，也没有合作。',
+      createdAt: '2026-10-28T19:20:00+08:00',
+    },
+  ]
+  for (const entry of radioEntries) {
+    await db.query(
+      `INSERT INTO radio_entries (id, title, body, created_at, updated_at)
+       VALUES ($1, $2, $3, $4, $4)
+       ON CONFLICT (id) DO NOTHING`,
+      [entry.id, entry.title, entry.body, entry.createdAt],
+    )
+  }
+
+  for (const release of seedReleases) {
+    await db.query(
+      `INSERT INTO version_releases (id, version, released_at, items)
+       VALUES ($1, $2, $3, $4::jsonb)
+       ON CONFLICT (id) DO UPDATE SET
+         version = EXCLUDED.version,
+         released_at = EXCLUDED.released_at,
+         items = EXCLUDED.items`,
+      [release.id, release.version, release.date, JSON.stringify(release.items)],
+    )
+  }
+
+  if (versions.blog && !versions.latest.placeholder) {
+    const version = `v${versions.blog}`
+    const existingRelease = await db.query<{ id: number }>(
+      'SELECT id FROM version_releases WHERE version = $1 LIMIT 1',
+      [version],
+    )
+    if (existingRelease.rows[0]) {
+      await db.query(
+        `UPDATE version_releases
+         SET released_at = $2, items = $3::jsonb
+         WHERE version = $1`,
+        [version, versions.latest.date, JSON.stringify(versions.latest.items)],
+      )
+    } else {
+      await db.query(
+        `INSERT INTO version_releases (id, version, released_at, items)
+         VALUES ((SELECT COALESCE(MAX(id), 0) + 1 FROM version_releases), $1, $2, $3::jsonb)`,
+        [version, versions.latest.date, JSON.stringify(versions.latest.items)],
+      )
+    }
   }
 
   const postCount = await db.query<{ count: number }>('SELECT count(*)::int AS count FROM posts')

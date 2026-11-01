@@ -1,11 +1,18 @@
+/**
+ * 个人空间
+ * 职责：登录后的文章管理、权限概览与公开主页入口。
+ * 样式：src/css/pages/space.css
+ */
+
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
 import { Link, Navigate } from 'react-router-dom'
 import {
   ArrowUpRight,
   CalendarDays,
+  Feather,
+  KeyRound,
   MapPin,
   PenLine,
-  Sparkles,
   Trash2,
   UserRound,
 } from 'lucide-react'
@@ -13,7 +20,7 @@ import { displayTitle, type CoverVariant } from '../data/posts'
 import { useAuth } from '../context/AuthContext'
 import { useToast } from '../context/ToastContext'
 import { usePageTitle } from '../hooks/usePageTitle'
-import { postsApi, type ApiPost } from '../lib/backend'
+import { postsApi, PERMISSION_CATALOG, type ApiPost } from '../lib/backend'
 import { refreshPosts } from '../lib/postsStore'
 import { Avatar } from '../components/Avatar'
 import { CoverArt } from '../components/CoverArt'
@@ -41,7 +48,7 @@ function useCountUp(target: number) {
 
 export function SpacePage() {
   usePageTitle('我的空间')
-  const { user, ready } = useAuth()
+  const { user, ready, can } = useAuth()
   const { showToast } = useToast()
   const [posts, setPosts] = useState<ApiPost[]>([])
   const [loading, setLoading] = useState(true)
@@ -155,13 +162,26 @@ export function SpacePage() {
             </h1>
             <p>{user.bio || '介绍还空着。'}</p>
             <div className="space-actions">
-              <Link className="button button--ink" to="/write">
-                <PenLine size={15} aria-hidden="true" />
-                写一页
-              </Link>
               {user.role === 'admin' && (
+                <Link className="button button--ink" to="/write">
+                  <PenLine size={15} aria-hidden="true" />
+                  写一页
+                </Link>
+              )}
+              {can('essays.write') && (
+                <Link className="text-link" to="/essay">
+                  <Feather size={13} aria-hidden="true" />
+                  写随笔 <ArrowUpRight size={14} aria-hidden="true" />
+                </Link>
+              )}
+              {can('posts.review') && (
                 <Link className="text-link" to="/review">
                   审核队列 <ArrowUpRight size={14} aria-hidden="true" />
+                </Link>
+              )}
+              {user.role === 'admin' && (
+                <Link className="text-link" to="/permissions">
+                  权限管理 <ArrowUpRight size={14} aria-hidden="true" />
                 </Link>
               )}
               <Link className="text-link" to="/me">
@@ -260,7 +280,10 @@ export function SpacePage() {
                       <p>{post.excerpt}</p>
                     </div>
                     <div className="space-post__actions">
-                      <Link className="text-button" to={`/write?edit=${post.slug}`}>
+                      <Link
+                        className="text-button"
+                        to={post.kind === 'essay' ? `/essay?edit=${post.slug}` : `/write?edit=${post.slug}`}
+                      >
                         <PenLine size={13} aria-hidden="true" /> 编辑
                       </Link>
                       {confirming === post.slug ? (
@@ -292,24 +315,16 @@ export function SpacePage() {
                 </span>
                 <h3>这一页还很空。</h3>
                 <p>从散步、饭、旧东西，或者一件没做成的小事写起。</p>
-                <Link className="button button--ink button--small" to="/write">
-                  写第一页 <ArrowUpRight size={14} aria-hidden="true" />
-                </Link>
+                {user.role === 'admin' && (
+                  <Link className="button button--ink button--small" to="/write">
+                    写第一页 <ArrowUpRight size={14} aria-hidden="true" />
+                  </Link>
+                )}
               </div>
             )}
           </section>
 
           <aside className="space-aside">
-            <div className="space-note">
-              <span className="space-note__stamp" aria-hidden="true">
-                <Sparkles size={16} />
-              </span>
-              <h2>今天的小提示</h2>
-              <p>先记一个动作或一句话，剩下的明天再说。</p>
-              <span className="space-note__doodle" aria-hidden="true">
-                afterglow
-              </span>
-            </div>
             <div className="space-note space-note--plain">
               <span className="space-note__stamp" aria-hidden="true">
                 <UserRound size={16} />
@@ -320,6 +335,30 @@ export function SpacePage() {
                 看看公开主页 <ArrowUpRight size={13} aria-hidden="true" />
               </Link>
             </div>
+            {(user.role === 'admin' || user.permissions.length > 0) && (
+              <div className="space-note space-note--plain">
+                <span className="space-note__stamp" aria-hidden="true">
+                  <KeyRound size={16} />
+                </span>
+                <h2>手上的钥匙</h2>
+                <p>
+                  {user.role === 'admin'
+                    ? 'ii52A1 拥有全部高级权限，也可以把其中几把交给其他账号。'
+                    : `已获得：${user.permissions
+                        .map(
+                          (permission) =>
+                            PERMISSION_CATALOG.find((item) => item.key === permission)?.label ??
+                            permission,
+                        )
+                        .join('、')}。`}
+                </p>
+                {user.role === 'admin' && (
+                  <Link className="text-link" to="/permissions">
+                    去下发权限 <ArrowUpRight size={13} aria-hidden="true" />
+                  </Link>
+                )}
+              </div>
+            )}
           </aside>
         </div>
       </div>

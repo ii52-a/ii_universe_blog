@@ -1,3 +1,9 @@
+/**
+ * 搜索弹窗
+ * 职责：全局文章搜索与结果列表。
+ * 样式：src/css/components/search-dialog.css
+ */
+
 import { useDeferredValue, useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { ArrowUpRight, Search } from 'lucide-react'

@@ -1,0 +1,436 @@
+/* ============================================================
+   ProfilePage
+   个人资料与账号设置。
+   ============================================================ */
+
+.profile-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px
+}
+.profile-page {
+  padding-top: 42px;
+  padding-bottom: 80px
+}
+.profile-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  padding-bottom: 23px;
+  border-bottom: 1px solid var(--line)
+}
+.profile-head h1 {
+  margin-top: 10px;
+  font-size: 46px;
+  letter-spacing: -0.06em
+}
+.profile-head p {
+  margin-top: 5px;
+  font-size: 11.5px;
+  color: var(--muted)
+}
+.profile-layout {
+  display: grid;
+  grid-template-columns: 326px minmax(0, 1fr);
+  gap: 24px;
+  align-items: start;
+  margin-top: 24px
+}
+.profile-card {
+  position: sticky;
+  top: 89px;
+  padding: 23px;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 23px;
+  box-shadow: var(--shadow-sm);
+  overflow: hidden
+}
+.profile-card__top {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 14px
+}
+.profile-card__tape {
+  position: absolute;
+  top: -34px;
+  left: 50%;
+  width: 72px;
+  height: 22px;
+  background: rgba(255, 216, 77, 0.8);
+  transform: translateX(-50%) rotate(-2deg)
+}
+.profile-card__online {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 4px;
+  padding: 3px 7px;
+  border-radius: 999px;
+  background: var(--mint);
+  font-size: 8.5px;
+  color: #2b6f4d
+}
+.profile-card__online i {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--green)
+}
+.profile-card h2 {
+  font-size: 27px;
+  letter-spacing: -0.04em
+}
+.profile-card__email {
+  margin-top: 2px;
+  font-size: 9.5px;
+  color: var(--muted)
+}
+.profile-card__bio {
+  margin-top: 12px;
+  font-size: 11.5px;
+  line-height: 1.75;
+  color: var(--ink-soft)
+}
+.profile-card__stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  margin-top: 17px;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line)
+}
+.profile-card__stats div {
+  padding: 11px 0
+}
+.profile-card__stats div + div {
+  padding-left: 16px;
+  border-left: 1px solid var(--line)
+}
+.profile-card__stats dt {
+  font-size: 8.5px;
+  color: var(--muted-light)
+}
+.profile-card__stats dd {
+  margin-top: 1px;
+  font-family: var(--serif);
+  font-size: 16px;
+  font-weight: 600
+}
+.profile-card__meta {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-top: 12px
+}
+.profile-card__meta span, .profile-card__meta a {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 9.5px;
+  color: var(--muted);
+  text-decoration: none
+}
+.profile-card__meta a:hover {
+  color: var(--blue)
+}
+.profile-card__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--line);
+  font-size: 8.5px;
+  color: var(--muted-light)
+}
+.profile-content {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 18px
+}
+.profile-section {
+  padding: 26px 28px;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  box-shadow: var(--shadow-sm);
+  scroll-margin-top: 90px
+}
+.profile-section__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--line)
+}
+.profile-section__head h2 {
+  font-size: 24px
+}
+.profile-section__head p {
+  margin-top: 4px;
+  font-size: 10.5px;
+  color: var(--muted)
+}
+.profile-section__head > svg {
+  color: var(--line-dark);
+  margin-top: 4px
+}
+.profile-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding-top: 20px
+}
+.avatar-field {
+  display: flex;
+  gap: 18px;
+  padding-bottom: 19px;
+  border-bottom: 1px dashed var(--line)
+}
+.avatar-field__preview {
+  flex-shrink: 0
+}
+.avatar-field__copy {
+  min-width: 0;
+  flex: 1
+}
+.avatar-field__copy > strong {
+  display: block;
+  font-size: 12.5px;
+  font-weight: 600
+}
+.avatar-field__copy > p {
+  margin-top: 2px;
+  font-size: 10px;
+  color: var(--muted)
+}
+.avatar-field__actions {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  margin-top: 9px
+}
+.color-picker {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 11px
+}
+.color-picker__label {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  margin-right: 3px;
+  font-size: 9px;
+  color: var(--muted)
+}
+.color-swatch {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border: 1.5px solid rgba(27, 27, 24, 0.16);
+  border-radius: 50%;
+  color: var(--ink);
+  transition:
+    transform 150ms var(--ease),
+    border-color 150ms var(--ease)
+}
+.color-swatch:hover {
+  transform: scale(1.1)
+}
+.color-swatch.is-active {
+  border-color: var(--ink);
+  box-shadow: 0 0 0 2px #fff, 0 0 0 3.5px var(--ink)
+}
+.profile-form__actions {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  padding-top: 2px
+}
+.saved-list {
+  margin-top: 6px
+}
+.saved-list .post-row {
+  padding-left: 0;
+  padding-right: 0
+}
+.saved-list .post-row:first-child {
+  border-top: 0
+}
+.saved-empty {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 21px 0 3px
+}
+.saved-empty__cover {
+  width: 92px;
+  height: 68px;
+  flex-shrink: 0;
+  border-radius: 10px;
+  overflow: hidden;
+  opacity: 0.75
+}
+.saved-empty strong {
+  font-family: var(--serif);
+  font-size: 17px;
+  font-weight: 600
+}
+.saved-empty p {
+  margin-top: 2px;
+  font-size: 10.5px;
+  color: var(--muted)
+}
+.saved-empty .text-link {
+  margin-top: 7px;
+  font-size: 10.5px
+}
+.profile-section--account .profile-section__head {
+  padding-bottom: 14px
+}
+.account-list {
+  display: flex;
+  flex-direction: column
+}
+.account-list > div {
+  display: grid;
+  grid-template-columns: 110px minmax(0, 1fr);
+  gap: 20px;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--line)
+}
+.account-list dt {
+  font-size: 10px;
+  color: var(--muted)
+}
+.account-list dd {
+  font-size: 11.5px;
+  color: var(--ink-soft)
+}
+.account-danger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 16px;
+  padding: 13px 15px;
+  border: 1px solid #f0d4ce;
+  border-radius: 12px;
+  background: #fff9f7
+}
+.account-danger strong {
+  display: block;
+  font-size: 11.5px;
+  font-weight: 600
+}
+.account-danger span {
+  display: block;
+  margin-top: 1px;
+  font-size: 9.5px;
+  color: var(--muted)
+}
+.account-danger__confirm {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  flex-shrink: 0
+}
+@media (max-width: 1020px) {
+  .profile-layout {
+    grid-template-columns: 290px minmax(0, 1fr)
+  }
+}
+@media (max-width: 860px) {
+  .profile-layout {
+    grid-template-columns: 1fr
+  }
+  .profile-card {
+    position: relative;
+    top: 0
+  }
+}
+@media (max-width: 640px) {
+  .profile-page {
+    padding-top: 26px;
+    padding-bottom: 55px
+  }
+  .profile-head {
+    display: block
+  }
+  .profile-head h1 {
+    font-size: 39px
+  }
+  .profile-head > .text-link {
+    margin-top: 9px
+  }
+  .profile-section {
+    padding: 21px 18px;
+    border-radius: 18px
+  }
+  .profile-section__head h2 {
+    font-size: 22px
+  }
+  .avatar-field {
+    flex-direction: column;
+    gap: 12px
+  }
+  .account-list > div {
+    grid-template-columns: 1fr;
+    gap: 1px
+  }
+  .account-danger {
+    flex-direction: column;
+    align-items: flex-start
+  }
+  .saved-empty {
+    align-items: flex-start
+  }
+  .saved-empty__cover {
+    width: 75px;
+    height: 58px
+  }
+}
+.profile-card__email {
+  font-size: 10.5px
+}
+.profile-card__bio {
+  font-size: 12px
+}
+.profile-card__stats dt {
+  font-size: 10px
+}
+.profile-card__online {
+  font-size: 9.5px
+}
+.profile-card__meta span {
+  font-size: 10.5px
+}
+.profile-card__foot {
+  font-size: 10px
+}
+.profile-section__head p {
+  font-size: 11.5px
+}
+.avatar-field__copy > p {
+  font-size: 11px
+}
+.color-picker__label {
+  font-size: 10px
+}
+.account-list dt {
+  font-size: 11px
+}
+.account-list dd {
+  font-size: 12px
+}
+.account-danger span {
+  font-size: 10.5px
+}

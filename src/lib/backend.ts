@@ -1,7 +1,17 @@
-import type { ContentBlock } from '../data/posts'
+import type { ArticleStyle, ContentBlock } from '../data/posts'
 
 export type UserRole = 'member' | 'admin'
 export type PostStatus = 'draft' | 'pending' | 'published' | 'rejected'
+
+export const PERMISSION_CATALOG = [
+  { key: 'posts.review', label: '审核文章', description: '查看待审核队列，通过或退回文章。' },
+  { key: 'posts.delete', label: '删除文章', description: '删除任意账号发布的一页。' },
+  { key: 'tags.manage', label: '管理标签', description: '新增、改名或删除文章分类。' },
+  { key: 'tools.manage', label: '管理 ii tool', description: '新增、编辑仓库与 ii tool 分类。' },
+  { key: 'essays.write', label: '写随笔', description: '' },
+] as const
+
+export type Permission = (typeof PERMISSION_CATALOG)[number]['key']
 
 export interface ApiUser {
   id: string
@@ -10,6 +20,7 @@ export interface ApiUser {
   name: string
   handle: string
   role: UserRole
+  permissions: Permission[]
   bio: string
   location: string
   github: string
@@ -28,6 +39,8 @@ export interface ApiPost {
   category: string
   tags: string[]
   cover: string
+  style: ArticleStyle
+  kind: 'post' | 'essay'
   status: PostStatus
   reviewNote: string
   reviewedAt: string | null
@@ -166,6 +179,7 @@ export interface GithubToolCategory {
 export interface Category {
   id: string
   name: string
+  protected: boolean
   createdAt: string
 }
 
@@ -203,6 +217,13 @@ export interface PostInput {
   category: string
   tags: string[]
   cover: string
+  style: ArticleStyle
+}
+
+export interface EssayInput {
+  title: string
+  body: string
+  content: ContentBlock[]
 }
 
 export const postsApi = {
@@ -233,6 +254,14 @@ export const postsApi = {
     apiFetch<{ user: ApiUser; posts: ApiPost[]; stats: UserStats; nextCursor: string | null }>(
       `/api/users/${encodeURIComponent(handle)}`,
     ),
+}
+
+export const essaysApi = {
+  create: (input: EssayInput) =>
+    apiFetch<{ post: ApiPost }>('/api/essays', {
+      method: 'POST',
+      body: JSON.stringify(input),
+    }),
 }
 
 export const reviewApi = {
@@ -266,6 +295,17 @@ export const githubApi = {
     const suffix = params.toString()
     return apiFetch<{ tools: GithubTool[] }>(`/api/github/tools${suffix ? `?${suffix}` : ''}`)
   },
+  favorites: () => apiFetch<{ repos: GithubRepo[] }>('/api/github/favorites'),
+  addFavorite: (repo: GithubRepo) =>
+    apiFetch<{ favorite: GithubRepo }>('/api/github/favorites', {
+      method: 'POST',
+      body: JSON.stringify(repo),
+    }),
+  removeFavorite: (fullName: string) =>
+    apiFetch<{ ok: true }>(
+      `/api/github/favorites?fullName=${encodeURIComponent(fullName)}`,
+      { method: 'DELETE' },
+    ),
   createTool: (input: GithubToolInput) =>
     apiFetch<{ tool: GithubTool }>('/api/github/tools', {
       method: 'POST',
@@ -310,11 +350,73 @@ export const categoriesApi = {
       method: 'PATCH',
       body: JSON.stringify({ name }),
     }),
-  remove: (id: string, force = false) =>
-    apiFetch<{ ok: true }>(
-      `/api/categories/${encodeURIComponent(id)}${force ? '?force=true' : ''}`,
-      { method: 'DELETE' },
-    ),
+  remove: (id: string) =>
+    apiFetch<{ ok: true }>(`/api/categories/${encodeURIComponent(id)}`, {
+      method: 'DELETE',
+    }),
+}
+
+export interface RadioEntry {
+  id: string
+  title: string
+  body: string
+  createdAt: string
+  updatedAt: string
+}
+
+export const radioApi = {
+  list: (page = 1, limit = 10) =>
+    apiFetch<{
+      entries: RadioEntry[]
+      total: number
+      page: number
+      pageSize: number
+    }>(`/api/radio?page=${page}&limit=${limit}`),
+  get: (id: string) =>
+    apiFetch<{ entry: RadioEntry }>(`/api/radio/${encodeURIComponent(id)}`),
+  create: (input: { title: string; body: string }) =>
+    apiFetch<{ entry: RadioEntry }>('/api/radio', {
+      method: 'POST',
+      body: JSON.stringify(input),
+    }),
+  update: (id: string, input: { title: string; body: string }) =>
+    apiFetch<{ entry: RadioEntry }>(`/api/radio/${encodeURIComponent(id)}`, {
+      method: 'PATCH',
+      body: JSON.stringify(input),
+    }),
+  remove: (id: string) =>
+    apiFetch<{ ok: true }>(`/api/radio/${encodeURIComponent(id)}`, { method: 'DELETE' }),
+}
+
+export interface VersionRelease {
+  id: number
+  version: string
+  date: string
+  items: string[]
+}
+
+export interface VersionsPayload {
+  blog: string
+  latest: {
+    placeholder: boolean
+    date: string
+    items: string[]
+  }
+  [key: string]: unknown
+}
+
+export const releasesApi = {
+  list: (page = 1, limit = 5) =>
+    apiFetch<{
+      releases: VersionRelease[]
+      total: number
+      page: number
+      pageSize: number
+    }>(`/api/sunset/releases?page=${page}&limit=${limit}`),
+  get: (id: number | string) =>
+    apiFetch<{ release: VersionRelease }>(`/api/sunset/releases/${encodeURIComponent(id)}`),
+  continueLatest: () =>
+    apiFetch<{ versions: VersionsPayload }>('/api/sunset/continue', { method: 'POST' }),
 }
 
 export const widgetsApi = {
@@ -335,4 +437,41 @@ export const widgetsApi = {
         updatedAt: string
       } | null
     }>('/api/widgets'),
+}
+
+export interface PermissionUser {
+  id: string
+  username: string
+  handle: string
+  role: UserRole
+  avatarColor: string
+  joinedAt: string
+  permissions: Permission[]
+}
+
+export const permissionsApi = {
+  list: () =>
+    apiFetch<{
+      users: PermissionUser[]
+      catalog: Array<{ key: Permission; label: string; description: string }>
+    }>('/api/permissions'),
+  update: (userId: string, permissions: Permission[]) =>
+    apiFetch<{ user: ApiUser }>('/api/permissions', {
+      method: 'PATCH',
+      body: JSON.stringify({ userId, permissions }),
+    }),
+}
+
+export interface VisitPoint {
+  date: string
+  label: string
+  views: number
+}
+
+export const visitsApi = {
+  get: (days = 14) =>
+    apiFetch<{ items: VisitPoint[]; days: number; total: number; today: number }>(
+      `/api/visits?days=${days}`,
+    ),
+  track: () => apiFetch<{ ok: true; today: number }>('/api/visits', { method: 'POST' }),
 }

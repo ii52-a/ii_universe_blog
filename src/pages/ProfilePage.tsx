@@ -1,3 +1,9 @@
+/**
+ * 资料页
+ * 职责：昵称、简介、头像与退出登录。
+ * 样式：src/css/pages/profile.css
+ */
+
 import { useEffect, useRef, useState, type ChangeEvent, type FormEvent } from 'react'
 import { Link, Navigate, useNavigate } from 'react-router-dom'
 import {

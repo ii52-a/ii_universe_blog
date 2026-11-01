@@ -11,10 +11,13 @@ const pages = [
   '/login',
   '/forgot',
   '/sunset',
+  '/sunset/version_set/1',
   '/universe',
+  '/starmap',
+  '/radio',
+  '/radio/00000000-0000-4000-8000-000000000503',
   '/github-lab',
   '/github-lab/top',
-  '/github-lab/favorites',
   '/github-lab/tools',
   '/github-lab/codecrafters-io/build-your-own-x',
   '/u/deepseek',
@@ -122,6 +125,25 @@ for (const theme of themes) {
       targets: violation.nodes.slice(0, 6).map((node) => node.target.join(' ')),
     })),
   })
+
+  for (const path of ['/permissions', '/essay', '/github-lab/favorites']) {
+    await page.goto(base + path, { waitUntil: 'networkidle' })
+    await page.waitForTimeout(500)
+    const results = await new AxeBuilder({ page })
+      .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
+      .analyze()
+    report.push({
+      theme,
+      path,
+      violations: results.violations.map((violation) => ({
+        id: violation.id,
+        impact: violation.impact,
+        help: violation.help,
+        nodes: violation.nodes.length,
+        targets: violation.nodes.slice(0, 6).map((node) => node.target.join(' ')),
+      })),
+    })
+  }
   await context.close()
 }
 

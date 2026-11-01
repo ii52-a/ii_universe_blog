@@ -1,3 +1,9 @@
+/**
+ * 找回密码页
+ * 职责：邮箱验证码与重置密码。
+ * 样式：src/css/pages/forgot.css
+ */
+
 import { useState, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
 import { ArrowLeft, Check, KeyRound, Mail, ShieldCheck } from 'lucide-react'

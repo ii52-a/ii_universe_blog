@@ -1,3 +1,9 @@
+/**
+ * 话题页
+ * 职责：按标签/分类聚合文章。
+ * 样式：src/css/pages/topic.css
+ */
+
 import { Link, useParams } from 'react-router-dom'
 import { ArrowLeft } from 'lucide-react'
 import { postAuthor } from '../data/posts'

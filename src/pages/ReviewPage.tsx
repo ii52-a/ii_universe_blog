@@ -1,3 +1,9 @@
+/**
+ * 审核页
+ * 职责：待审核文章与随笔的通过/退回。
+ * 样式：src/css/pages/review.css
+ */
+
 import { useEffect, useState } from 'react'
 import { Link, Navigate } from 'react-router-dom'
 import { ArrowUpRight, Check, ClipboardCheck, X } from 'lucide-react'
@@ -11,7 +17,8 @@ import { displayTitle } from '../data/posts'
 
 export function ReviewPage() {
   usePageTitle('审核')
-  const { user, ready } = useAuth()
+  const { user, ready, can } = useAuth()
+  const canReview = can('posts.review')
   const { showToast } = useToast()
   const [posts, setPosts] = useState<ApiPost[]>([])
   const [loading, setLoading] = useState(true)
@@ -21,7 +28,7 @@ export function ReviewPage() {
   const [note, setNote] = useState('')
 
   useEffect(() => {
-    if (!ready || !user || user.role !== 'admin') return
+    if (!ready || !user || !canReview) return
     let cancelled = false
     setLoading(true)
     reviewApi
@@ -38,7 +45,7 @@ export function ReviewPage() {
     return () => {
       cancelled = true
     }
-  }, [ready, user])
+  }, [ready, user, canReview])
 
   if (!ready) {
     return (
@@ -52,11 +59,12 @@ export function ReviewPage() {
   }
 
   if (!user) return <Navigate to="/login?from=/review" replace />
-  if (user.role !== 'admin') {
+  if (!canReview) {
     return (
       <div className="review-page">
         <div className="page-container review-denied">
-          <h1>这里只对管理员开放。</h1>
+          <h1>这里需要审核权限。</h1>
+          <p>权限由 ii52A1 在「权限管理」里下发。</p>
           <Link className="text-link" to="/articles">
             回到风吹散的页
           </Link>
@@ -86,7 +94,7 @@ export function ReviewPage() {
       <div className="page-container">
         <header className="review-head">
           <div>
-            <span className="page-hero__note">管理员 · 审核队列</span>
+            <span className="page-hero__note">审核权限 · 审核队列</span>
             <h1>等一等的页。</h1>
           </div>
           <span className="review-count">

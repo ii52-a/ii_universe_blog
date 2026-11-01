@@ -1,0 +1,196 @@
+/* ============================================================
+   PermissionsPage
+   权限下发。
+   ============================================================ */
+
+.permissions-page {
+  padding: 34px 0 90px;
+  background: var(--canvas)
+}
+.permissions-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 28px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--line)
+}
+.permissions-head h1 {
+  margin-top: 9px;
+  font-size: clamp(40px, 5vw, 58px);
+  letter-spacing: -0.06em
+}
+.permissions-head p {
+  max-width: 560px;
+  margin-top: 10px;
+  color: var(--muted);
+  font-size: 11.5px;
+  line-height: 1.85
+}
+.permissions-head__actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+  font-size: 10px
+}
+.permissions-legend {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 20px
+}
+.permissions-legend__item {
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--paper)
+}
+.permissions-legend__item span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--ink-soft);
+  font-size: 11px;
+  font-weight: 600
+}
+.permissions-legend__item p {
+  margin-top: 5px;
+  color: var(--muted);
+  font-size: 9.5px;
+  line-height: 1.7
+}
+.permission-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 24px
+}
+.permission-card {
+  display: grid;
+  grid-template-columns: minmax(180px, 0.8fr) minmax(0, 1.5fr) auto;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 18px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--paper);
+  box-shadow: var(--shadow-sm)
+}
+.permission-card--admin {
+  border-color: #e0cd7e;
+  background: linear-gradient(145deg, #fffdf3, var(--paper))
+}
+.permission-card__person {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  min-width: 0
+}
+.permission-card__person strong {
+  display: block;
+  font-size: 12.5px;
+  font-weight: 600
+}
+.permission-card__person span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 9px
+}
+.permission-card__person em {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  color: #9a7a1f;
+  font-style: normal
+}
+.permission-card__checks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px
+}
+.permission-check {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 9px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--ink-soft);
+  font-size: 9.5px;
+  cursor: pointer;
+  transition: border-color 150ms var(--ease), background-color 150ms var(--ease)
+}
+.permission-check:hover {
+  border-color: var(--line-dark);
+  background: var(--paper-soft)
+}
+.permission-check input {
+  width: 12px;
+  height: 12px;
+  accent-color: var(--blue)
+}
+.permission-check.is-locked {
+  opacity: 0.65;
+  cursor: default
+}
+.permission-card__actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 9px;
+  min-width: 100px
+}
+.permission-card__note {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--muted-light);
+  font-size: 9px
+}
+.permission-card__dirty {
+  color: var(--coral);
+  font-size: 9px
+}
+@media (max-width: 860px) {
+  .permissions-legend {
+    grid-template-columns: repeat(2, minmax(0, 1fr))
+  }
+  .permission-card {
+    grid-template-columns: 1fr;
+    align-items: flex-start;
+    gap: 12px
+  }
+  .permission-card__actions {
+    justify-content: flex-start
+  }
+  .permissions-head {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px
+  }
+  .permissions-head__actions {
+    align-items: flex-start
+  }
+}
+@media (max-width: 600px) {
+  .permissions-legend {
+    grid-template-columns: 1fr 1fr
+  }
+}
+.permission-card__actions .button:disabled {
+  opacity: 0.32
+}
+@media (min-width: 1101px) {
+  .permissions-legend {
+    grid-template-columns: repeat(5, minmax(0, 1fr))
+  }
+}
+@media (min-width: 861px) and (max-width: 1100px) {
+  .permissions-legend {
+    grid-template-columns: repeat(3, minmax(0, 1fr))
+  }
+}

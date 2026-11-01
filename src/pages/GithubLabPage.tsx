@@ -1,10 +1,18 @@
+/**
+ * GitHub 研究所首页
+ * 职责：研究所入口、搜索与快捷链接。
+ * 样式：src/css/pages/github-lab.css
+ */
+
 import { useState, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Search } from 'lucide-react'
 import { usePageTitle } from '../hooks/usePageTitle'
+import { LabTop } from '../components/LabTop'
+import versions from '../content/versions.json'
 
 export function GithubLabPage() {
-  usePageTitle('GitHub 研究所')
+  usePageTitle('GitHub 研究所', 'ii universe')
   const navigate = useNavigate()
   const [query, setQuery] = useState('')
 
@@ -17,15 +25,12 @@ export function GithubLabPage() {
   return (
     <div className="lab-page lab-home">
       <div className="page-container">
-        <header className="lab-top">
-          <Link to="/universe">ii universe</Link>
-          <span>GitHub 研究所</span>
-        </header>
+        <LabTop />
 
         <section className="lab-hero">
           <h1>
             GitHub 研究所
-            <span className="lab-version">v0.2 alpha</span>
+            <span className="lab-version">v{versions.github}</span>
           </h1>
 
           <form className="lab-search lab-search--hero" onSubmit={submit} role="search">

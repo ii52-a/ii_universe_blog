@@ -1,0 +1,124 @@
+/* ============================================================
+   NotFoundPage
+   404 页面。
+   ============================================================ */
+
+.not-found {
+  display: grid;
+  grid-template-columns: 1.05fr 0.95fr;
+  align-items: center;
+  gap: 60px;
+  min-height: calc(100vh - 68px);
+  padding-top: 50px;
+  padding-bottom: 70px
+}
+.not-found__art {
+  position: relative;
+  min-height: 420px;
+  display: flex;
+  align-items: center;
+  justify-content: center
+}
+.not-found__number {
+  font-family: var(--serif);
+  font-size: clamp(150px, 20vw, 260px);
+  font-weight: 700;
+  line-height: 0.8;
+  letter-spacing: -0.1em;
+  color: transparent;
+  -webkit-text-stroke: 2px var(--line-dark)
+}
+.not-found__paper {
+  position: absolute;
+  width: 245px;
+  padding: 8px;
+  background: #fff;
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow-md);
+  transform: rotate(-7deg);
+  top: 90px;
+  left: 12%
+}
+.not-found__note {
+  position: absolute;
+  right: 13%;
+  bottom: 42px;
+  padding: 7px 12px;
+  background: var(--butter);
+  border: 1px solid var(--ink);
+  font-family: var(--serif);
+  font-size: 12px;
+  transform: rotate(4deg);
+  box-shadow: 2px 2px 0 var(--ink)
+}
+.not-found__copy h1 {
+  margin-top: 12px;
+  font-size: clamp(44px, 5.5vw, 64px);
+  letter-spacing: -0.06em
+}
+.not-found__copy > p {
+  max-width: 380px;
+  margin-top: 14px;
+  font-size: 13px;
+  line-height: 1.8;
+  color: var(--muted)
+}
+.not-found__actions {
+  display: flex;
+  align-items: center;
+  gap: 17px;
+  margin-top: 23px
+}
+@media (max-width: 860px) {
+  .not-found {
+    grid-template-columns: 1fr;
+    gap: 10px;
+    min-height: auto;
+    padding-top: 30px
+  }
+  .not-found__art {
+    min-height: 300px;
+    order: 1
+  }
+  .not-found__number {
+    font-size: 170px
+  }
+  .not-found__paper {
+    width: 205px;
+    top: 45px;
+    left: 12%
+  }
+  .not-found__note {
+    bottom: 25px
+  }
+  .not-found__copy {
+    order: 0;
+    text-align: center;
+    padding-bottom: 8px
+  }
+  .not-found__copy > p {
+    margin-inline: auto
+  }
+  .not-found__actions {
+    justify-content: center
+  }
+}
+@media (max-width: 640px) {
+  .not-found__number {
+    font-size: 130px
+  }
+  .not-found__art {
+    min-height: 260px
+  }
+  .not-found__paper {
+    width: 170px;
+    top: 36px
+  }
+  .not-found__note {
+    right: 4%;
+    bottom: 10px
+  }
+  .not-found__copy h1 {
+    font-size: 42px
+  }
+}

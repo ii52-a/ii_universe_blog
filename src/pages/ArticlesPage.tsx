@@ -1,3 +1,9 @@
+/**
+ * 文章归档页
+ * 职责：分类筛选、搜索、月份时间线与分页。
+ * 样式：src/css/pages/articles.css
+ */
+
 import { useDeferredValue, useEffect, useState, type FormEvent } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { PenLine, Plus, Search, X } from 'lucide-react'
@@ -32,11 +38,11 @@ function groupByMonth(posts: Post[]) {
 export function ArticlesPage() {
   usePageTitle('风吹散的页')
   const content = site.articles
-  const { user } = useAuth()
+  const { user, can } = useAuth()
   const { showToast } = useToast()
   const { categories, refresh: refreshCategories } = useCategories()
   const [params, setParams] = useSearchParams()
-  const category = params.get('view') === 'blogger' ? '只看博主' : (params.get('category') ?? '全部')
+  const category = params.get('category') ?? '全部'
   const [query, setQuery] = useState(() => params.get('q') ?? '')
   const deferredQuery = useDeferredValue(query.trim())
   const [posts, setPosts] = useState<Post[]>([])
@@ -48,9 +54,9 @@ export function ArticlesPage() {
   const [addingTag, setAddingTag] = useState(false)
   const [newTag, setNewTag] = useState('')
   const [tagBusy, setTagBusy] = useState(false)
-  const admin = user?.role === 'admin'
+  const admin = can('tags.manage')
   const names = categories.length > 0 ? categories.map((item) => item.name) : [...fallbackCategories]
-  const tabs = ['全部', '只看博主', ...names]
+  const tabs = ['全部', ...names]
 
   useEffect(() => {
     const nextQuery = params.get('q') ?? ''
@@ -70,9 +76,8 @@ export function ArticlesPage() {
       .list({
         limit: PAGE_SIZE,
         cursor: cursorStack[pageIndex] ?? undefined,
-        category: category === '全部' || category === '只看博主' ? undefined : category,
+        category: category === '全部' ? undefined : category,
         q: deferredQuery || undefined,
-        author: category === '只看博主' ? 'deepseek' : undefined,
       })
       .then((result) => {
         if (cancelled) return
@@ -105,9 +110,7 @@ export function ArticlesPage() {
   const updateCategory = (value: string) => {
     const next = new URLSearchParams(params)
     next.delete('category')
-    next.delete('view')
-    if (value === '只看博主') next.set('view', 'blogger')
-    else if (value !== '全部') next.set('category', value)
+    if (value !== '全部') next.set('category', value)
     next.delete('q')
     setQuery('')
     setParams(next, { replace: true })
@@ -138,15 +141,10 @@ export function ArticlesPage() {
   }
 
   const removeTag = async (id: string, name: string) => {
+    if (!window.confirm(`永久删除分类「${name}」？`)) return
     try {
-      const used = await postsApi.list({ category: name, limit: 1 })
-      if (used.posts.length > 0) {
-        if (!window.confirm('是否去除所有文章的该标签？')) return
-        await categoriesApi.remove(id, true)
-        await refreshPosts()
-      } else {
-        await categoriesApi.remove(id)
-      }
+      await categoriesApi.remove(id)
+      await refreshPosts()
       await refreshCategories()
       if (category === name) updateCategory('全部')
       setPageIndex(0)
@@ -164,7 +162,7 @@ export function ArticlesPage() {
         <div>
           {hasText(content.title) && <h1>{content.title}</h1>}
           {hasText(content.lede) && <p>{content.lede}</p>}
-          {hasText(content.write) && (
+          {hasText(content.write) && user?.role === 'admin' && (
             <Link className="button button--ink page-hero__write" to="/write">
               <PenLine size={15} aria-hidden="true" />
               {content.write}
@@ -184,7 +182,7 @@ export function ArticlesPage() {
           <div className="filter-chips" role="group" aria-label="按分类筛选">
             {tabs.map((item) => {
               const categoryItem = categories.find((entry) => entry.name === item)
-              const locked = item === '全部' || item === '只看博主'
+              const locked = item === '全部'
               return (
                 <span className={`filter-chip-wrap${admin && !locked ? ' is-editable' : ''}`} key={item}>
                   <button
@@ -307,7 +305,8 @@ export function ArticlesPage() {
         ) : (
           <div className="archive-empty">
             <span aria-hidden="true">✳</span>
-            <h2>没有找到相关的文章</h2>
+            <h2>{category === '只看博主' ? 'ii52A1 还没有写页' : '没有找到相关的文章'}</h2>
+            {category === '只看博主' && <p>这个筛选只看 ii52A1 账户的文章。</p>}
           </div>
         )}
       </section>

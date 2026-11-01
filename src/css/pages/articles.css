@@ -1,0 +1,417 @@
+/* ============================================================
+   ArticlesPage
+   文章归档、筛选与时间线。
+   ============================================================ */
+
+.articles-page {
+  padding-top: 42px;
+  padding-bottom: 80px
+}
+.page-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 280px;
+  align-items: end;
+  gap: 30px;
+  padding-bottom: 30px;
+  border-bottom: 1px solid var(--line)
+}
+.page-hero__note {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10.5px;
+  color: var(--muted);
+  letter-spacing: 0.03em
+}
+.page-hero__note::before {
+  content: '';
+  width: 16px;
+  height: 1px;
+  background: var(--ink);
+  opacity: 0.35
+}
+.page-hero h1 {
+  margin-top: 14px;
+  font-size: clamp(44px, 5.2vw, 64px);
+  letter-spacing: -0.06em
+}
+.page-hero p {
+  max-width: 680px;
+  margin-top: 16px;
+  font-size: 13.5px;
+  line-height: 1.8;
+  color: var(--muted)
+}
+.page-hero__aside {
+  position: relative;
+  height: 128px;
+  display: flex;
+  align-items: center;
+  justify-content: center
+}
+.page-hero__stamp {
+  display: grid;
+  place-items: center;
+  width: 104px;
+  height: 104px;
+  border: 1.5px solid var(--ink);
+  border-radius: 50%;
+  background: var(--butter);
+  font-family: var(--serif);
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  transform: rotate(-8deg);
+  box-shadow: 4px 4px 0 var(--ink)
+}
+.page-hero__scribble {
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+  font-family: var(--serif);
+  font-size: 10px;
+  color: var(--muted);
+  transform: rotate(-4deg)
+}
+.archive {
+  margin-top: 28px
+}
+.archive__toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px
+}
+.filter-chips {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex-wrap: wrap
+}
+.filter-chip {
+  min-height: 32px;
+  padding: 6px 12px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  color: var(--muted);
+  font-size: 11.5px;
+  transition:
+    color 150ms var(--ease),
+    background-color 150ms var(--ease),
+    border-color 150ms var(--ease)
+}
+.filter-chip:hover {
+  background: #fff;
+  border-color: var(--line);
+  color: var(--ink)
+}
+.filter-chip.is-active {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: #fff
+}
+.archive-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 208px;
+  height: 38px;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--muted);
+  transition: border-color 150ms var(--ease)
+}
+.archive-search:focus-within {
+  border-color: var(--ink)
+}
+.archive-search input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  font-size: 12px
+}
+.archive-search button {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  color: var(--muted)
+}
+.archive-search button:hover {
+  background: var(--paper-soft)
+}
+.archive__status {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 40px;
+  margin-top: 10px;
+  padding: 0 4px;
+  font-size: 10px;
+  color: var(--muted-light)
+}
+.archive-list {
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: #fff;
+  overflow: hidden;
+  box-shadow: var(--shadow-sm)
+}
+.archive-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 310px;
+  padding: 40px 24px;
+  border: 1px dashed var(--line-dark);
+  border-radius: 20px;
+  background: #fff;
+  text-align: center
+}
+.archive-empty > span {
+  font-size: 30px;
+  color: var(--blue);
+  transform: rotate(10deg)
+}
+.archive-empty h2 {
+  margin-top: 10px;
+  font-size: 27px
+}
+.archive-empty p {
+  margin-top: 6px;
+  margin-bottom: 18px;
+  font-size: 12px;
+  color: var(--muted)
+}
+.archive-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  margin-top: 17px;
+  padding: 0 4px;
+  font-size: 10.5px;
+  color: var(--muted)
+}
+@media (max-width: 860px) {
+  .page-hero {
+    grid-template-columns: 1fr;
+    gap: 10px
+  }
+  .page-hero__aside {
+    display: none
+  }
+}
+@media (max-width: 640px) {
+  .articles-page {
+    padding-top: 26px;
+    padding-bottom: 55px
+  }
+  .page-hero {
+    padding-bottom: 22px
+  }
+  .page-hero h1 {
+    font-size: 43px
+  }
+  .page-hero p {
+    font-size: 12px
+  }
+  .archive {
+    margin-top: 20px
+  }
+  .archive__toolbar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 11px
+  }
+  .filter-chips {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding-bottom: 3px;
+    scrollbar-width: none
+  }
+  .filter-chips::-webkit-scrollbar {
+    display: none
+  }
+  .filter-chip {
+    flex-shrink: 0
+  }
+  .archive-search {
+    width: 100%
+  }
+  .archive__status {
+    min-height: 36px
+  }
+  .archive-list {
+    border-radius: 16px
+  }
+  .archive-foot {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px
+  }
+}
+.page-hero__note {
+  font-size: 11.5px
+}
+.filter-chip {
+  font-size: 12px
+}
+.archive__status {
+  font-size: 11px
+}
+.archive-foot {
+  font-size: 11.5px
+}
+.page-hero__write {
+  margin-top: 18px
+}
+@media (max-width: 640px) {
+  .page-hero__write {
+    margin-top: 14px
+  }
+}
+.archive-timeline {
+  margin-top: 8px;
+  border-top: 1px solid var(--line)
+}
+.archive-month {
+  padding-top: 18px;
+  border-top: 1px solid var(--line)
+}
+.archive-month:first-child {
+  border-top: 0
+}
+.archive-month > h2 {
+  margin-bottom: 4px;
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.04em
+}
+.archive-day {
+  display: grid;
+  grid-template-columns: 52px minmax(0, 1fr);
+  gap: 14px;
+  border-top: 1px solid var(--line)
+}
+.archive-day > time {
+  padding-top: 22px;
+  color: var(--muted-light);
+  font-family: var(--mono);
+  font-size: 9px
+}
+.archive-pager {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  padding: 22px 0 4px;
+  border-top: 1px solid var(--line)
+}
+.archive-pager span {
+  color: var(--muted-light);
+  font-family: var(--mono);
+  font-size: 9px
+}
+.archive-pager .text-button:disabled {
+  color: var(--line-dark);
+  cursor: default
+}
+.archive-loading {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 26px 0
+}
+.archive-loading span {
+  display: block;
+  width: 72%;
+  height: 48px;
+  border-radius: 8px;
+  background: var(--paper-soft);
+  animation: lab-pulse 1.6s ease-in-out infinite
+}
+.filter-chip-wrap {
+  position: relative;
+  display: inline-flex
+}
+.filter-chip__remove {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  display: grid;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  border: 1px solid var(--line-dark);
+  border-radius: 50%;
+  background: var(--paper);
+  color: var(--muted);
+  opacity: 0;
+  transition: opacity 140ms var(--ease);
+  cursor: pointer
+}
+.filter-chip-wrap.is-editable:hover .filter-chip__remove, .filter-chip__remove:focus-visible {
+  opacity: 1
+}
+.filter-chip__add-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 7px 2px;
+  border: 0;
+  background: none;
+  color: var(--muted-light);
+  font-size: 10px;
+  cursor: pointer
+}
+.filter-chip__add-trigger:hover {
+  color: var(--ink)
+}
+.filter-chip__add {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px
+}
+.filter-chip__add input {
+  width: 86px;
+  border: 1px solid var(--line-dark);
+  border-radius: 999px;
+  background: var(--paper);
+  color: var(--ink);
+  padding: 6px 9px;
+  font-size: 10px;
+  outline: 0
+}
+.filter-chip__add button {
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--paper-soft);
+  color: var(--muted);
+  cursor: pointer
+}
+@media (max-width: 640px) {
+  .archive-day {
+    grid-template-columns: 38px minmax(0, 1fr);
+    gap: 8px
+  }
+  .archive-day > time {
+    padding-top: 15px;
+    font-size: 8px
+  }
+}

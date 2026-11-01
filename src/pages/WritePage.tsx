@@ -1,7 +1,13 @@
+/**
+ * 写文章页
+ * 职责：文章标题、摘要、分类、标签、封面、排版与正文。
+ * 样式：src/css/pages/write.css
+ */
+
 import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
 import { Link, Navigate, useNavigate, useSearchParams } from 'react-router-dom'
 import { ArrowLeft, Check, Eye, Image, PenLine, Plus } from 'lucide-react'
-import type { CoverVariant } from '../data/posts'
+import type { ArticleStyle, CoverVariant } from '../data/posts'
 import { categories as fallbackCategories } from '../data/posts'
 import { useCategories } from '../hooks/useCategories'
 import { parseArticleBody, countCharacters, stringifyArticleBody } from '../lib/markdown'
@@ -10,11 +16,13 @@ import { postsApi, BackendError } from '../lib/backend'
 import { readStorage, removeStorage, writeStorage } from '../lib/storage'
 import { useAuth } from '../context/AuthContext'
 import { useToast } from '../context/ToastContext'
+import { useWidgets } from '../context/WidgetsContext'
 import { usePageTitle } from '../hooks/usePageTitle'
 import { CoverArt } from '../components/CoverArt'
 import { Avatar } from '../components/Avatar'
 
 const coverOptions: Array<{ value: CoverVariant; label: string }> = [
+  { value: 'none', label: '不用封面' },
   { value: 'store', label: '夜里的店' },
   { value: 'walk', label: '雨里的路' },
   { value: 'chair', label: '旧椅子' },
@@ -26,12 +34,20 @@ const coverOptions: Array<{ value: CoverVariant; label: string }> = [
   { value: 'map', label: '一张地图' },
 ]
 
+const styleOptions: Array<{ value: ArticleStyle; label: string; note: string }> = [
+  { value: 'paper', label: '纸页', note: '现在的样子' },
+  { value: 'quiet', label: '留白', note: '标题更大，句子更慢' },
+  { value: 'magazine', label: '杂志', note: '宽标题与彩色引线' },
+  { value: 'note', label: '便签', note: '窄栏，像手写手记' },
+]
+
 interface Draft {
   title: string
   excerpt: string
   category: string
   tags: string
   cover: CoverVariant
+  style: ArticleStyle
   body: string
 }
 
@@ -41,6 +57,7 @@ const emptyDraft: Draft = {
   category: '日常',
   tags: '',
   cover: 'walk',
+  style: 'paper',
   body: '',
 }
 
@@ -51,11 +68,15 @@ export function WritePage() {
   const editingSlug = params.get('edit')
   usePageTitle(editingSlug ? '改一页' : '写一页')
   const { user, ready } = useAuth()
+  const { serverOffsetMs } = useWidgets()
   const { names } = useCategories()
   const categories = names.length > 0 ? names : [...fallbackCategories]
   const { showToast } = useToast()
   const navigate = useNavigate()
-  const [form, setForm] = useState<Draft>(() => readStorage<Draft>('write-draft.v1', emptyDraft))
+  const [form, setForm] = useState<Draft>(() => ({
+    ...emptyDraft,
+    ...readStorage<Partial<Draft>>('write-draft.v1', {}),
+  }))
   const [errors, setErrors] = useState<Errors>({})
   const [saving, setSaving] = useState(false)
   const [loadingEdit, setLoadingEdit] = useState(Boolean(editingSlug))
@@ -95,7 +116,7 @@ export function WritePage() {
       .get(editingSlug)
       .then(({ post }) => {
         if (cancelled) return
-        if (post.authorId !== user.id) {
+        if (post.authorId !== user.id && user.role !== 'admin') {
           setEditError('这一页不是你写的，只能看，不能改。')
           return
         }
@@ -105,6 +126,7 @@ export function WritePage() {
           category: post.category,
           tags: post.tags.join(', '),
           cover: post.cover as CoverVariant,
+          style: (post.style as ArticleStyle) ?? 'paper',
           body: post.body || stringifyArticleBody(post.content),
         })
       })
@@ -133,6 +155,19 @@ export function WritePage() {
   }
 
   if (!user) return <Navigate to={`/login?from=${encodeURIComponent(editingSlug ? `/write?edit=${editingSlug}` : '/write')}`} replace />
+
+  if (user.role !== 'admin') {
+    return (
+      <div className="write-page">
+        <div className="page-container review-denied">
+          <h1>这里暂不开放。</h1>
+          <Link className="text-link" to="/articles">
+            回到文章
+          </Link>
+        </div>
+      </div>
+    )
+  }
 
   if (loadingEdit) {
     return (
@@ -201,6 +236,7 @@ export function WritePage() {
         category: form.category,
         tags,
         cover: form.cover,
+        style: form.style,
         content: blocks,
         body: form.body,
       }
@@ -229,11 +265,7 @@ export function WritePage() {
           <div>
             <span className="page-hero__note">{editingSlug ? '共同文章 · 改一页' : '共同文章 · 写一页'}</span>
             <h1>{editingSlug ? '把这一页再理一理。' : '把今天写下来。'}</h1>
-            <p>
-              {editingSlug
-                ? '地址不变，改完仍归你。'
-                : '写完会署你的名字。普通账号先审核，ii52A1 直接发布。'}
-            </p>
+            <span className="write-head__ink" aria-hidden="true" />
           </div>
           <Link className="text-link" to="/articles">
             <ArrowLeft size={14} aria-hidden="true" />
@@ -331,6 +363,7 @@ export function WritePage() {
 
             <fieldset className="cover-field">
               <legend>封面</legend>
+              <p className="field-hint">可以不用图片，只留下文字和排版。</p>
               <div className="cover-picker">
                 {coverOptions.map((cover) => (
                   <button
@@ -344,6 +377,32 @@ export function WritePage() {
                       <CoverArt variant={cover.value} decorative />
                     </span>
                     <span>{cover.label}</span>
+                  </button>
+                ))}
+              </div>
+            </fieldset>
+
+            <fieldset className="style-field">
+              <legend>排版样式</legend>
+              <div className="style-picker">
+                {styleOptions.map((style) => (
+                  <button
+                    key={style.value}
+                    type="button"
+                    className={`style-choice${form.style === style.value ? ' is-active' : ''}`}
+                    aria-pressed={form.style === style.value}
+                    onClick={() => update('style', style.value)}
+                  >
+                    <span
+                      className={`style-choice__paper style-choice__paper--${style.value}`}
+                      aria-hidden="true"
+                    >
+                      <i />
+                      <i />
+                      <i />
+                    </span>
+                    <strong>{style.label}</strong>
+                    <small>{style.note}</small>
                   </button>
                 ))}
               </div>
@@ -409,13 +468,25 @@ export function WritePage() {
               <Eye size={14} aria-hidden="true" />
               预览
             </div>
-            <div className="write-preview">
-              <span className="write-preview__cover">
-                <CoverArt variant={form.cover} decorative />
-              </span>
+            <div className={`write-preview write-preview--style-${form.style}`}>
+              {form.cover !== 'none' && (
+                <span className="write-preview__cover">
+                  <CoverArt variant={form.cover} decorative />
+                </span>
+              )}
               <div className="write-preview__meta">
                 <span>{form.category}</span>
-                <span>刚刚</span>
+                <time>
+                  {new Intl.DateTimeFormat('zh-CN', {
+                    timeZone: 'Asia/Shanghai',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: false,
+                  }).format(new Date(Date.now() + serverOffsetMs))}
+                </time>
               </div>
               <h2>{form.title || '还没有标题'}</h2>
               <p>{form.excerpt || '摘要会出现在这里。'}</p>
@@ -447,7 +518,7 @@ export function WritePage() {
             </div>
             <div className="write-side__note">
               <Image size={15} aria-hidden="true" />
-              <p>封面是半日画好的插图。发布以后，它会和别人的页一起排在「风吹散的页」里。</p>
+              <p>封面可以用插画，也可以干脆留白。发布以后，它会和别人的页一起排在「风吹散的页」里。</p>
             </div>
           </aside>
         </div>

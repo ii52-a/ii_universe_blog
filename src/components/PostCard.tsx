@@ -1,28 +1,42 @@
+/**
+ * 文章卡组件
+ * 职责：首页卡片、归档行与分区标题。
+ * 样式：src/css/components/post-card.css
+ */
+
 import { Link } from 'react-router-dom'
 import { ArrowUpRight } from 'lucide-react'
-import { displayTitle, formatShortDate, postAuthor, type Post } from '../data/posts'
+import { displayTitle, formatShortDate, postAuthor, usesContentAsTitle, type Post } from '../data/posts'
 import { CoverArt } from './CoverArt'
 
 interface PostCardProps {
   post: Post
-  variant?: 'featured' | 'standard' | 'row'
+  variant?: 'featured' | 'standard' | 'row' | 'compact'
 }
 
 export function PostCard({ post, variant = 'standard' }: PostCardProps) {
+  const noCover = post.cover === 'none'
+  const contentTitle = usesContentAsTitle(post)
   return (
-    <Link className={`post-card post-card--${variant}`} to={`/articles/${post.slug}`}>
-      <span className="post-card__cover">
-        <CoverArt variant={post.cover} decorative />
-        <span className="post-card__category">{post.category}</span>
-      </span>
+    <Link
+      className={`post-card post-card--${variant}${noCover ? ' post-card--no-cover' : ''}`}
+      to={`/articles/${post.slug}`}
+    >
+      {!noCover && (
+        <span className="post-card__cover">
+          <CoverArt variant={post.cover} decorative />
+          <span className="post-card__category">{post.category}</span>
+        </span>
+      )}
       <span className="post-card__body">
         <span className="post-card__meta">
+          {noCover && <span className="post-card__category-text">{post.category}</span>}
           <span className="post-card__author">{postAuthor(post).name}</span>
           <span>{formatShortDate(post.publishedAt)}</span>
           <span>{post.readMinutes} 分钟</span>
         </span>
         <strong className="post-card__title">{displayTitle(post)}</strong>
-        <span className="post-card__excerpt">{post.excerpt}</span>
+        {!contentTitle && <span className="post-card__excerpt">{post.excerpt}</span>}
         <span className="post-card__foot">
           读这一篇
           <ArrowUpRight size={15} aria-hidden="true" />
@@ -36,12 +50,12 @@ export function PostRow({ post, hideDate = false }: { post: Post; hideDate?: boo
   return (
     <Link className={`post-row${hideDate ? ' post-row--no-date' : ''}`} to={`/articles/${post.slug}`}>
       {!hideDate && <span className="post-row__date">{formatShortDate(post.publishedAt)}</span>}
-      <span className="post-row__cover">
-        <CoverArt variant={post.cover} decorative />
+      <span className={`post-row__cover${post.cover === 'none' ? ' post-row__cover--none' : ''}`}>
+        {post.cover === 'none' ? <span aria-hidden="true">✳</span> : <CoverArt variant={post.cover} decorative />}
       </span>
       <span className="post-row__copy">
         <strong>{displayTitle(post)}</strong>
-        <span>{post.excerpt}</span>
+        {!usesContentAsTitle(post) && <span>{post.excerpt}</span>}
       </span>
       <span className="post-row__meta">
         {postAuthor(post).name}

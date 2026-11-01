@@ -1,7 +1,11 @@
 import { useEffect } from 'react'
 
-export function usePageTitle(title: string) {
+export function usePageTitle(title: string, site = '半日') {
   useEffect(() => {
-    document.title = title ? `${title} · 半日` : '半日 · 把日子写成一页'
-  }, [title])
+    if (title) {
+      document.title = `${title} · ${site}`
+      return
+    }
+    document.title = site === '半日' ? '半日 · 把日子写成一页' : site
+  }, [title, site])
 }

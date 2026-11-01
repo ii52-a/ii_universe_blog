@@ -1,3 +1,9 @@
+/**
+ * 404 页面
+ * 职责：找不到页面时的提示。
+ * 样式：src/css/pages/not-found.css
+ */
+
 import { Link } from 'react-router-dom'
 import { ArrowUpRight } from 'lucide-react'
 import { usePageTitle } from '../hooks/usePageTitle'

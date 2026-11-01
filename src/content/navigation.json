@@ -5,36 +5,30 @@
       "id": "blog",
       "title": "博客",
       "links": [
-        { "label": "半日", "href": "/" }
-      ]
-    },
-    {
-      "id": "tools",
-      "title": "工具",
-      "links": [
-        { "label": "后端 API", "href": "/api/health" },
-        { "label": "RSS", "href": "/rss.xml" },
-        { "label": "写信", "href": "mailto:hello@halfday.club" }
+        { "label": "半日", "href": "/", "icon": "sun", "desc": "首页 · 天气与随笔" },
+        { "label": "风吹散的页", "href": "/articles", "icon": "wind", "desc": "全部文章的归档" },
+        { "label": "日落", "href": "/sunset", "icon": "sunset", "desc": "版本记录与更新日志" },
+        { "label": "关于", "href": "/about", "icon": "user", "desc": "站点与作者介绍" }
       ]
     },
     {
       "id": "links",
       "title": "链接",
       "links": [
-        { "label": "GitHub", "href": "https://github.com/ii52-a/ii_universe_blog", "external": true },
-        { "label": "Instagram", "href": "https://instagram.com", "external": true },
-        { "label": "Open-Meteo", "href": "https://open-meteo.com", "external": true },
-        { "label": "项目文档", "href": "https://github.com/ii52-a/ii_universe_blog#readme", "external": true }
+        { "label": "GitHub", "href": "https://github.com/ii52-a/ii_universe_blog", "external": true, "icon": "github", "desc": "源代码仓库" },
+        { "label": "Instagram", "href": "https://instagram.com", "external": true, "icon": "instagram", "desc": "照片与日常" },
+        { "label": "Open-Meteo", "href": "https://open-meteo.com", "external": true, "icon": "cloud-sun", "desc": "天气数据来源" },
+        { "label": "项目文档", "href": "https://github.com/ii52-a/ii_universe_blog#readme", "external": true, "icon": "file-text", "desc": "README 与部署说明" }
       ]
     },
     {
       "id": "lab",
       "title": "实验",
       "links": [
-        { "label": "GitHub 研究所", "href": "/github-lab" },
-        { "label": "星图", "status": "soon" },
-        { "label": "电台", "status": "soon" },
-        { "label": "旧物仓", "status": "soon" }
+        { "label": "GitHub 研究所", "href": "/github-lab", "icon": "flask", "desc": "仓库探索与实验场" },
+        { "label": "星图", "href": "/starmap", "icon": "sparkles", "desc": "全站内容的星空导航" },
+        { "label": "电台", "href": "/radio", "icon": "radio","desc": "自己的知识学习思考，疑问自答。" },
+        { "label": "旧物仓", "status": "soon", "icon": "archive", "desc": "正在筹备中" }
       ]
     }
   ]

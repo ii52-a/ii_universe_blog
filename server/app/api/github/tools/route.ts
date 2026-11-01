@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto'
 import { NextRequest, NextResponse } from 'next/server'
-import { getAuthUser, isAdmin } from '../../../../lib/auth'
+import { getAuthUser, hasPermission } from '../../../../lib/auth'
 import { ensureDatabase, getDatabase } from '../../../../lib/db'
 import { ApiError, handleRouteError, readJson } from '../../../../lib/http'
 import { listGithubTools, mapGithubTool, parseGithubRepoUrl, type GithubToolRow } from '../../../../lib/githubTools'
@@ -28,7 +28,9 @@ export async function POST(request: NextRequest) {
   try {
     const user = await getAuthUser(request)
     if (!user) throw new ApiError(401, 'UNAUTHORIZED', '请先登录')
-    if (!isAdmin(user)) throw new ApiError(403, 'FORBIDDEN', '只有管理员可以编辑 ii tool')
+    if (!hasPermission(user, 'tools.manage')) {
+      throw new ApiError(403, 'FORBIDDEN', '需要 ii tool 管理权限')
+    }
 
     const body = githubToolSchema.parse(await readJson(request))
     const parsed = parseGithubRepoUrl(body.url)

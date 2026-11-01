@@ -1,6 +1,12 @@
+/**
+ * 顶栏组件
+ * 职责：导航、搜索、写文章入口、账号菜单与移动菜单。
+ * 样式：src/css/components/header.css
+ */
+
 import { useEffect, useRef, useState } from 'react'
 import { NavLink, useLocation, useNavigate, Link } from 'react-router-dom'
-import { ChevronDown, ClipboardCheck, LogOut, Menu, PenLine, Search, Settings, Sparkles, UserRound, X } from 'lucide-react'
+import { ChevronDown, ClipboardCheck, Feather, LogOut, Menu, PenLine, Search, Settings, ShieldCheck, Sparkles, UserRound, X } from 'lucide-react'
 import { Brand } from './Brand'
 import { Avatar } from './Avatar'
 import { useAuth } from '../context/AuthContext'
@@ -19,6 +25,7 @@ export function Header() {
   const [searchOpen, setSearchOpen] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
   const location = useLocation()
+  const { user } = useAuth()
 
   useEffect(() => {
     setMobileOpen(false)
@@ -73,10 +80,12 @@ export function Header() {
               <span>搜一搜</span>
               <kbd aria-hidden="true">⌘ K</kbd>
             </button>
-            <Link className="write-link" to="/write">
-              <PenLine size={14} aria-hidden="true" />
-              <span>写一页</span>
-            </Link>
+            {user?.role === 'admin' && (
+              <Link className="write-link" to="/write">
+                <PenLine size={14} aria-hidden="true" />
+                <span>写一页</span>
+              </Link>
+            )}
             <span className="site-header__divider" aria-hidden="true" />
             <AuthMenu />
             <button
@@ -123,10 +132,12 @@ export function Header() {
             <Search size={17} aria-hidden="true" />
             搜索文章
           </button>
-          <Link className="mobile-menu__write" to="/write" onClick={() => setMobileOpen(false)}>
-            <PenLine size={16} aria-hidden="true" />
-            写一页
-          </Link>
+          {user?.role === 'admin' && (
+            <Link className="mobile-menu__write" to="/write" onClick={() => setMobileOpen(false)}>
+              <PenLine size={16} aria-hidden="true" />
+              写一页
+            </Link>
+          )}
         </div>
       )}
 
@@ -136,7 +147,7 @@ export function Header() {
 }
 
 function AuthMenu() {
-  const { user, logout } = useAuth()
+  const { user, logout, can } = useAuth()
   const [open, setOpen] = useState(false)
   const rootRef = useRef<HTMLDivElement>(null)
   const navigate = useNavigate()
@@ -198,20 +209,34 @@ function AuthMenu() {
             <Sparkles size={15} aria-hidden="true" />
             我的空间
           </Link>
-          {user.role === 'admin' && (
+          {can('posts.review') && (
             <Link to="/review" className="auth-menu__item" role="menuitem">
               <ClipboardCheck size={15} aria-hidden="true" />
               审核队列
+            </Link>
+          )}
+          {user.role === 'admin' && (
+            <Link to="/permissions" className="auth-menu__item" role="menuitem">
+              <ShieldCheck size={15} aria-hidden="true" />
+              权限管理
             </Link>
           )}
           <Link to={`/u/${user.handle}`} className="auth-menu__item" role="menuitem">
             <UserRound size={15} aria-hidden="true" />
             公开主页
           </Link>
-          <Link to="/write" className="auth-menu__item" role="menuitem">
-            <PenLine size={15} aria-hidden="true" />
-            写一页
-          </Link>
+          {user.role === 'admin' && (
+            <Link to="/write" className="auth-menu__item" role="menuitem">
+              <PenLine size={15} aria-hidden="true" />
+              写一页
+            </Link>
+          )}
+          {can('essays.write') && (
+            <Link to="/essay" className="auth-menu__item" role="menuitem">
+              <Feather size={15} aria-hidden="true" />
+              写随笔
+            </Link>
+          )}
           <Link to="/me#settings" className="auth-menu__item" role="menuitem">
             <Settings size={15} aria-hidden="true" />
             编辑资料
@@ -238,7 +263,7 @@ function AuthMenu() {
 }
 
 function MobileAccount({ onNavigate }: { onNavigate: () => void }) {
-  const { user, logout } = useAuth()
+  const { user, logout, can } = useAuth()
   const { showToast } = useToast()
   const navigate = useNavigate()
 
@@ -267,9 +292,19 @@ function MobileAccount({ onNavigate }: { onNavigate: () => void }) {
       <Link className="text-button" to={`/u/${user.handle}`} onClick={onNavigate}>
         主页
       </Link>
-      {user.role === 'admin' && (
+      {can('posts.review') && (
         <Link className="text-button" to="/review" onClick={onNavigate}>
           审核
+        </Link>
+      )}
+      {can('essays.write') && (
+        <Link className="text-button" to="/essay" onClick={onNavigate}>
+          随笔
+        </Link>
+      )}
+      {user.role === 'admin' && (
+        <Link className="text-button" to="/permissions" onClick={onNavigate}>
+          权限
         </Link>
       )}
       <Link className="text-button" to="/me" onClick={onNavigate}>

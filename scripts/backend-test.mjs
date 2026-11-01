@@ -19,7 +19,8 @@ const postData = {
   ],
   category: '日常',
   tags: ['测试'],
-  cover: 'walk',
+  cover: 'none',
+  style: 'note',
 }
 
 async function json(response) {
@@ -40,10 +41,11 @@ try {
   assert.equal(response.status(), 201)
   const registered = await json(response)
   assert.equal(registered.user.role, 'member')
+  assert.deepEqual(registered.user.permissions, [])
   assert.equal('mode' in registered, false)
 
   const cookies = (await api.storageState()).cookies.map((cookie) => cookie.name)
-  assert.equal(cookies.includes('halfday_jwt'), true)
+  assert.equal(cookies.includes('ii_universe_jwt'), true)
   assert.equal(cookies.includes('halfday_session'), false)
 
   response = await api.get('/api/auth/me')
@@ -56,25 +58,29 @@ try {
   assert.equal(response.status(), 200)
   assert.equal((await json(response)).user.github, 'https://github.com/ii52-a')
 
+  response = await api.post('/api/essays', {
+    data: {
+      title: '没有权限的随笔',
+      body: '这是一段足够长的随笔正文，用来验证权限拦截是否生效。',
+      content: [{ type: 'p', text: '这是一段足够长的随笔正文，用来验证权限拦截是否生效。' }],
+    },
+  })
+  assert.equal(response.status(), 403, 'essay writing requires a permission')
+
   const seedPosts = await json(await api.get('/api/posts?limit=50'))
-  const seedAuthors = new Set(seedPosts.posts.map((post) => post.authorHandle))
-  assert.equal(seedAuthors.size >= 4, true, 'seed posts should have several authors')
   assert.equal(
-    seedPosts.posts.filter((post) => post.authorHandle === 'deepseek').length,
-    2,
-    'only the pages written by DeepS use the DeepS author',
+    seedPosts.posts.some((post) => post.slug === 'a-rainy-walk-from-mantoushan'),
+    true,
+    'seed article should exist',
+  )
+  assert.equal(
+    seedPosts.posts.some((post) => post.slug === 'after-clearing-the-desk'),
+    true,
+    'seed article should exist',
   )
 
   response = await api.post('/api/posts', { data: postData })
-  assert.equal(response.status(), 201)
-  const created = await json(response)
-  assert.equal(created.post.status, 'pending', 'member posts should wait for review')
-  const slug = created.post.slug
-
-  response = await anon.get(`/api/posts/${slug}`)
-  assert.equal(response.status(), 404, 'pending post should not be public')
-  response = await api.get('/api/posts?mine=true&limit=50')
-  assert.equal((await json(response)).posts.some((post) => post.slug === slug), true)
+  assert.equal(response.status(), 403, 'members cannot write articles')
 
   response = await api.get('/api/review')
   assert.equal(response.status(), 403, 'members cannot review')
@@ -83,35 +89,88 @@ try {
     data: { identifier: 'ii52A1', password: '0000', remember: true },
   })
   assert.equal(response.status(), 200)
-  assert.equal((await json(response)).user.role, 'admin')
+  const adminUser = (await json(response)).user
+  assert.equal(adminUser.role, 'admin')
+  assert.equal(adminUser.permissions.length, 5, 'admin should expose all permissions')
   const adminCookies = (await admin.storageState()).cookies.map((cookie) => cookie.name)
-  assert.equal(adminCookies.includes('halfday_jwt'), true)
+  assert.equal(adminCookies.includes('ii_universe_jwt'), true)
+
+  response = await api.get('/api/permissions')
+  assert.equal(response.status(), 403, 'members cannot list permissions')
+  response = await admin.get('/api/permissions')
+  assert.equal(response.status(), 200)
+  const permissionData = await json(response)
+  assert.equal(permissionData.catalog.length, 5)
+  assert.equal(permissionData.users.some((user) => user.id === registered.user.id), true)
+
+  response = await admin.patch('/api/permissions', {
+    data: {
+      userId: registered.user.id,
+      permissions: ['posts.review', 'tags.manage', 'tools.manage', 'posts.delete', 'essays.write'],
+    },
+  })
+  assert.equal(response.status(), 200)
+  assert.equal((await json(response)).user.permissions.length, 5)
+
+  response = await admin.patch('/api/permissions', {
+    data: { userId: adminUser.id, permissions: [] },
+  })
+  assert.equal(response.status(), 400, 'admin permissions cannot be reduced')
+
+  response = await api.get('/api/review')
+  assert.equal(response.status(), 200, 'granted review permission should open the queue')
+
+  response = await api.post('/api/essays', {
+    data: {
+      title: '接口随笔',
+      body: '雨停以后，窗台上还有一点水。把杯子放上去，杯子底就印了一个圆。',
+      content: [
+        { type: 'p', text: '雨停以后，窗台上还有一点水。把杯子放上去，杯子底就印了一个圆。' },
+      ],
+    },
+  })
+  assert.equal(response.status(), 201, 'granted essay permission should allow essays')
+  const essay = (await json(response)).post
+  assert.equal(essay.kind, 'essay')
+  assert.equal(essay.category, '随笔')
+  assert.equal(essay.cover, 'none')
+  assert.deepEqual(essay.tags, [])
+  assert.equal(essay.status, 'pending')
 
   response = await admin.get('/api/review')
   assert.equal(response.status(), 200)
-  assert.equal((await json(response)).posts.some((post) => post.slug === slug), true)
-
-  response = await admin.patch(`/api/review/${slug}`, { data: { action: 'approve' } })
+  assert.equal((await json(response)).posts.some((post) => post.slug === essay.slug), true)
+  response = await admin.patch(`/api/review/${essay.slug}`, { data: { action: 'approve' } })
   assert.equal(response.status(), 200)
   assert.equal((await json(response)).post.status, 'published')
-
-  response = await anon.get(`/api/posts/${slug}`)
-  assert.equal(response.status(), 200, 'approved post should be public')
+  response = await anon.get(`/api/posts/${essay.slug}`)
+  assert.equal(response.status(), 200, 'approved essay should be public')
   response = await anon.get(`/api/users/${registered.user.handle}`)
   assert.equal(response.status(), 200)
   assert.equal((await json(response)).stats.postCount >= 1, true)
-
-  response = await api.patch(`/api/posts/${slug}`, { data: { title: '接口测试的一页（已修改）' } })
+  response = await admin.delete(`/api/posts/${essay.slug}`)
   assert.equal(response.status(), 200)
-  assert.equal((await json(response)).post.status, 'pending', 'member edits go back to review')
 
-  response = await admin.patch(`/api/review/${slug}`, {
-    data: { action: 'reject', note: '再改一改' },
+  response = await api.post('/api/categories', {
+    data: { name: `权限测试${stamp.slice(-3)}` },
   })
+  assert.equal(response.status(), 201, 'granted tag permission should allow categories')
+  const grantedCategory = (await json(response)).category
+  response = await api.delete(`/api/categories/${grantedCategory.id}`)
   assert.equal(response.status(), 200)
-  assert.equal((await json(response)).post.status, 'rejected')
-  response = await api.get(`/api/posts/${slug}`)
-  assert.equal((await json(response)).post.reviewNote, '再改一改')
+
+  response = await api.post('/api/github/tools/categories', {
+    data: { name: `权限工具${stamp.slice(-3)}` },
+  })
+  assert.equal(response.status(), 201, 'granted tool permission should allow categories')
+  const grantedToolCategory = (await json(response)).category
+  response = await api.delete(`/api/github/tools/categories/${grantedToolCategory.id}`)
+  assert.equal(response.status(), 200)
+
+  const categoryList = await json(await anon.get('/api/categories'))
+  assert.equal(categoryList.categories.length >= 9, true)
+  const thoughts = categoryList.categories.find((category) => category.name === '胡思乱想')
+  assert.equal(thoughts.protected, false)
 
   response = await admin.post('/api/posts', {
     data: { ...postData, title: '管理员直接发布的一页' },
@@ -119,7 +178,35 @@ try {
   assert.equal(response.status(), 201)
   const adminPost = await json(response)
   assert.equal(adminPost.post.status, 'published', 'admin posts publish without review')
+  response = await anon.get('/api/posts?author=ii52a1&limit=10')
+  assert.equal(response.status(), 200)
+  assert.equal(
+    (await json(response)).posts.some((post) => post.slug === adminPost.post.slug),
+    true,
+    'blogger filter should return ii52A1 posts',
+  )
+  response = await admin.patch(`/api/posts/${adminPost.post.slug}`, {
+    data: { title: '管理员直接发布的一页（已修改）' },
+  })
+  assert.equal(response.status(), 200)
+  assert.equal((await json(response)).post.status, 'published')
   response = await admin.delete(`/api/posts/${adminPost.post.slug}`)
+  assert.equal(response.status(), 200)
+
+  response = await admin.post('/api/essays', {
+    data: {
+      title: '管理员随笔',
+      body: '这是管理员直接发布的一篇随笔，用来验证发布路径和文章展示。',
+      content: [
+        { type: 'p', text: '这是管理员直接发布的一篇随笔，用来验证发布路径和文章展示。' },
+      ],
+    },
+  })
+  assert.equal(response.status(), 201)
+  const adminEssay = (await json(response)).post
+  assert.equal(adminEssay.kind, 'essay')
+  assert.equal(adminEssay.status, 'published', 'admin essays publish without review')
+  response = await admin.delete(`/api/posts/${adminEssay.slug}`)
   assert.equal(response.status(), 200)
 
   response = await api.post('/api/auth/logout')
@@ -150,15 +237,19 @@ try {
   })
   assert.equal(response.status(), 200)
 
-  response = await api.delete(`/api/posts/${slug}`)
-  assert.equal(response.status(), 200)
-
   response = await api.get('/api/widgets')
   assert.equal(response.status(), 200)
   const widgets = await json(response)
   assert.equal(widgets.timeZone, 'Asia/Shanghai')
   assert.equal(widgets.location.city, '杭州')
   assert.equal(widgets.weather === null || typeof widgets.weather.temperature === 'number', true)
+
+  response = await anon.get('/api/visits')
+  assert.equal(response.status(), 200)
+  assert.equal((await json(response)).items.length, 14)
+  response = await anon.post('/api/visits')
+  assert.equal(response.status(), 200)
+  assert.equal(typeof (await json(response)).today, 'number')
 
   response = await anon.get('/api/github/leaderboard')
   assert.equal(response.status(), 200)
@@ -187,9 +278,26 @@ try {
   assert.equal(response.status(), 200)
   assert.equal((await json(response)).tools.length, 2, 'seed should include two ii tools')
 
+  const favoriteRepo = github.items[0]
+  response = await anon.get('/api/github/favorites')
+  assert.equal(response.status(), 401, 'favorites require an ii universe account')
+  response = await api.post('/api/github/favorites', { data: favoriteRepo })
+  assert.equal(response.status(), 201)
+  response = await api.get('/api/github/favorites')
+  assert.equal(response.status(), 200)
+  const favoriteList = await json(response)
+  assert.equal(favoriteList.repos.length, 1)
+  assert.equal(favoriteList.repos[0].fullName, favoriteRepo.fullName)
+  response = await api.delete(
+    `/api/github/favorites?fullName=${encodeURIComponent(favoriteRepo.fullName)}`,
+  )
+  assert.equal(response.status(), 200)
+  response = await api.get('/api/github/favorites')
+  assert.equal((await json(response)).repos.length, 0)
+
   response = await anon.get('/api/categories')
   assert.equal(response.status(), 200)
-  assert.equal((await json(response)).categories.length, 7)
+  assert.equal((await json(response)).categories.length, 9)
 
   response = await admin.post('/api/categories', { data: { name: '测试分类' } })
   assert.equal(response.status(), 201)
@@ -238,8 +346,43 @@ try {
   const emptyTitlePost = (await json(response)).post
   assert.equal(emptyTitlePost.title, '')
 
-  response = await admin.delete(`/api/categories/${testCategory.id}?force=true`)
+  response = await admin.delete(`/api/categories/${testCategory.id}`)
   assert.equal(response.status(), 200)
+
+  response = await anon.get(`/api/posts/${emptyTitlePost.slug}`)
+  assert.equal(response.status(), 200)
+  assert.equal((await json(response)).post.category, '')
+
+  response = await anon.get('/api/radio')
+  assert.equal(response.status(), 200)
+  assert.equal((await json(response)).entries.length >= 3, true)
+
+  response = await api.post('/api/radio', { data: { title: '测试问题', body: '测试回答' } })
+  assert.equal(response.status(), 403)
+
+  response = await admin.post('/api/radio', { data: { title: '', body: '' } })
+  assert.equal(response.status(), 201)
+  const createdRadio = (await json(response)).entry
+  assert.equal(createdRadio.title, '')
+
+  response = await admin.patch(`/api/radio/${createdRadio.id}`, {
+    data: { title: '电台测试', body: '## 标题\n\n内容' },
+  })
+  assert.equal(response.status(), 200)
+  assert.equal((await json(response)).entry.title, '电台测试')
+
+  response = await admin.delete(`/api/radio/${createdRadio.id}`)
+  assert.equal(response.status(), 200)
+
+  response = await anon.get('/api/sunset/releases?page=1&limit=5')
+  assert.equal(response.status(), 200)
+  const releasePage = await json(response)
+  assert.equal(releasePage.releases.length, 5)
+  assert.equal(releasePage.total >= 20, true)
+
+  response = await anon.get(`/api/sunset/releases/${releasePage.releases[0].id}`)
+  assert.equal(response.status(), 200)
+  assert.equal((await json(response)).release.items.length > 0, true)
 
   response = await admin.patch(`/api/github/tools/${createdTool.id}`, {
     data: {
@@ -261,7 +404,7 @@ try {
   response = await admin.delete(`/api/posts/${emptyTitlePost.slug}`)
   assert.equal(response.status(), 200)
 
-  console.log(JSON.stringify({ ok: true, email, username, checks: 49 }, null, 2))
+  console.log(JSON.stringify({ ok: true, email, username, checks: 68 }, null, 2))
 } finally {
   await api.dispose()
   await admin.dispose()

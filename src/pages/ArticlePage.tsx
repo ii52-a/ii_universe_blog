@@ -1,3 +1,9 @@
+/**
+ * 文章详情页
+ * 职责：文章正文、封面、作者、目录与留言。
+ * 样式：src/css/pages/article.css
+ */
+
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import {
@@ -10,7 +16,7 @@ import {
   PencilLine,
   Trash2,
 } from 'lucide-react'
-import { displayTitle, type ContentBlock, type Post, postAuthor } from '../data/posts'
+import { displayTitle, type ContentBlock, type Post, postAuthor, usesContentAsTitle } from '../data/posts'
 import { usePageTitle } from '../hooks/usePageTitle'
 import { reactionsApi, commentsApi } from '../lib/api'
 import { deletePost, mapApiPost, usePosts } from '../lib/postsStore'
@@ -37,7 +43,7 @@ export function ArticlePage() {
   const [remotePost, setRemotePost] = useState<Post | null>(null)
   const [loadingPost, setLoadingPost] = useState(true)
   const post = remotePost ?? localPost
-  const { user } = useAuth()
+  const { user, can } = useAuth()
   usePageTitle(post?.title ?? '没有这篇')
   const { showToast } = useToast()
   const [reaction, setReaction] = useState(() =>
@@ -139,15 +145,17 @@ export function ArticlePage() {
   if (!post) return <NotFoundPage />
 
   const author = postAuthor(post)
-  const canManage = Boolean(user && user.id === author.id)
+  const articleStyle = post.style ?? 'paper'
+  const canManage = Boolean(user && (user.id === author.id || user.role === 'admin'))
+  const canDelete = canManage || can('posts.delete')
   const handleDelete = async () => {
     if (!window.confirm('删除这一页？删除以后地址会失效，评论也不会再显示。')) return
     try {
       await deletePost(post.slug)
       showToast('这一页已经收走了。', 'info')
       navigate('/articles')
-    } catch {
-      showToast('没有删掉，再试一次。', 'error')
+    } catch (caught) {
+      showToast(caught instanceof Error ? caught.message : '没有删掉，再试一次。', 'error')
     }
   }
   const related = allPosts
@@ -163,7 +171,16 @@ export function ArticlePage() {
     ...allPosts.filter((item) => item.slug !== post.slug && !relatedSlugs.has(item.slug)),
   ].slice(0, 2)
 
+  const requireLogin = () => {
+    showToast('登录 ii universe 后才能喜欢和收藏。', 'info')
+    navigate(`/login?from=${encodeURIComponent(`/articles/${post.slug}`)}`)
+  }
+
   const handleLike = () => {
+    if (!user) {
+      requireLogin()
+      return
+    }
     const liked = reactionsApi.toggleLike(post.slug)
     setReaction((current) => ({
       ...current,
@@ -174,6 +191,10 @@ export function ArticlePage() {
   }
 
   const handleSave = () => {
+    if (!user) {
+      requireLogin()
+      return
+    }
     const saved = reactionsApi.toggleSave(post.slug)
     setReaction((current) => ({ ...current, saved }))
     showToast(saved ? '收进收藏夹了。' : '已从收藏夹取出。', saved ? 'success' : 'info')
@@ -196,7 +217,7 @@ export function ArticlePage() {
   let headingIndex = 0
 
   return (
-    <div className="article-page">
+    <div className={`article-page article-page--style-${articleStyle}`}>
       <div className="reading-progress" aria-hidden="true">
         <span style={{ transform: `scaleX(${progress})` }} />
       </div>
@@ -230,7 +251,7 @@ export function ArticlePage() {
             <span>{post.readMinutes} 分钟读完</span>
           </div>
           <h1>{displayTitle(post)}</h1>
-          <p className="article-header__dek">{post.excerpt}</p>
+          {!usesContentAsTitle(post) && <p className="article-header__dek">{post.excerpt}</p>}
           <div className="article-byline">
             <Avatar name={author.name} color={author.color} src={author.avatar} size="md" />
             <div>
@@ -264,27 +285,36 @@ export function ArticlePage() {
                 <Link2 size={16} aria-hidden="true" />
               </button>
               {canManage && (
-                <>
-                  <Link className="article-action" to={`/write?edit=${post.slug}`}>
-                    <PencilLine size={15} aria-hidden="true" />
-                    编辑
-                  </Link>
-                  <button type="button" className="article-action article-action--danger" onClick={handleDelete}>
-                    <Trash2 size={15} aria-hidden="true" />
-                    删除
-                  </button>
-                </>
+                <Link
+                  className="article-action"
+                  to={post.kind === 'essay' ? `/essay?edit=${post.slug}` : `/write?edit=${post.slug}`}
+                >
+                  <PencilLine size={15} aria-hidden="true" />
+                  编辑
+                </Link>
+              )}
+              {canDelete && (
+                <button type="button" className="article-action article-action--danger" onClick={handleDelete}>
+                  <Trash2 size={15} aria-hidden="true" />
+                  删除
+                </button>
               )}
             </div>
           </div>
         </header>
 
-        <figure className="article-cover">
-          <CoverArt variant={post.cover} />
-          <figcaption>
-            {post.category === '散步' ? '杭州 · 凤凰山脚' : '杭州 · 十月'} / 插图：半日
-          </figcaption>
-        </figure>
+        {post.cover !== 'none' ? (
+          <figure className="article-cover">
+            <CoverArt variant={post.cover} />
+            <figcaption>
+              {post.category === '散步' ? '杭州 · 凤凰山脚' : '杭州 · 十月'} / 插图：半日
+            </figcaption>
+          </figure>
+        ) : (
+          <div className="article-coverless" aria-hidden="true">
+            <span>这一页没有插图</span>
+          </div>
+        )}
 
         <div className="article-layout">
           <article className="article-body" id="article-body">

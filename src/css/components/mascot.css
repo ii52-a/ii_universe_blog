@@ -1,0 +1,316 @@
+/* ============================================================
+   Mascot
+   小满卡片与天气涂鸦。
+   ============================================================ */
+
+.mascot-card {
+  grid-column: span 4;
+  position: relative;
+  min-height: 438px;
+  display: flex;
+  flex-direction: column;
+  padding: 21px 22px 14px;
+  border: 1.5px solid var(--ink);
+  border-radius: 26px;
+  background:
+    radial-gradient(rgba(27, 27, 24, 0.15) 1px, transparent 1px) 0 0 / 15px 15px,
+    var(--butter);
+  overflow: hidden;
+  box-shadow: 0 2px 0 rgba(27, 27, 24, 0.12)
+}
+.mascot-card::after {
+  content: '';
+  position: absolute;
+  right: -50px;
+  bottom: -60px;
+  width: 190px;
+  height: 190px;
+  border: 1.5px solid rgba(27, 27, 24, 0.13);
+  border-radius: 50%
+}
+.mascot-card__head {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px
+}
+.mascot-card__name {
+  font-family: var(--serif);
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -0.03em
+}
+.mascot-card__job {
+  display: inline-flex;
+  margin-left: 7px;
+  padding: 2px 7px;
+  vertical-align: 3px;
+  border: 1px solid rgba(27, 27, 24, 0.45);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.35);
+  font-family: var(--sans);
+  font-size: 9.5px;
+  font-weight: 500;
+  letter-spacing: 0.02em
+}
+.mascot-card__clock {
+  padding-top: 5px;
+  font-size: 9.5px;
+  color: rgba(27, 27, 24, 0.6);
+  white-space: nowrap
+}
+.mascot-wrap {
+  position: relative;
+  z-index: 2;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  margin-top: -2px
+}
+.mascot-speech {
+  position: relative;
+  margin-bottom: -9px;
+  padding: 7px 12px;
+  background: #fffdf7;
+  border: 1.5px solid var(--ink);
+  border-radius: 13px 13px 13px 3px;
+  font-size: 11.5px;
+  font-weight: 500;
+  line-height: 1.45;
+  box-shadow: 2px 2px 0 rgba(27, 27, 24, 0.11);
+  z-index: 8
+}
+.mascot-speech::after {
+  content: '';
+  position: absolute;
+  left: 16px;
+  bottom: -7px;
+  width: 11px;
+  height: 11px;
+  background: #fffdf7;
+  border-right: 1.5px solid var(--ink);
+  border-bottom: 1.5px solid var(--ink);
+  transform: rotate(45deg)
+}
+.mascot {
+  display: block;
+  width: 232px;
+  max-width: 90%;
+  padding: 0;
+  border-radius: 20px;
+  background: transparent;
+  line-height: 0
+}
+.mascot__svg {
+  width: 100%;
+  height: auto;
+  overflow: visible
+}
+.mascot__float {
+  animation: mascotBob 5.5s ease-in-out infinite;
+  transform-box: fill-box;
+  transform-origin: center bottom
+}
+.mascot__shadow {
+  animation: mascotShadow 5.5s ease-in-out infinite;
+  transform-box: fill-box;
+  transform-origin: center
+}
+.mascot__eye {
+  animation: mascotBlink 6.5s infinite;
+  transform-box: fill-box;
+  transform-origin: center
+}
+.mascot__arm--right {
+  transform-box: fill-box;
+  transform-origin: 10% 90%
+}
+.mascot:hover .mascot__arm--right {
+  animation: mascotWave 900ms var(--ease)
+}
+.mascot:active .mascot__float {
+  transform: scale(0.98)
+}
+.mascot-hint {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: -8px;
+  font-size: 9.5px;
+  color: rgba(27, 27, 24, 0.58)
+}
+.mascot-card__foot {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding-top: 10px;
+  border-top: 1px dashed rgba(27, 27, 24, 0.25);
+  font-size: 10.5px;
+  color: rgba(27, 27, 24, 0.66)
+}
+.mascot-card__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--green)
+}
+.mascot-card__scribble {
+  position: absolute;
+  right: 19px;
+  bottom: 44px;
+  font-size: 24px;
+  color: var(--blue);
+  transform: rotate(14deg);
+  z-index: 1
+}
+@media (max-width: 1160px) {
+  .mascot-card {
+    padding-inline: 18px
+  }
+}
+@media (max-width: 1020px) {
+  .mascot-card {
+    grid-column: span 3
+  }
+  .mascot {
+    width: 195px
+  }
+}
+@media (max-width: 860px) {
+  .mascot-card {
+    grid-column: auto
+  }
+  .mascot-card__head {
+    grid-column: 1 / -1
+  }
+  .mascot-wrap {
+    grid-column: 2;
+    grid-row: 1 / 3;
+    margin-top: 0
+  }
+  .mascot {
+    width: 210px
+  }
+  .mascot-card__foot {
+    grid-column: 1;
+    align-self: end;
+    border-top: 0;
+    padding-top: 0
+  }
+  .mascot-card__scribble {
+    display: none
+  }
+}
+@media (max-width: 640px) {
+  .mascot-card {
+    min-height: 360px;
+    display: flex;
+    border-radius: 22px;
+    padding: 20px 20px 12px
+  }
+  .mascot-card__head {
+    width: 100%
+  }
+  .mascot-wrap {
+    margin-top: -4px
+  }
+  .mascot {
+    width: 200px
+  }
+  .mascot-hint {
+    margin-top: -3px
+  }
+  .mascot-card__foot {
+    width: 100%;
+    border-top: 1px dashed rgba(27, 27, 24, 0.25);
+    padding-top: 9px
+  }
+}
+.mascot--companion {
+  width: 100%;
+  border-radius: 18px;
+  cursor: pointer
+}
+.mascot--companion:focus-visible {
+  outline-offset: 6px
+}
+.mascot-reopen {
+  position: fixed;
+  right: 15px;
+  bottom: 92px;
+  z-index: 72;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  padding: 8px 7px 7px;
+  border: 1px solid var(--line-dark);
+  border-radius: 13px;
+  background: var(--paper);
+  box-shadow: var(--shadow-sm);
+  font-size: 8px;
+  color: var(--muted);
+  transition: transform 160ms var(--ease)
+}
+.mascot-reopen:hover {
+  transform: translateY(-2px)
+}
+.mascot-reopen__face {
+  position: relative;
+  display: block;
+  width: 34px;
+  height: 24px;
+  border: 1.5px solid #1d1b17;
+  border-radius: 7px;
+  background: var(--butter)
+}
+.mascot-reopen__face i {
+  position: absolute;
+  top: 8px;
+  width: 3px;
+  height: 4px;
+  border-radius: 50%;
+  background: #1d1b17
+}
+.mascot-reopen__face i:first-child {
+  left: 9px
+}
+.mascot-reopen__face i:last-child {
+  right: 9px
+}
+.mascot-card__clock {
+  font-size: 10.5px
+}
+.mascot-card__job {
+  font-size: 10px
+}
+.mascot-card__foot {
+  font-size: 11px
+}
+.mascot-hint {
+  font-size: 10px
+}
+@media (max-width: 860px) {
+  .mascot-reopen {
+    right: 9px;
+    bottom: 30px
+  }
+}
+@media (max-width: 640px) {
+  .mascot-reopen {
+    right: 7px;
+    bottom: 16px;
+    padding: 6px
+  }
+  .mascot-reopen__face {
+    width: 30px;
+    height: 21px
+  }
+}

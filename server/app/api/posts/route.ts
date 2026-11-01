@@ -35,11 +35,11 @@ export async function POST(request: NextRequest) {
   try {
     const user = await getAuthUser(request)
     if (!user) throw new ApiError(401, 'UNAUTHORIZED', '请先登录')
+    if (!isAdmin(user)) throw new ApiError(403, 'FORBIDDEN', '没有权限')
     const body = postCreateSchema.parse(await readJson(request))
     await ensureDatabase()
     const db = await getDatabase()
-    const status = isAdmin(user) ? 'published' : 'pending'
-    const post = await createPost(db, user.id, body, status)
+    const post = await createPost(db, user.id, body, 'published')
     return NextResponse.json({ post }, { status: 201 })
   } catch (error) {
     return handleRouteError(error)

@@ -1,11 +1,18 @@
+/**
+ * GitHub 仓库页
+ * 职责：仓库简介、ii tool、README 与留言。
+ * 样式：src/css/pages/github-repo.css
+ */
+
 import { useEffect, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import { ArrowLeft, ArrowUpRight, Star } from 'lucide-react'
 import { CommentSection } from '../components/CommentSection'
 import { githubApi, type GithubRepoDetail, type GithubTool } from '../lib/backend'
-import { isGithubFavorite, toggleGithubFavorite } from '../lib/githubFavorites'
 import { usePageTitle } from '../hooks/usePageTitle'
 import { useToast } from '../context/ToastContext'
+import { useAuth } from '../context/AuthContext'
+import { LabTop } from '../components/LabTop'
 
 function formatStars(value: number) {
   if (value >= 10000) return `${(value / 10000).toFixed(1)} 万`
@@ -14,6 +21,8 @@ function formatStars(value: number) {
 
 export function GithubRepoPage() {
   const { owner = '', repo: name = '' } = useParams()
+  const { user } = useAuth()
+  const navigate = useNavigate()
   const { showToast } = useToast()
   const [repo, setRepo] = useState<GithubRepoDetail | null>(null)
   const [tool, setTool] = useState<GithubTool | null>(null)
@@ -21,7 +30,7 @@ export function GithubRepoPage() {
   const [error, setError] = useState('')
   const [favorite, setFavorite] = useState(false)
 
-  usePageTitle(repo ? `${repo.fullName} · GitHub 研究所` : 'GitHub 研究所')
+  usePageTitle(repo ? `${repo.fullName} · GitHub 研究所` : 'GitHub 研究所', 'ii universe')
 
   useEffect(() => {
     let cancelled = false
@@ -32,7 +41,6 @@ export function GithubRepoPage() {
       .then((data) => {
         if (cancelled) return
         setRepo(data)
-        setFavorite(isGithubFavorite(data.fullName))
         githubApi
           .tools(data.fullName)
           .then((result) => {
@@ -55,11 +63,47 @@ export function GithubRepoPage() {
     }
   }, [owner, name])
 
-  const toggleFavorite = () => {
+  useEffect(() => {
+    if (!repo || !user) {
+      setFavorite(false)
+      return
+    }
+    let cancelled = false
+    githubApi
+      .favorites()
+      .then((data) => {
+        if (!cancelled) setFavorite(data.repos.some((item) => item.fullName === repo.fullName))
+      })
+      .catch(() => {
+        if (!cancelled) setFavorite(false)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [repo, user])
+
+  const toggleFavorite = async () => {
     if (!repo) return
-    const added = toggleGithubFavorite(repo)
-    setFavorite(added)
-    showToast(added ? '已放进收藏。' : '已从收藏里移除。', 'info')
+    if (!user) {
+      showToast('登录 ii universe 后才能收藏。', 'info')
+      navigate(
+        `/login?from=${encodeURIComponent(`${window.location.pathname}${window.location.search}`)}`,
+      )
+      return
+    }
+    try {
+      if (favorite) {
+        await githubApi.removeFavorite(repo.fullName)
+        setFavorite(false)
+        showToast('已从收藏里移除。', 'info')
+      } else {
+        await githubApi.addFavorite(repo)
+        setFavorite(true)
+        showToast('已放进账号收藏。')
+      }
+    } catch (caught) {
+      showToast(caught instanceof Error ? caught.message : '收藏没有保存。', 'error')
+    }
   }
 
   const languageNames =
@@ -75,10 +119,7 @@ export function GithubRepoPage() {
   return (
     <div className="repo-page">
       <div className="page-container">
-        <header className="lab-top">
-          <Link to="/universe">ii universe</Link>
-          <Link to="/github-lab">GitHub 研究所</Link>
-        </header>
+        <LabTop section={`${owner}/${name}`} />
 
         {loading ? (
           <div className="write-loading">
@@ -107,7 +148,7 @@ export function GithubRepoPage() {
               <button
                 type="button"
                 className={`repo-favorite${favorite ? ' is-favorite' : ''}`}
-                onClick={toggleFavorite}
+                onClick={() => void toggleFavorite()}
                 aria-pressed={favorite}
               >
                 <Star size={14} fill={favorite ? 'currentColor' : 'none'} aria-hidden="true" />

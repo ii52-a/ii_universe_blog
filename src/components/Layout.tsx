@@ -1,3 +1,9 @@
+/**
+ * 博客布局
+ * 职责：博客页面外壳：顶栏、内容区、跟屏玩偶与页脚。
+ * 样式：src/css/components/header.css / footer.css
+ */
+
 import { useEffect } from 'react'
 import { Outlet, useLocation } from 'react-router-dom'
 import { Header } from './Header'

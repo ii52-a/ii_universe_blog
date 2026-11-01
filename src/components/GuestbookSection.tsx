@@ -1,3 +1,9 @@
+/**
+ * 留言簿组件
+ * 职责：首页留言簿区块。
+ * 样式：src/css/components/guestbook.css
+ */
+
 import { useEffect, useState } from 'react'
 import { MessageCircle } from 'lucide-react'
 import type { Comment } from '../data/comments'

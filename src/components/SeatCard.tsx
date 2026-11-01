@@ -1,3 +1,9 @@
+/**
+ * 座位卡组件
+ * 职责：首页“窗边的座位”卡片。
+ * 样式：src/css/components/seat-card.css
+ */
+
 import { Link } from 'react-router-dom'
 import { ArrowUpRight, Bookmark, UserRound } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
@@ -60,7 +66,6 @@ export function SeatCard() {
           </div>
           <div className="seat-card__copy">
             <h2>这个位置还空着。</h2>
-            <p>登录以后，你的头像会坐在这里。留言和收藏也有地方放。</p>
           </div>
           <div className="seat-card__actions">
             <Link className="button button--ink button--small" to="/login?from=/">

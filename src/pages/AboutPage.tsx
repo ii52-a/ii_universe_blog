@@ -1,3 +1,9 @@
+/**
+ * 关于页
+ * 职责：关于站点、作者、时间线与常见问题。
+ * 样式：src/css/pages/about.css
+ */
+
 import { Link } from 'react-router-dom'
 import { MapPin, MoveUpRight } from 'lucide-react'
 import site from '../content/site.json'

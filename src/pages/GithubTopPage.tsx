@@ -1,11 +1,18 @@
+/**
+ * GitHub 排行榜页
+ * 职责：星标排行、语言筛选与搜索。
+ * 样式：src/css/pages/github-lab.css
+ */
+
 import { useEffect, useState, type FormEvent } from 'react'
-import { Link, useSearchParams } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { ArrowLeft, Search } from 'lucide-react'
 import { GithubRepoRow } from '../components/GithubRepoRow'
 import { githubApi, type GithubRepo } from '../lib/backend'
-import { readGithubFavorites, toggleGithubFavorite } from '../lib/githubFavorites'
 import { usePageTitle } from '../hooks/usePageTitle'
 import { useToast } from '../context/ToastContext'
+import { useAuth } from '../context/AuthContext'
+import { LabTop } from '../components/LabTop'
 
 const languages = [
   { label: '全部', value: '' },
@@ -26,18 +33,39 @@ function formatTime(value: string) {
 }
 
 export function GithubTopPage() {
+  const { user } = useAuth()
+  const navigate = useNavigate()
   const { showToast } = useToast()
   const [searchParams, setSearchParams] = useSearchParams()
   const activeQuery = searchParams.get('q') ?? ''
   const activeLanguage = searchParams.get('language') ?? ''
   const [query, setQuery] = useState(activeQuery)
   const [repos, setRepos] = useState<GithubRepo[]>([])
-  const [favorites, setFavorites] = useState<GithubRepo[]>(() => readGithubFavorites())
+  const [favorites, setFavorites] = useState<GithubRepo[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [updatedAt, setUpdatedAt] = useState('')
 
-  usePageTitle('GitHub 排行榜')
+  usePageTitle('GitHub 排行榜', 'ii universe')
+
+  useEffect(() => {
+    if (!user) {
+      setFavorites([])
+      return
+    }
+    let cancelled = false
+    githubApi
+      .favorites()
+      .then((data) => {
+        if (!cancelled) setFavorites(data.repos)
+      })
+      .catch(() => {
+        if (!cancelled) setFavorites([])
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [user])
 
   useEffect(() => {
     setQuery(activeQuery)
@@ -78,10 +106,28 @@ export function GithubTopPage() {
     setSearchParams(params)
   }
 
-  const favorite = (repo: GithubRepo) => {
-    const added = toggleGithubFavorite(repo)
-    setFavorites(readGithubFavorites())
-    showToast(added ? '已放进收藏。' : '已从收藏里移除。', 'info')
+  const favorite = async (repo: GithubRepo) => {
+    if (!user) {
+      showToast('登录 ii universe 后才能收藏。', 'info')
+      navigate(
+        `/login?from=${encodeURIComponent(`${window.location.pathname}${window.location.search}`)}`,
+      )
+      return
+    }
+    const exists = favorites.some((item) => item.fullName === repo.fullName)
+    try {
+      if (exists) {
+        await githubApi.removeFavorite(repo.fullName)
+        setFavorites((current) => current.filter((item) => item.fullName !== repo.fullName))
+        showToast('已从收藏里移除。', 'info')
+      } else {
+        await githubApi.addFavorite(repo)
+        setFavorites((current) => [repo, ...current])
+        showToast('已放进账号收藏。')
+      }
+    } catch (caught) {
+      showToast(caught instanceof Error ? caught.message : '收藏没有保存。', 'error')
+    }
   }
 
   const heading = activeQuery
@@ -93,10 +139,7 @@ export function GithubTopPage() {
   return (
     <div className="lab-page">
       <div className="page-container">
-        <header className="lab-top">
-          <Link to="/universe">ii universe</Link>
-          <Link to="/github-lab">GitHub 研究所</Link>
-        </header>
+        <LabTop section="top 排行榜" />
 
         <Link className="lab-back" to="/github-lab">
           <ArrowLeft size={13} aria-hidden="true" />
@@ -177,7 +220,7 @@ export function GithubTopPage() {
                   repo={repo}
                   index={index}
                   favorite={favorites.some((item) => item.fullName === repo.fullName)}
-                  onFavorite={favorite}
+                  onFavorite={(item) => void favorite(item)}
                 />
               ))}
             </div>

@@ -19,6 +19,7 @@ export const schemaStatements = [
   `ALTER TABLE users ADD COLUMN IF NOT EXISTS role text NOT NULL DEFAULT 'member'`,
   `ALTER TABLE users ADD COLUMN IF NOT EXISTS token_version integer NOT NULL DEFAULT 0`,
   `ALTER TABLE users ADD COLUMN IF NOT EXISTS github_url text NOT NULL DEFAULT ''`,
+  `ALTER TABLE users ADD COLUMN IF NOT EXISTS permissions text[] NOT NULL DEFAULT '{}'`,
   `ALTER TABLE users DROP CONSTRAINT IF EXISTS users_role_check`,
   `ALTER TABLE users ADD CONSTRAINT users_role_check CHECK (role IN ('member', 'admin'))`,
   `CREATE UNIQUE INDEX IF NOT EXISTS users_email_lower_idx ON users (lower(email))`,
@@ -56,6 +57,8 @@ export const schemaStatements = [
   )`,
   `ALTER TABLE posts ADD COLUMN IF NOT EXISTS review_note text NOT NULL DEFAULT ''`,
   `ALTER TABLE posts ADD COLUMN IF NOT EXISTS reviewed_at timestamptz`,
+  `ALTER TABLE posts ADD COLUMN IF NOT EXISTS style text NOT NULL DEFAULT 'paper'`,
+  `ALTER TABLE posts ADD COLUMN IF NOT EXISTS kind text NOT NULL DEFAULT 'post'`,
   `ALTER TABLE posts DROP CONSTRAINT IF EXISTS posts_status_check`,
   `ALTER TABLE posts ADD CONSTRAINT posts_status_check CHECK (status IN ('draft', 'pending', 'published', 'rejected'))`,
   `CREATE INDEX IF NOT EXISTS posts_feed_idx ON posts (status, published_at DESC, id DESC)`,
@@ -79,7 +82,15 @@ export const schemaStatements = [
   `CREATE TABLE IF NOT EXISTS categories (
     id uuid PRIMARY KEY,
     name text NOT NULL UNIQUE,
+    protected boolean NOT NULL DEFAULT false,
     created_at timestamptz NOT NULL DEFAULT now(),
+    updated_at timestamptz NOT NULL DEFAULT now()
+  )`,
+  `ALTER TABLE categories ADD COLUMN IF NOT EXISTS protected boolean NOT NULL DEFAULT false`,
+  `UPDATE categories SET protected = false WHERE protected = true`,
+  `CREATE TABLE IF NOT EXISTS app_meta (
+    key text PRIMARY KEY,
+    value text NOT NULL,
     updated_at timestamptz NOT NULL DEFAULT now()
   )`,
   `CREATE TABLE IF NOT EXISTS github_tool_categories (
@@ -87,4 +98,40 @@ export const schemaStatements = [
     name text NOT NULL UNIQUE,
     created_at timestamptz NOT NULL DEFAULT now()
   )`,
+  `CREATE TABLE IF NOT EXISTS github_favorites (
+    id uuid PRIMARY KEY,
+    user_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    repo_id bigint NOT NULL,
+    repo_full_name text NOT NULL,
+    repo_url text NOT NULL DEFAULT '',
+    owner text NOT NULL DEFAULT '',
+    name text NOT NULL DEFAULT '',
+    description text NOT NULL DEFAULT '',
+    stars integer NOT NULL DEFAULT 0,
+    language text,
+    created_at timestamptz NOT NULL DEFAULT now(),
+    UNIQUE (user_id, repo_full_name)
+  )`,
+  `CREATE INDEX IF NOT EXISTS github_favorites_user_idx ON github_favorites (user_id, created_at DESC)`,
+  `CREATE TABLE IF NOT EXISTS site_visits (
+    day date PRIMARY KEY,
+    views integer NOT NULL DEFAULT 0,
+    updated_at timestamptz NOT NULL DEFAULT now()
+  )`,
+  `CREATE TABLE IF NOT EXISTS radio_entries (
+    id uuid PRIMARY KEY,
+    title text NOT NULL DEFAULT '',
+    body text NOT NULL DEFAULT '',
+    created_at timestamptz NOT NULL DEFAULT now(),
+    updated_at timestamptz NOT NULL DEFAULT now()
+  )`,
+  `CREATE INDEX IF NOT EXISTS radio_entries_feed_idx ON radio_entries (created_at DESC, id DESC)`,
+  `CREATE TABLE IF NOT EXISTS version_releases (
+    id integer PRIMARY KEY,
+    version text NOT NULL UNIQUE,
+    released_at date NOT NULL,
+    items jsonb NOT NULL DEFAULT '[]'::jsonb,
+    created_at timestamptz NOT NULL DEFAULT now()
+  )`,
+  `CREATE INDEX IF NOT EXISTS version_releases_order_idx ON version_releases (released_at DESC, id DESC)`,
 ]

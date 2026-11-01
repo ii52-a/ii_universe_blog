@@ -16,6 +16,8 @@ export interface PostRow extends Record<string, unknown> {
   category: string
   tags: string[]
   cover: string
+  style: string
+  kind: 'post' | 'essay'
   status: PostStatus
   review_note: string
   reviewed_at: string | null
@@ -42,6 +44,8 @@ export interface PostDto {
   category: string
   tags: string[]
   cover: string
+  style: string
+  kind: 'post' | 'essay'
   status: PostStatus
   reviewNote: string
   reviewedAt: string | null
@@ -71,6 +75,8 @@ export function mapPost(row: PostRow): PostDto {
     category: row.category,
     tags: row.tags ?? [],
     cover: row.cover,
+    style: row.style ?? 'paper',
+    kind: row.kind === 'essay' ? 'essay' : 'post',
     status: row.status,
     reviewNote: row.review_note ?? '',
     reviewedAt: row.reviewed_at ? new Date(row.reviewed_at).toISOString() : null,
@@ -193,6 +199,8 @@ export async function createPost(
     category: string
     tags: string[]
     cover: string
+    style: string
+    kind?: 'post' | 'essay'
   },
   status: 'pending' | 'published',
 ) {
@@ -202,8 +210,8 @@ export async function createPost(
   const now = new Date().toISOString()
   await db.query(
     `INSERT INTO posts
-      (id, slug, title, excerpt, body, content, category, tags, cover, status, review_note, reviewed_at, read_minutes, author_id, published_at, created_at, updated_at)
-     VALUES ($1, $2, $3, $4, $5, $6::jsonb, $7, $8, $9, $10, '', $11, $12, $13, $14, $14, $14)`,
+      (id, slug, title, excerpt, body, content, category, tags, cover, style, kind, status, review_note, reviewed_at, read_minutes, author_id, published_at, created_at, updated_at)
+     VALUES ($1, $2, $3, $4, $5, $6::jsonb, $7, $8, $9, $10, $11, $12, '', $13, $14, $15, $16, $16, $16)`,
     [
       id,
       slug,
@@ -214,6 +222,8 @@ export async function createPost(
       input.category,
       input.tags,
       input.cover,
+      input.style,
+      input.kind ?? 'post',
       status,
       status === 'published' ? now : null,
       readMinutes,
@@ -236,13 +246,17 @@ export async function updatePost(
     category?: string
     tags?: string[]
     cover?: string
+    style?: string
   },
   nextStatus: 'pending' | 'published',
+  canEditAny = false,
 ) {
   const existingResult = await db.query<PostRow>(`${baseSelect} WHERE p.slug = $1 LIMIT 1`, [slug])
   const existing = existingResult.rows[0]
   if (!existing) throw new ApiError(404, 'POST_NOT_FOUND', '这一页不存在')
-  if (existing.author_id !== authorId) throw new ApiError(403, 'FORBIDDEN', '只能修改自己写的页')
+  if (existing.author_id !== authorId && !canEditAny) {
+    throw new ApiError(403, 'FORBIDDEN', '只能修改自己写的页')
+  }
 
   const fields: string[] = []
   const params: unknown[] = []
@@ -257,6 +271,7 @@ export async function updatePost(
   if (input.category !== undefined) add('category', input.category)
   if (input.tags !== undefined) add('tags', input.tags)
   if (input.cover !== undefined) add('cover', input.cover)
+  if (input.style !== undefined) add('style', input.style)
   add('status', nextStatus)
   add('review_note', '')
   add('reviewed_at', nextStatus === 'published' ? new Date().toISOString() : null)
@@ -271,9 +286,10 @@ export async function updatePost(
     fields.push('published_at = now()')
   }
   fields.push('updated_at = now()')
+  const authorClause = canEditAny ? '' : ` AND author_id = $${params.length + 1}::uuid`
   await db.query(
-    `UPDATE posts SET ${fields.join(', ')} WHERE slug = $${slugIndex} AND author_id = $${params.length + 1}::uuid`,
-    [...params, authorId],
+    `UPDATE posts SET ${fields.join(', ')} WHERE slug = $${slugIndex}${authorClause}`,
+    canEditAny ? params : [...params, authorId],
   )
   return getPost(db, slug)
 }
@@ -297,10 +313,17 @@ export async function reviewPost(
   return getPost(db, slug)
 }
 
-export async function deletePost(db: DbClient, slug: string, authorId: string) {
-  const result = await db.query<{ id: string }>(
-    'DELETE FROM posts WHERE slug = $1 AND author_id = $2::uuid RETURNING id',
-    [slug, authorId],
-  )
+export async function deletePost(
+  db: DbClient,
+  slug: string,
+  actorId: string,
+  canDeleteAny = false,
+) {
+  const result = canDeleteAny
+    ? await db.query<{ id: string }>('DELETE FROM posts WHERE slug = $1 RETURNING id', [slug])
+    : await db.query<{ id: string }>(
+        'DELETE FROM posts WHERE slug = $1 AND author_id = $2::uuid RETURNING id',
+        [slug, actorId],
+      )
   if (!result.rows[0]) throw new ApiError(404, 'POST_NOT_FOUND', '这一页不存在，或者不是你写的')
 }

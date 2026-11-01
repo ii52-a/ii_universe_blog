@@ -1,3 +1,9 @@
+/**
+ * 跟屏玩偶
+ * 职责：跟随视窗的小满与交互台词。
+ * 样式：src/css/components/mascot-companion.css
+ */
+
 import { useEffect, useRef, useState, type CSSProperties } from 'react'
 import { useLocation } from 'react-router-dom'
 import { Minus, Sparkles } from 'lucide-react'

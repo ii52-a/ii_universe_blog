@@ -1,3 +1,9 @@
+/**
+ * 封面插画组件
+ * 职责：内联 SVG 封面场景与无封面占位。
+ * 样式：src/css/components/cover-art.css
+ */
+
 import { useId } from 'react'
 import type { CoverVariant } from '../data/posts'
 
@@ -18,6 +24,7 @@ const labels: Record<CoverVariant, string> = {
   ice: '一支绿豆棒冰插画',
   bus: '公交车窗外的城市插画',
   map: '从馒头山到凤山门的散步路线图',
+  none: '无封面，留白纸页',
 }
 
 export function CoverArt({ variant, className = '', decorative = false, label }: CoverArtProps) {
@@ -58,6 +65,7 @@ export function CoverArt({ variant, className = '', decorative = false, label }:
         {variant === 'ice' && <IceScene />}
         {variant === 'bus' && <BusScene />}
         {variant === 'map' && <MapScene />}
+        {variant === 'none' && <NoCoverScene />}
         <rect width="640" height="480" filter={`url(#${grain})`} opacity="0.5" style={{ mixBlendMode: 'multiply' }} />
       </g>
     </svg>
@@ -503,6 +511,49 @@ function MapScene() {
         <path d="M0 0c14-13 29-12 43 1" fill="none" />
         <path d="M0 8c20-17 40-16 60 1" fill="none" opacity="0.65" />
       </g>
+    </>
+  )
+}
+
+function NoCoverScene() {
+  return (
+    <>
+      <rect width="640" height="480" fill="#F8F3E6" />
+      <rect x="42" y="42" width="556" height="396" fill="none" stroke="#D8CDB5" strokeWidth="1.5" />
+      <path d="M86 132h188" stroke="#2449E8" strokeWidth="2.5" strokeLinecap="round" />
+      <text
+        x="86"
+        y="248"
+        fontFamily="'Noto Serif SC', Georgia, serif"
+        fontSize="104"
+        fontWeight="600"
+        fill="#25251F"
+        letterSpacing="-6"
+      >
+        留白
+      </text>
+      <text x="90" y="302" fontFamily="Georgia, serif" fontSize="21" fontStyle="italic" fill="#8A806C">
+        a page without a picture
+      </text>
+      <g transform="translate(514 366)">
+        <circle cx="0" cy="0" r="34" fill="none" stroke="#A65F45" strokeWidth="1.5" />
+        <text
+          x="0"
+          y="7"
+          textAnchor="middle"
+          fontFamily="'Noto Serif SC', Georgia, serif"
+          fontSize="20"
+          fill="#A65F45"
+        >
+          半日
+        </text>
+      </g>
+      <g stroke="#C3B89F" strokeWidth="1.2">
+        <path d="M86 350h84M86 364h132M86 378h56" />
+      </g>
+      <text x="514" y="82" textAnchor="middle" fontFamily="Georgia, serif" fontSize="12" fill="#B5A98F">
+        ✳
+      </text>
     </>
   )
 }

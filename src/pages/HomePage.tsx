@@ -1,3 +1,9 @@
+/**
+ * 首页
+ * 职责：主视觉、今日组件、最近文章、侧栏与留言簿。
+ * 样式：src/css/pages/home.css
+ */
+
 import { Link } from 'react-router-dom'
 import { ArrowUpRight } from 'lucide-react'
 import site from '../content/site.json'
@@ -15,7 +21,7 @@ import {
   NewsletterCard,
   PresenceWidget,
   QuoteCard,
-  ShelfCard,
+  VisitChart,
   WeatherWidget,
 } from '../components/Widgets'
 import { SeatCard } from '../components/SeatCard'
@@ -136,14 +142,9 @@ export function HomePage() {
                 link="/articles"
                 id="recent-title"
               />
-              <div className="recent-grid">
+              <div className="recent-grid recent-grid--compact">
                 {recent.length > 0 ? (
-                  <>
-                    <PostCard post={recent[0]} variant="featured" />
-                    {recent.slice(1).map((post) => (
-                      <PostCard key={post.slug} post={post} />
-                    ))}
-                  </>
+                  recent.map((post) => <PostCard key={post.slug} post={post} variant="compact" />)
                 ) : (
                   <div className="recent-loading" role="status">
                     <span className="spinner" aria-hidden="true" />
@@ -170,12 +171,12 @@ export function HomePage() {
 
           <aside className="home-side" aria-label="侧边栏">
             <QuoteCard />
-            <ShelfCard />
             <NewsletterCard />
           </aside>
         </div>
 
         <GuestbookSection />
+        <VisitChart />
       </div>
     </>
   )

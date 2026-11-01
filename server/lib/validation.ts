@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { PERMISSIONS } from './auth'
 
 const email = z.string().trim().toLowerCase().email('请输入有效的邮箱地址').max(160)
 const password = z
@@ -55,7 +56,19 @@ export const profileUpdateSchema = z.object({
   avatarUrl: z.string().max(2_000_000).optional().nullable(),
 })
 
-const cover = z.enum(['store', 'chair', 'walk', 'receipt', 'desk', 'book', 'ice', 'bus', 'map'])
+const cover = z.enum([
+  'store',
+  'chair',
+  'walk',
+  'receipt',
+  'desk',
+  'book',
+  'ice',
+  'bus',
+  'map',
+  'none',
+])
+const style = z.enum(['paper', 'quiet', 'magazine', 'note'])
 
 export const postCreateSchema = z.object({
   title: z.string().trim().max(80, '标题最多 80 个字').default(''),
@@ -65,9 +78,25 @@ export const postCreateSchema = z.object({
   category: z.string().trim().min(1).max(24),
   tags: z.array(z.string().trim().min(1).max(24)).max(4).default([]),
   cover,
+  style: style.default('paper'),
 })
 
-export const postUpdateSchema = postCreateSchema.partial()
+export const postUpdateSchema = z.object({
+  title: z.string().trim().max(80, '标题最多 80 个字').optional(),
+  excerpt: z.string().trim().min(8, '摘要至少 8 个字').max(200, '摘要最多 200 个字').optional(),
+  body: z.string().min(20, '正文至少 20 个字').max(50000).optional(),
+  content: z.array(z.unknown()).min(1, '正文不能为空').max(300).optional(),
+  category: z.string().trim().min(1).max(24).optional(),
+  tags: z.array(z.string().trim().min(1).max(24)).max(4).optional(),
+  cover: cover.optional(),
+  style: style.optional(),
+})
+
+export const essayCreateSchema = z.object({
+  title: z.string().trim().max(80, '标题最多 80 个字').default(''),
+  body: z.string().min(20, '正文至少 20 个字').max(50000),
+  content: z.array(z.unknown()).min(1, '正文不能为空').max(300),
+})
 
 export const reviewSchema = z.object({
   action: z.enum(['approve', 'reject']),
@@ -87,6 +116,30 @@ export const categorySchema = z.object({
 
 export const githubToolCategorySchema = z.object({
   name: z.string().trim().min(1).max(24),
+})
+
+export const githubFavoriteSchema = z.object({
+  id: z.number().int().positive(),
+  fullName: z
+    .string()
+    .trim()
+    .regex(/^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/, '仓库名格式不正确'),
+  owner: z.string().trim().min(1).max(80),
+  name: z.string().trim().min(1).max(120),
+  url: z.string().trim().url('仓库地址格式不正确').max(300),
+  description: z.string().max(1200).default(''),
+  stars: z.number().int().nonnegative().default(0),
+  language: z.string().trim().max(40).nullable().optional(),
+})
+
+export const radioEntrySchema = z.object({
+  title: z.string().max(200).default(''),
+  body: z.string().max(50000).default(''),
+})
+
+export const permissionsUpdateSchema = z.object({
+  userId: z.string().uuid('用户不存在'),
+  permissions: z.array(z.enum(PERMISSIONS)).max(PERMISSIONS.length),
 })
 
 export type RegisterInput = z.infer<typeof registerSchema>

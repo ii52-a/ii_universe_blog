@@ -1,0 +1,445 @@
+/* ============================================================
+   UniversePage
+   ii universe 导航（深空极简版）
+   ============================================================ */
+
+@keyframes universeDrift {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  100% {
+    transform: translate3d(4%, -4%, 0) scale(1.08);
+  }
+}
+
+.universe-page {
+  position: relative;
+  min-height: 100vh;
+  overflow-x: hidden;
+  background-color: #030612;
+  background-image:
+    radial-gradient(ellipse 80% 50% at 50% -15%, rgba(45, 95, 215, 0.22), transparent 70%),
+    radial-gradient(circle at 85% 25%, rgba(110, 60, 210, 0.12), transparent 45%),
+    radial-gradient(circle at 15% 85%, rgba(20, 120, 190, 0.12), transparent 50%);
+  color: #e4ecff;
+  font-family: var(--sans);
+}
+
+/* 星云极光层 */
+
+/* 宇宙星轨线条 */
+.universe-lines {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.4;
+}
+
+.universe-lines svg {
+  width: 100%;
+  height: 100%;
+}
+
+.universe-lines path {
+  fill: none;
+  stroke: rgba(148, 184, 255, 0.12);
+  stroke-width: 1;
+  stroke-dasharray: 6 10;
+}
+
+.universe-lines path:nth-child(2) {
+  stroke: rgba(148, 184, 255, 0.07);
+  stroke-dasharray: none;
+}
+
+/* 顶部导航栏 */
+.universe-top {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 18px 24px;
+  border-bottom: 1px solid rgba(160, 190, 255, 0.08);
+  background: rgba(3, 6, 18, 0.65);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+.universe-logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: #f4f7ff;
+  text-decoration: none;
+}
+
+.universe-logo span {
+  font-family: var(--serif);
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: -0.04em;
+}
+
+.universe-version {
+  margin-left: 2px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: rgba(148, 184, 255, 0.08);
+  color: rgba(180, 204, 255, 0.55);
+  font-family: var(--mono) !important;
+  font-size: 9.5px !important;
+  font-weight: 400 !important;
+  letter-spacing: 0.06em !important;
+}
+
+.universe-top__nav {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  font-size: 13px;
+}
+
+.universe-top__nav a {
+  color: rgba(200, 216, 255, 0.62);
+  text-decoration: none;
+  transition: color 180ms ease;
+}
+
+.universe-top__nav a:hover {
+  color: #ffffff;
+}
+
+.universe-top__account {
+  padding: 5px 13px;
+  border: 1px solid rgba(160, 190, 255, 0.2);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.03);
+  color: #f4f7ff !important;
+  transition: border-color 180ms ease, background 180ms ease !important;
+}
+
+.universe-top__account:hover {
+  border-color: rgba(160, 190, 255, 0.45);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+/* 主体与分组布局 */
+.universe-content {
+  position: relative;
+  z-index: 2;
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 48px 24px 96px;
+}
+
+.universe-groups {
+  display: flex;
+  flex-direction: column;
+  gap: 44px;
+}
+
+.universe-group {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.universe-group h2 {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0;
+  color: rgba(165, 192, 245, 0.55);
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.universe-group h2::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, rgba(160, 190, 255, 0.14), transparent 85%);
+}
+
+/* 极简星际卡片列表 */
+.universe-links {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.universe-link {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 15px 16px;
+  border: 1px solid rgba(160, 190, 255, 0.08);
+  border-radius: 14px;
+  background: rgba(12, 20, 44, 0.42);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  color: #f0f5ff;
+  text-decoration: none;
+  transition:
+    transform 200ms cubic-bezier(0.22, 1, 0.36, 1),
+    background 200ms ease,
+    border-color 200ms ease,
+    box-shadow 200ms ease;
+}
+
+.universe-link:hover {
+  transform: translateY(-2px);
+  border-color: rgba(130, 175, 255, 0.28);
+  background: rgba(22, 36, 76, 0.58);
+  box-shadow: 0 12px 32px -12px rgba(0, 0, 0, 0.65);
+}
+
+.universe-link__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  border: 1px solid rgba(160, 190, 255, 0.12);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.03);
+  color: rgba(185, 210, 255, 0.78);
+  transition: color 200ms ease, border-color 200ms ease, background 200ms ease;
+}
+
+.universe-link:hover .universe-link__icon {
+  border-color: rgba(120, 170, 255, 0.4);
+  background: rgba(80, 140, 255, 0.15);
+  color: #ffffff;
+}
+
+.universe-link__text {
+  flex: 1;
+  min-width: 0;
+}
+
+.universe-link h3 {
+  margin: 0;
+  color: #f4f7ff;
+  font-family: var(--serif);
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: -0.02em;
+  transition: color 200ms ease;
+}
+
+.universe-link__text p {
+  margin: 3px 0 0;
+  color: rgba(180, 200, 240, 0.52);
+  font-size: 12px;
+  line-height: 1.45;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.universe-link__arrow {
+  margin-left: auto;
+  color: rgba(160, 190, 255, 0.28);
+  font-size: 13px;
+  transition: color 200ms ease, transform 200ms ease;
+}
+
+.universe-link:hover .universe-link__arrow {
+  color: rgba(220, 235, 255, 0.9);
+  transform: translate(2px, -2px);
+}
+
+/* 即将推出状态 (Soon) */
+.universe-link--soon {
+  border-style: dashed;
+  border-color: rgba(160, 190, 255, 0.06);
+  background: rgba(8, 14, 32, 0.24);
+  cursor: default;
+}
+
+.universe-link--soon:hover {
+  transform: none;
+  border-color: rgba(160, 190, 255, 0.06);
+  background: rgba(8, 14, 32, 0.24);
+  box-shadow: none;
+}
+
+.universe-link--soon h3 {
+  color: rgba(180, 200, 240, 0.42);
+}
+
+.universe-link--soon .universe-link__text p {
+  color: rgba(180, 200, 240, 0.3);
+}
+
+.universe-link--soon .universe-link__icon {
+  border-style: dashed;
+  border-color: rgba(160, 190, 255, 0.08);
+  background: transparent;
+  color: rgba(160, 190, 255, 0.3);
+}
+
+.universe-link--soon:hover .universe-link__icon {
+  border-color: rgba(160, 190, 255, 0.08);
+  background: transparent;
+  color: rgba(160, 190, 255, 0.3);
+}
+
+.universe-link__badge {
+  margin-left: auto;
+  padding: 2px 8px;
+  border: 1px solid rgba(160, 190, 255, 0.12);
+  border-radius: 999px;
+  color: rgba(160, 190, 255, 0.4);
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+/* 响应式适配 */
+@media (max-width: 920px) {
+  .universe-links {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .universe-top {
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 14px 18px;
+  }
+  .universe-top__nav {
+    gap: 14px;
+    font-size: 12px;
+  }
+  .universe-content {
+    padding: 32px 18px 72px;
+  }
+  .universe-groups {
+    gap: 32px;
+  }
+  .universe-links {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+}
+
+/* 黑白导航 */
+.universe-page {
+  background: #000000;
+  color: #f5f5f2;
+}
+.universe-lines {
+  opacity: 0.24;
+}
+.universe-lines path {
+  stroke: rgba(255, 255, 255, 0.075);
+}
+.universe-lines path:nth-child(2) {
+  stroke: rgba(255, 255, 255, 0.045);
+}
+.universe-top {
+  border-bottom-color: rgba(255, 255, 255, 0.12);
+  background: #000000;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+.universe-logo {
+  color: #ffffff;
+}
+.universe-version {
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.5);
+}
+.universe-top__nav a {
+  color: rgba(255, 255, 255, 0.58);
+}
+.universe-top__nav a:hover {
+  color: #ffffff;
+}
+.universe-top__account {
+  border-color: rgba(255, 255, 255, 0.18);
+  background: transparent;
+  color: #ffffff !important;
+}
+.universe-top__account:hover {
+  border-color: rgba(255, 255, 255, 0.42);
+  background: rgba(255, 255, 255, 0.06);
+}
+.universe-group h2 {
+  color: rgba(255, 255, 255, 0.48);
+}
+.universe-group h2::after {
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.14), transparent 85%);
+}
+.universe-link {
+  border-color: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.018);
+  color: #f5f5f2;
+}
+.universe-link:hover {
+  border-color: rgba(255, 255, 255, 0.28);
+  background: rgba(255, 255, 255, 0.06);
+  box-shadow: 0 12px 32px -12px rgba(0, 0, 0, 0.8);
+}
+.universe-link__icon {
+  border-color: rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.025);
+  color: rgba(255, 255, 255, 0.7);
+}
+.universe-link:hover .universe-link__icon {
+  border-color: rgba(255, 255, 255, 0.32);
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+}
+.universe-link h3 {
+  color: #ffffff;
+}
+.universe-link__text p {
+  color: rgba(255, 255, 255, 0.45);
+}
+.universe-link__arrow {
+  color: rgba(255, 255, 255, 0.26);
+}
+.universe-link:hover .universe-link__arrow {
+  color: rgba(255, 255, 255, 0.9);
+}
+.universe-link--soon {
+  border-color: rgba(255, 255, 255, 0.07);
+  background: transparent;
+}
+.universe-link--soon:hover {
+  border-color: rgba(255, 255, 255, 0.07);
+  background: transparent;
+}
+.universe-link--soon h3 {
+  color: rgba(255, 255, 255, 0.34);
+}
+.universe-link--soon .universe-link__text p {
+  color: rgba(255, 255, 255, 0.24);
+}
+.universe-link--soon .universe-link__icon,
+.universe-link--soon:hover .universe-link__icon {
+  border-color: rgba(255, 255, 255, 0.08);
+  background: transparent;
+  color: rgba(255, 255, 255, 0.28);
+}
+.universe-link__badge {
+  border-color: rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.4);
+}

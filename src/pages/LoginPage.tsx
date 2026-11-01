@@ -1,7 +1,12 @@
-import { useEffect, useState, type FormEvent } from 'react'
+/**
+ * 登录页
+ * 职责：登录、注册、验证码与账号入口。
+ * 样式：src/css/pages/login.css
+ */
+
+import { useEffect, useState, type FormEvent, type ReactNode } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import {
-  ArrowLeft,
   ArrowUpRight,
   Check,
   Eye,
@@ -16,10 +21,21 @@ import { useAuth, rememberedEmail } from '../context/AuthContext'
 import { useToast } from '../context/ToastContext'
 import { authApi, BackendError } from '../lib/backend'
 import { Avatar } from '../components/Avatar'
-import { CoverArt } from '../components/CoverArt'
+import { UniverseTop } from '../components/UniverseTop'
 
 type Mode = 'login' | 'register'
 type Errors = Record<string, string | undefined>
+
+function LoginShell({ children, signed = false }: { children: ReactNode; signed?: boolean }) {
+  return (
+    <div className="login-page login-page--universe">
+      <UniverseTop />
+      <div className={`page-container login-page__inner${signed ? ' login-page__inner--signed' : ''}`}>
+        {children}
+      </div>
+    </div>
+  )
+}
 
 export function LoginPage() {
   const [mode, setMode] = useState<Mode>('login')
@@ -138,88 +154,81 @@ export function LoginPage() {
 
   if (!ready) {
     return (
-      <div className="login-page">
-        <div className="page-container login-page__inner login-page__inner--signed">
-          <div className="signed-card">
-            <span className="signed-card__eyebrow">正在确认登录状态</span>
-            <h1>稍等一下。</h1>
-          </div>
+      <LoginShell signed>
+        <div className="signed-card">
+          <span className="signed-card__eyebrow">正在确认登录状态</span>
+          <h1>稍等一下。</h1>
         </div>
-      </div>
+      </LoginShell>
     )
   }
 
   if (user) {
     return (
-      <div className="login-page">
-        <div className="page-container login-page__inner login-page__inner--signed">
-          <div className="signed-card">
-            <Avatar name={user.name} color={user.avatarColor} src={user.avatar} size="xl" />
-            <span className="signed-card__eyebrow">已经登录</span>
-            <h1>{user.name}，你在这里。</h1>
-            <p>资料和文章都还在原来的地方。</p>
-            <div className="signed-card__actions">
-              <Link className="button button--ink" to="/space">
-                去个人空间
-                <ArrowUpRight size={16} aria-hidden="true" />
-              </Link>
-              <button
-                type="button"
-                className="button button--ghost"
-                onClick={() => {
-                  void logout()
-                  showToast('已退出，可以换个账号。', 'info')
-                }}
-              >
-                切换账号
-              </button>
-            </div>
+      <LoginShell signed>
+        <div className="signed-card">
+          <Avatar name={user.name} color={user.avatarColor} src={user.avatar} size="xl" />
+          <span className="signed-card__eyebrow">已登录 ii universe</span>
+          <h1>{user.name}，你在这里。</h1>
+          <p>博客、GitHub 研究所和 ii tool 都认这个账号。</p>
+          <div className="signed-card__actions">
+            <Link className="button button--ink" to="/space">
+              去个人空间
+              <ArrowUpRight size={16} aria-hidden="true" />
+            </Link>
+            <Link className="button button--ghost" to="/github-lab">
+              去 GitHub 研究所
+            </Link>
+            <button
+              type="button"
+              className="button button--ghost"
+              onClick={() => {
+                void logout()
+                showToast('已退出，可以换个账号。', 'info')
+              }}
+            >
+              切换账号
+            </button>
           </div>
         </div>
-      </div>
+      </LoginShell>
     )
   }
 
   return (
-    <div className="login-page">
-      <div className="page-container login-page__inner">
-        <aside className="login-art" aria-label="半日的一句话">
-          <div className="login-art__top">
-            <Link to="/" className="login-back">
-              <ArrowLeft size={15} aria-hidden="true" />
-              回到半日
-            </Link>
-            <span>v2.6 · 标签与翻页</span>
+    <LoginShell>
+      <aside className="login-universe" aria-label="ii universe 账号说明">
+        <div className="login-universe__brand" aria-label="ii universe">
+          <span className="login-universe__ii">ii</span>
+          <span className="login-universe__word">universe</span>
+        </div>
+
+        <div className="login-cube-scene" aria-hidden="true">
+          <div className="login-cube">
+            {['front', 'back', 'left', 'right', 'top', 'bottom'].map((face) => (
+              <span className={`login-cube__face login-cube__face--${face}`} key={face} />
+            ))}
           </div>
-          <div className="login-art__card">
-            <span className="tape" />
-            <CoverArt variant="store" decorative />
-            <span className="login-art__caption">“我本来只想买一瓶水。”</span>
-          </div>
-          <blockquote>
-            一半用来忙，
-            <br />
-            一半用来浪费。
-          </blockquote>
-          <p>登录后可以写页、改资料、留言。</p>
-          <div className="login-art__toys" aria-hidden="true">
-            <span className="toy-dot toy-dot--yellow" />
-            <span className="toy-dot toy-dot--blue" />
-            <span className="toy-dot toy-dot--coral" />
-            <span className="toy-star">✳</span>
-          </div>
-        </aside>
+        </div>
+
+        <div className="login-art__toys" aria-hidden="true">
+          <span className="toy-dot toy-dot--yellow" />
+          <span className="toy-dot toy-dot--blue" />
+          <span className="toy-dot toy-dot--coral" />
+          <span className="toy-star">✳</span>
+        </div>
+      </aside>
 
         <section className="auth-card" aria-labelledby="auth-title">
           <div className="auth-card__head">
             <span className="auth-card__mark" aria-hidden="true">
               <KeyRound size={18} />
             </span>
-            <h1 id="auth-title">{mode === 'login' ? '回来坐坐。' : '给自己留个位置。'}</h1>
+            <h1 id="auth-title">{mode === 'login' ? 'ii universe。' : '注册账号。'}</h1>
             <p>
               {mode === 'login'
-                ? '邮箱或用户名。'
-                : '邮箱注册，验证码一次有效。'}
+                ? '浩瀚如初，感谢归来'
+                : '记录足迹'}
             </p>
           </div>
 
@@ -408,16 +417,11 @@ export function LoginPage() {
                   ? '进去坐坐'
                   : '建好账号'}
             </button>
-
-            <p className="auth-form__terms">
-              登录状态保存在 JWT Cookie。密码只以哈希形式保存。
-            </p>
           </form>
 
           <div className="demo-account">
             <div>
               <strong>只想看看？</strong>
-              <span>直接进演示账号。</span>
             </div>
             <div className="demo-account__actions">
               <button
@@ -426,20 +430,18 @@ export function LoginPage() {
                 onClick={() => void demoLogin()}
                 disabled={submitting}
               >
-                {submitting ? '正在进入…' : '演示账号'}
+                {submitting ? '正在进入…' : '游客账号'}
               </button>
             </div>
             <small>hello@halfday.club / halfday</small>
           </div>
 
           <div className="auth-card__foot">
-            <span>慢慢来。</span>
-            <Link to="/">
-              先随便看看 <span aria-hidden="true">↗</span>
+            <Link to="/universe">
+              看看 ii universe <span aria-hidden="true">↗</span>
             </Link>
           </div>
         </section>
-      </div>
-    </div>
+    </LoginShell>
   )
 }

@@ -1,5 +1,5 @@
 import { useEffect, useSyncExternalStore } from 'react'
-import { type ContentBlock, type CoverVariant, type Post } from '../data/posts'
+import { type ArticleStyle, type ContentBlock, type CoverVariant, type Post } from '../data/posts'
 import { postsApi, type ApiPost, type PostInput } from './backend'
 
 const listeners = new Set<() => void>()
@@ -24,6 +24,8 @@ export function mapApiPost(post: ApiPost): Post {
     publishedAt: post.publishedAt,
     readMinutes: post.readMinutes,
     cover: post.cover as CoverVariant,
+    style: post.style,
+    kind: post.kind,
     status: post.status,
     reviewNote: post.reviewNote,
     reviewedAt: post.reviewedAt,
@@ -83,6 +85,7 @@ export interface NewPostInput {
   category: string
   tags: string[]
   cover: CoverVariant
+  style: ArticleStyle
   content: ContentBlock[]
   body: string
 }
@@ -96,6 +99,7 @@ function toApiInput(input: NewPostInput): PostInput {
     category: input.category,
     tags: input.tags,
     cover: input.cover,
+    style: input.style,
   }
 }
 

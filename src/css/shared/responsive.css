@@ -1,0 +1,72 @@
+/* ============================================================
+   响应式
+   跨组件媒体查询与降级。
+   ============================================================ */
+
+@media (max-width: 1160px) {
+
+  .page-container {
+    width: min(100% - 40px, var(--max));
+  }
+}
+
+@media (max-width: 860px) {
+
+  .today-note {
+    display: none;
+  }
+
+  @keyframes mobileIn {
+    from {
+      opacity: 0;
+      transform: translateY(-6px);
+    }
+  }
+}
+
+@media (max-width: 640px) {
+
+  html {
+    scroll-padding-top: 78px;
+  }
+
+  body {
+    font-size: 14px;
+  }
+
+  .page-container {
+    width: calc(100% - 28px);
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+  html {
+    scroll-behavior: auto;
+  }
+
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  *::before {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

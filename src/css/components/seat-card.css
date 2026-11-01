@@ -1,0 +1,231 @@
+/* ============================================================
+   SeatCard
+   首页窗边座位卡。
+   ============================================================ */
+
+.seat-card {
+  grid-column: span 4;
+  position: relative;
+  min-height: 475px;
+  display: flex;
+  flex-direction: column;
+  padding: 21px 23px 16px;
+  border: 1px solid #dbe2f8;
+  border-radius: 26px;
+  background:
+    radial-gradient(rgba(36, 73, 232, 0.13) 0.8px, transparent 0.8px) 0 0 / 16px 16px,
+    linear-gradient(155deg, #f8f9ff 0%, #eef2ff 100%);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm)
+}
+.seat-card::after {
+  content: '';
+  position: absolute;
+  right: -66px;
+  bottom: -74px;
+  width: 190px;
+  height: 190px;
+  border: 1px solid rgba(36, 73, 232, 0.12);
+  border-radius: 50%
+}
+.seat-card__tape {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  width: 58px;
+  height: 15px;
+  background: rgba(255, 216, 77, 0.78);
+  transform: translateX(-50%) rotate(-2deg)
+}
+.seat-card__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 8px;
+  font-size: 10.5px;
+  color: #6f7692
+}
+.seat-card__number {
+  font-family: var(--mono);
+  font-size: 9.5px;
+  letter-spacing: 0.05em
+}
+.seat-card__avatar {
+  position: relative;
+  width: 88px;
+  height: 88px;
+  display: grid;
+  place-items: center;
+  margin: 22px 0 13px
+}
+.seat-card__ring {
+  position: absolute;
+  inset: -7px;
+  border: 1px dashed rgba(36, 73, 232, 0.37);
+  border-radius: 50%;
+  animation: seatOrbit 26s linear infinite
+}
+.seat-card__online {
+  position: absolute;
+  right: -12px;
+  bottom: 1px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 7px;
+  border: 1px solid #fff;
+  border-radius: 999px;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(27, 27, 24, 0.1);
+  font-size: 8.5px;
+  color: #2b6f4d
+}
+.seat-card__online i {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--green)
+}
+.seat-card__avatar--empty {
+  margin-top: 17px
+}
+.seat-card__placeholder {
+  display: grid;
+  place-items: center;
+  width: 82px;
+  height: 82px;
+  border: 1.8px dashed #7f8dbb;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.68);
+  color: #53618d
+}
+.seat-card__ghost {
+  position: absolute;
+  right: 2px;
+  bottom: -6px;
+  font-family: var(--serif);
+  font-size: 68px;
+  font-weight: 700;
+  line-height: 1;
+  color: rgba(36, 73, 232, 0.055);
+  pointer-events: none
+}
+.seat-card__copy {
+  position: relative;
+  z-index: 2
+}
+.seat-card__copy h2 {
+  font-size: 27px;
+  line-height: 1.35;
+  letter-spacing: -0.045em
+}
+.seat-card__copy p {
+  max-width: 270px;
+  margin-top: 7px;
+  font-size: 11.5px;
+  line-height: 1.75;
+  color: #6f7692
+}
+.seat-card__actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: auto;
+  padding-top: 17px
+}
+.seat-card__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 15px;
+  padding-top: 11px;
+  border-top: 1px dashed rgba(36, 73, 232, 0.22);
+  font-size: 9px;
+  color: #7c84a1
+}
+.seat-card__foot span:first-child {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px
+}
+.seat-card__star {
+  position: absolute;
+  right: 18px;
+  top: 56px;
+  font-size: 21px;
+  color: var(--coral);
+  transform: rotate(12deg)
+}
+.seat-card--filled .seat-card__star {
+  color: var(--blue)
+}
+@media (max-width: 1160px) {
+  .seat-card {
+    padding-inline: 20px
+  }
+  .seat-card__copy h2 {
+    font-size: 24px
+  }
+}
+@media (max-width: 1020px) {
+  .seat-card {
+    grid-column: span 3;
+    min-height: 400px
+  }
+  .seat-card__copy h2 {
+    font-size: 22px
+  }
+  .seat-card__copy p {
+    font-size: 11px
+  }
+  .seat-card__avatar {
+    width: 78px;
+    height: 78px;
+    margin-top: 17px
+  }
+  .seat-card__placeholder {
+    --avatar-size: 72px;
+    width: 72px;
+    height: 72px
+  }
+  .seat-card__actions {
+    flex-wrap: wrap;
+    gap: 11px
+  }
+}
+@media (max-width: 860px) {
+  .seat-card {
+    grid-column: auto;
+    min-height: 0;
+    padding: 21px 24px 17px
+  }
+  .seat-card__avatar {
+    margin-top: 14px
+  }
+  .seat-card__actions {
+    margin-top: 16px;
+    padding-top: 0
+  }
+  .seat-card__foot {
+    margin-top: 15px
+  }
+}
+@media (max-width: 640px) {
+  .seat-card {
+    padding: 20px 19px 15px;
+    border-radius: 22px
+  }
+  .seat-card__copy h2 {
+    font-size: 24px
+  }
+  .seat-card__actions {
+    gap: 13px
+  }
+}
+html.is-theme-switching .seat-card {
+  transition:
+    background-color 420ms var(--ease),
+    color 420ms var(--ease),
+    border-color 420ms var(--ease)
+}

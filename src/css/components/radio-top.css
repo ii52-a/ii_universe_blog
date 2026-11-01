@@ -1,0 +1,91 @@
+/* ============================================================
+   RadioTop
+   电台顶栏：星图入口、返回宇宙与账号信息。
+   ============================================================ */
+
+.radio-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: 18px 28px;
+  border-bottom: 1px solid var(--line)
+}
+.radio-top__left {
+  display: flex;
+  align-items: center;
+  gap: 18px
+}
+.radio-top__logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  color: var(--ink);
+  text-decoration: none
+}
+.radio-top__logo span {
+  font-family: var(--serif);
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: -0.03em
+}
+.radio-top__back {
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-decoration: none;
+  transition: color 160ms var(--ease)
+}
+.radio-top__back:hover {
+  color: var(--ink)
+}
+.radio-top__account {
+  display: flex;
+  align-items: center
+}
+.radio-account {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--ink);
+  text-decoration: none
+}
+.radio-account > span {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.25
+}
+.radio-account strong {
+  font-size: 12px;
+  font-weight: 600
+}
+.radio-account small {
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 9px
+}
+.radio-login {
+  padding: 6px 13px;
+  border: 1px solid var(--line-dark);
+  border-radius: 999px;
+  color: var(--ink);
+  font-size: 11px;
+  text-decoration: none
+}
+@media (max-width: 640px) {
+  .radio-top {
+    padding: 14px 18px
+  }
+  .radio-top__left {
+    gap: 12px
+  }
+  .radio-top__back {
+    font-size: 9px
+  }
+  .radio-account small {
+    display: none
+  }
+}

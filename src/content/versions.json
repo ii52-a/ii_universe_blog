@@ -1,0 +1,20 @@
+{
+  "iiUniverse": "1.1 alpha",
+  "blog": "2.7.2",
+  "github": "0.21 alpha",
+  "starmap": "1.12",
+  "radio": "0.1",
+  "latest": {
+    "placeholder": false,
+    "date": "2026-11-01",
+    "items": [
+      "日落版本记录改为无图标列表，近 3 次更新直接展示。",
+      "版本索引显示全部版本，每页 5 条，可进入单次更新详情。",
+      "ii universe 分类卡片加宽。"
+    ]
+  },
+  "repository": {
+    "name": "ii_universe_blog",
+    "url": "https://github.com/ii52-a/ii_universe_blog"
+  }
+}

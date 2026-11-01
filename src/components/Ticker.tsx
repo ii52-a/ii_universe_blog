@@ -1,3 +1,9 @@
+/**
+ * 滚动条组件
+ * 职责：首页顶部滚动的近况文字。
+ * 样式：src/css/components/ticker.css
+ */
+
 import { useClock } from '../hooks/useClock'
 import { usePosts } from '../lib/postsStore'
 import { displayTitle, postAuthor } from '../data/posts'

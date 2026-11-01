@@ -1,3 +1,9 @@
+/**
+ * 公开主页
+ * 职责：岛民信息、文章、留言与使用记录。
+ * 样式：src/css/pages/user.css
+ */
+
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import {
@@ -50,6 +56,7 @@ export function UserPage() {
             email: '',
             handle: publicAuthor.author.handle,
             role: 'member' as const,
+            permissions: [],
             bio: publicAuthor.author.bio || '在半日写过几页，偶尔也留一句话。',
             location: publicAuthor.author.location,
             github: '',
@@ -78,6 +85,7 @@ export function UserPage() {
             email: apiUser.email,
             handle: apiUser.handle,
             role: apiUser.role,
+            permissions: apiUser.permissions,
             bio: apiUser.bio,
             location: apiUser.location,
             github: apiUser.github,
@@ -142,7 +150,9 @@ export function UserPage() {
     ? remotePosts
     : allPosts.filter((post) => postAuthor(post).id === profile.id)
   const visitedPlaces = remoteStats?.categories.length
-    ? remoteStats.categories.map((category) => category.name)
+    ? remoteStats.categories
+        .map((category) => category.name)
+        .filter((name) => name.trim().length > 0)
     : Array.from(
         new Set(
           comments
@@ -195,7 +205,6 @@ export function UserPage() {
               <div className="user-ticket__copy">
                 <span className="user-ticket__handle">@{profile.handle}</span>
                 <h1>{profile.name}</h1>
-                <p>{profile.bio || '这个人还没写介绍。'}</p>
                 <div className="user-ticket__meta">
                   {profile.location && (
                     <span>
@@ -221,7 +230,7 @@ export function UserPage() {
               </div>
             </div>
             <div className="user-ticket__foot">
-              <span>{isMe ? '这是你的那一页' : '路过的人也可以坐一会儿'}</span>
+              <h3>{profile.bio || '这个人还没写介绍。'}</h3>
               <span className="user-ticket__barcode" aria-hidden="true" />
             </div>
           </div>
@@ -231,11 +240,6 @@ export function UserPage() {
               <i aria-hidden="true" /> 正在岛上
             </span>
             <h2>今天也在这儿。</h2>
-            <p>
-              {isMe
-                ? '这是你留给别人的那一面。名字、头像和几句介绍，改资料的时候会一起变。'
-                : '从留言里认识一个人，比从自我介绍里认识要慢一点，也准一点。'}
-            </p>
             <div className="user-summary__actions">
               {isMe ? (
                 <Link className="button button--ink button--small" to="/me">

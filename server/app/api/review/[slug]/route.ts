@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getAuthUser, isAdmin } from '../../../../lib/auth'
+import { getAuthUser, hasPermission } from '../../../../lib/auth'
 import { ensureDatabase, getDatabase } from '../../../../lib/db'
 import { ApiError, handleRouteError, readJson } from '../../../../lib/http'
 import { reviewPost } from '../../../../lib/posts'
@@ -14,7 +14,9 @@ export async function PATCH(
   try {
     const user = await getAuthUser(request)
     if (!user) throw new ApiError(401, 'UNAUTHORIZED', '请先登录')
-    if (!isAdmin(user)) throw new ApiError(403, 'FORBIDDEN', '只有管理员能审核')
+    if (!hasPermission(user, 'posts.review')) {
+      throw new ApiError(403, 'FORBIDDEN', '需要审核权限才能审核')
+    }
     const body = reviewSchema.parse(await readJson(request))
     await ensureDatabase()
     const { slug } = await params

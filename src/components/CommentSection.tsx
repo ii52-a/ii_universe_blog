@@ -1,3 +1,9 @@
+/**
+ * 留言组件
+ * 职责：留言列表、输入、点赞与删除。
+ * 样式：src/css/components/comments.css
+ */
+
 import { useEffect, useState, type FormEvent, type KeyboardEvent } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { Heart, MessageCircle, Send, Trash2 } from 'lucide-react'

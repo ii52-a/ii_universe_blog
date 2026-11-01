@@ -1,0 +1,18 @@
+/* ============================================================
+   UniverseMark
+   ii universe 轨道 logo。
+   ============================================================ */
+
+.universe-mark {
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  color: #1b1b18;
+  border-radius: 50%;
+  box-shadow: 0 0 0 1px var(--line-dark)
+}
+.starmap-logo .universe-mark {
+  width: 34px;
+  height: 34px;
+  box-shadow: 0 0 0 1px var(--line-dark)
+}

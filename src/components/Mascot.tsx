@@ -1,3 +1,9 @@
+/**
+ * 小满组件
+ * 职责：小满卡片与天气涂鸦。
+ * 样式：src/css/components/mascot.css
+ */
+
 import { useEffect, useRef, useState } from 'react'
 import type { WeatherKind } from '../hooks/useWeather'
 

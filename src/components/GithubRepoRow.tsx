@@ -1,3 +1,9 @@
+/**
+ * 仓库行组件
+ * 职责：GitHub 排行榜与收藏中的单行仓库。
+ * 样式：src/css/pages/github-lab.css
+ */
+
 import { Link } from 'react-router-dom'
 import { Star } from 'lucide-react'
 import type { GithubRepo } from '../lib/backend'

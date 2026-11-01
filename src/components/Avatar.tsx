@@ -1,3 +1,9 @@
+/**
+ * 头像组件
+ * 职责：渲染单人/多人头像与底色。
+ * 样式：src/css/components/avatar.css
+ */
+
 import type { CSSProperties } from 'react'
 
 interface AvatarProps {

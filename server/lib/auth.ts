@@ -5,6 +5,30 @@ import { ensureDatabase, getDatabase } from './db'
 
 export type Role = 'member' | 'admin'
 
+export const PERMISSIONS = [
+  'posts.review',
+  'posts.delete',
+  'tags.manage',
+  'tools.manage',
+  'essays.write',
+] as const
+
+export type Permission = (typeof PERMISSIONS)[number]
+
+export const PERMISSION_INFO: Record<Permission, { label: string; description: string }> = {
+  'posts.review': { label: '审核文章', description: '查看待审核队列，通过或退回文章。' },
+  'posts.delete': { label: '删除文章', description: '删除任意账号发布的一页。' },
+  'tags.manage': { label: '管理标签', description: '新增、改名或删除文章分类。' },
+  'tools.manage': { label: '管理 ii tool', description: '新增、编辑仓库与 ii tool 分类。' },
+  'essays.write': { label: '写随笔', description: '' },
+}
+
+export function normalizePermissions(value: unknown): Permission[] {
+  if (!Array.isArray(value)) return []
+  const unique = new Set(value.filter((item): item is Permission => PERMISSIONS.includes(item)))
+  return PERMISSIONS.filter((permission) => unique.has(permission))
+}
+
 export interface PublicUser {
   id: string
   email: string
@@ -12,6 +36,7 @@ export interface PublicUser {
   name: string
   handle: string
   role: Role
+  permissions: Permission[]
   bio: string
   location: string
   website: string
@@ -28,6 +53,7 @@ export interface UserRow extends Record<string, unknown> {
   handle: string
   password_hash: string
   role: Role
+  permissions: string[] | null
   token_version: number
   bio: string
   location: string
@@ -39,8 +65,8 @@ export interface UserRow extends Record<string, unknown> {
   updated_at: string
 }
 
-export const JWT_COOKIE = 'halfday_jwt'
-const DEFAULT_SECRET = 'halfday-local-dev-secret-change-me'
+export const JWT_COOKIE = 'ii_universe_jwt'
+const DEFAULT_SECRET = 'ii-universe-local-dev-secret-change-me'
 const secret = new TextEncoder().encode(process.env.JWT_SECRET ?? DEFAULT_SECRET)
 
 export function normalizeEmail(email: string) {
@@ -65,6 +91,10 @@ export function publicUser(row: UserRow): PublicUser {
     name: row.username,
     handle: row.handle,
     role: row.role ?? 'member',
+    permissions:
+      row.role === 'admin'
+        ? [...PERMISSIONS]
+        : normalizePermissions(row.permissions),
     bio: row.bio,
     location: row.location,
     website: row.website,
@@ -77,6 +107,14 @@ export function publicUser(row: UserRow): PublicUser {
 
 export function isAdmin(user: PublicUser | null): boolean {
   return user?.role === 'admin'
+}
+
+export function hasPermission(
+  user: PublicUser | null,
+  permission: Permission,
+): boolean {
+  if (!user) return false
+  return user.role === 'admin' || user.permissions.includes(permission)
 }
 
 export async function createJwt(userId: string, remember: boolean, tokenVersion = 0) {

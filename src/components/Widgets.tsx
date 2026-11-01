@@ -1,4 +1,10 @@
-import { useState, type FormEvent } from 'react'
+/**
+ * 今日组件
+ * 职责：日历、时钟、天气、在线状态、访客折线图与慢信订阅。
+ * 样式：src/css/components/widgets.css
+ */
+
+import { useEffect, useId, useState, type FormEvent } from 'react'
 import { ArrowUpRight, Headphones, Mail, MapPin, Send } from 'lucide-react'
 import { useClock } from '../hooks/useClock'
 import { usePresence } from '../hooks/usePresence'
@@ -6,6 +12,7 @@ import { useAuth } from '../context/AuthContext'
 import { useWidgets } from '../context/WidgetsContext'
 import { useToast } from '../context/ToastContext'
 import { newsletterApi } from '../lib/api'
+import { visitsApi, type VisitPoint } from '../lib/backend'
 import { Avatar, AvatarStack } from './Avatar'
 import { WeatherDoodle } from './Mascot'
 
@@ -199,35 +206,135 @@ export function QuoteCard() {
   )
 }
 
-const shelf = [
-  { glyph: '东', title: '东京八平米', author: '吉井忍', note: '读到 98 页', color: '#F7D46B' },
-  { glyph: '物', title: '物尽其用', author: '巫鸿', note: '重新翻', color: '#BFD2FF' },
-  { glyph: '路', title: '路上观察学', author: '赤濑川原平', note: '睡前两页', color: '#F7B9A8' },
-]
+export function VisitChart() {
+  const gradientId = `visit-fill-${useId().replace(/[^a-zA-Z0-9_-]/g, '')}`
+  const [points, setPoints] = useState<VisitPoint[]>([])
+  const [state, setState] = useState<'loading' | 'ready' | 'error'>('loading')
 
-export function ShelfCard() {
+  useEffect(() => {
+    let cancelled = false
+    const load = () => {
+      visitsApi
+        .get(14)
+        .then((data) => {
+          if (cancelled) return
+          setPoints(data.items)
+          setState('ready')
+        })
+        .catch(() => {
+          if (!cancelled) setState('error')
+        })
+    }
+    load()
+    window.addEventListener('ii:visit-recorded', load)
+    return () => {
+      cancelled = true
+      window.removeEventListener('ii:visit-recorded', load)
+    }
+  }, [])
+
+  const total = points.reduce((sum, point) => sum + point.views, 0)
+  const today = points[points.length - 1]?.views ?? 0
+  const last7 = points.slice(-7).reduce((sum, point) => sum + point.views, 0)
+  const max = Math.max(1, ...points.map((point) => point.views))
+  const width = 1000
+  const height = 220
+  const top = 22
+  const bottom = 18
+  const chartPoints = points.map((point, index) => {
+    const x = points.length <= 1 ? width / 2 : 10 + (index * (width - 20)) / (points.length - 1)
+    const y = height - bottom - (point.views / max) * (height - top - bottom)
+    return { ...point, x, y }
+  })
+  const line = chartPoints.map((point) => `${point.x.toFixed(1)},${point.y.toFixed(1)}`).join(' ')
+  const area =
+    chartPoints.length > 1
+      ? `M${chartPoints[0].x},${height} L${chartPoints.map((point) => `${point.x},${point.y}`).join(' L')} L${chartPoints[chartPoints.length - 1].x},${height} Z`
+      : ''
+  const firstLabel = chartPoints[0]?.label ?? ''
+  const middleLabel = chartPoints[Math.floor(chartPoints.length / 2)]?.label ?? ''
+
   return (
-    <aside className="shelf-card" id="shelf" aria-label="床头三本书">
-      <div className="shelf-card__head">
-        <h3>床头三本</h3>
-        <span>最近翻的</span>
-      </div>
-      <div className="shelf-card__list">
-        {shelf.map((book) => (
-          <div className="shelf-book" key={book.title}>
-            <span className="shelf-book__glyph" style={{ background: book.color }} aria-hidden="true">
-              {book.glyph}
-            </span>
-            <div className="shelf-book__copy">
-              <strong>{book.title}</strong>
-              <span>
-                {book.author} · {book.note}
-              </span>
-            </div>
+    <section className="visit-panel" id="visits" aria-labelledby="visits-title">
+      <div className="visit-panel__head">
+        <div>
+          <span className="page-hero__note">网站近况</span>
+          <h2 id="visits-title">网站访问</h2>
+          <p>最近 14 天，每天 00:00 汇总一次。</p>
+        </div>
+        <div className="visit-panel__metrics">
+          <div>
+            <strong>{today}</strong>
+            <span>今天</span>
           </div>
-        ))}
+          <div>
+            <strong>{last7}</strong>
+            <span>近 7 天</span>
+          </div>
+          <div>
+            <strong>{total}</strong>
+            <span>近 14 天</span>
+          </div>
+        </div>
       </div>
-    </aside>
+
+      {state === 'loading' ? (
+        <div className="visit-panel__loading" role="status" aria-label="正在读取访问数据">
+          <span />
+        </div>
+      ) : state === 'error' ? (
+        <p className="visit-panel__empty">访问数据没有连上。</p>
+      ) : (
+        <>
+          <div className="visit-panel__chart">
+            <svg
+              viewBox={`0 0 ${width} ${height}`}
+              role="img"
+              aria-label={`最近 ${points.length} 天共 ${total} 次访问，今天 ${today} 次`}
+            >
+              <defs>
+                <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#2449E8" stopOpacity="0.18" />
+                  <stop offset="100%" stopColor="#2449E8" stopOpacity="0" />
+                </linearGradient>
+              </defs>
+              {[0.25, 0.5, 0.75].map((ratio) => (
+                <line
+                  key={ratio}
+                  className="visit-panel__grid"
+                  x1="0"
+                  x2={width}
+                  y1={height * ratio}
+                  y2={height * ratio}
+                />
+              ))}
+              <path d={area} fill={`url(#${gradientId})`} />
+              <polyline className="visit-panel__line" points={line} />
+              {chartPoints.map((point, index) => (
+                <circle
+                  key={point.date}
+                  className={index === chartPoints.length - 1 ? 'visit-panel__dot is-today' : 'visit-panel__dot'}
+                  cx={point.x}
+                  cy={point.y}
+                  r={index === chartPoints.length - 1 ? 4 : 2.2}
+                />
+              ))}
+            </svg>
+          </div>
+          <div className="visit-panel__labels" aria-hidden="true">
+            <span>{firstLabel}</span>
+            <span>{middleLabel}</span>
+            <span>今天</span>
+          </div>
+          {total === 0 && <p className="visit-panel__empty">还没有访问记录，打开页面就会记下第一笔。</p>}
+        </>
+      )}
+
+      <div className="visit-panel__foot">
+        <span>每日 00:00 按 Asia/Shanghai 汇总</span>
+        <span>来自 /api/visits 的访问记录</span>
+      </div>
+    </section>
   )
 }
 

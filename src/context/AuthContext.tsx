@@ -7,7 +7,7 @@ import {
   useState,
   type ReactNode,
 } from 'react'
-import { authApi, type ApiUser } from '../lib/backend'
+import { authApi, type ApiUser, type Permission } from '../lib/backend'
 import { readStorage, removeStorage, writeStorage } from '../lib/storage'
 
 export interface User {
@@ -17,6 +17,7 @@ export interface User {
   email: string
   handle: string
   role: 'member' | 'admin'
+  permissions: Permission[]
   bio: string
   location: string
   github: string
@@ -28,6 +29,7 @@ export interface User {
 interface AuthContextValue {
   user: User | null
   ready: boolean
+  can: (permission: Permission) => boolean
   login: (
     identifier: string,
     password: string,
@@ -60,6 +62,7 @@ function mapUser(apiUser: ApiUser): User {
     email: apiUser.email,
     handle: apiUser.handle,
     role: apiUser.role,
+    permissions: apiUser.permissions ?? [],
     bio: apiUser.bio,
     location: apiUser.location,
     github: apiUser.github,
@@ -128,6 +131,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [])
 
+  const can = useCallback(
+    (permission: Permission) =>
+      Boolean(user && (user.role === 'admin' || user.permissions.includes(permission))),
+    [user],
+  )
+
   const updateUser = useCallback(
     async (patch: Partial<Omit<User, 'id' | 'email' | 'joinedAt' | 'role'>>) => {
       if (!user) throw new Error('请先登录')
@@ -147,8 +156,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   )
 
   const value = useMemo(
-    () => ({ user, ready, login, register, logout, updateUser }),
-    [user, ready, login, register, logout, updateUser],
+    () => ({ user, ready, can, login, register, logout, updateUser }),
+    [user, ready, can, login, register, logout, updateUser],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

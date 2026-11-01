@@ -1,0 +1,32 @@
+{
+  "title": "星图",
+  "categories": [
+    {
+      "id": "inspiration",
+      "title": "灵感",
+      "links": [
+        { "title": "Are.na", "url": "https://www.are.na", "desc": "灵感收集与连接" },
+        { "title": "Dribbble", "url": "https://dribbble.com", "desc": "设计作品集" },
+        { "title": "Pinterest", "url": "https://www.pinterest.com", "desc": "图片灵感板" },
+        { "title": "Cosmos", "url": "https://www.cosmos.so", "desc": "审美驱动的收藏" }
+      ]
+    },
+    {
+      "id": "sound",
+      "title": "声音",
+      "links": [
+        { "title": "NTS Radio", "url": "https://www.nts.live", "desc": "伦敦独立电台" },
+        { "title": "Bandcamp", "url": "https://bandcamp.com", "desc": "独立音乐" },
+        { "title": "YouTube", "url": "https://www.youtube.com", "desc": "视频与音乐" }
+      ]
+    },
+    {
+      "id": "reference",
+      "title": "星河浩瀚",
+      "links": [
+        { "title": "weather-fighter", "url": "https://lolikonnn.github.io/weather-fighter/", "desc": "老实看天气预报很枯燥吧" },
+        { "title": "Radio Garden", "url": "https://radio.garden", "desc": "听一听世界的频率" }
+      ]
+    }
+  ]
+}

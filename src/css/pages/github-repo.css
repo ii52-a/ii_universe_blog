@@ -1,0 +1,218 @@
+/* ============================================================
+   GithubRepoPage
+   GitHub 仓库详情。
+   ============================================================ */
+
+.repo-tool__experience > span {
+  flex-shrink: 0;
+  color: var(--muted-light);
+  font-family: var(--mono);
+  font-size: 8px;
+  letter-spacing: 0.04em
+}
+.repo-tool__experience p {
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.85
+}
+.repo-page {  min-height: 100vh;
+  padding: 42px 0 100px;
+  background: var(--canvas)
+}
+.repo-page .page-container {
+  max-width: 820px
+}
+.repo-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 16px;
+  color: var(--muted);
+  font-size: 10px;
+  text-decoration: none
+}
+.repo-back:hover {
+  color: var(--ink)
+}
+.repo-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 22px;
+  margin-top: 22px
+}
+.repo-owner {
+  color: var(--muted-light);
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.06em
+}
+.repo-head h1 {
+  margin-top: 4px;
+  font-family: var(--serif);
+  font-size: clamp(38px, 5vw, 58px);
+  font-weight: 600;
+  letter-spacing: -0.06em;
+  line-height: 1
+}
+.repo-favorite {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  border: 1px solid var(--line-dark);
+  border-radius: 999px;
+  background: var(--paper);
+  color: var(--muted);
+  padding: 8px 13px;
+  font-size: 11px;
+  cursor: pointer
+}
+.repo-favorite.is-favorite {
+  border-color: var(--ink);
+  color: var(--ink)
+}
+.repo-intro {
+  margin-top: 38px;
+  padding-top: 18px;
+  border-top: 1px solid var(--line)
+}
+.repo-section-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 14px
+}
+.repo-section-head h2 {
+  font-family: var(--serif);
+  font-size: 23px;
+  font-weight: 600;
+  letter-spacing: -0.03em
+}
+.repo-section-head span {
+  color: var(--muted-light);
+  font-family: var(--mono);
+  font-size: 8px
+}
+.repo-intro > p {
+  max-width: 700px;
+  margin-top: 10px;
+  color: var(--ink-soft);
+  font-size: 13px;
+  line-height: 1.95
+}
+.repo-intro__note {
+  color: var(--muted-light) !important;
+  font-size: 10px !important
+}
+.repo-tool {
+  margin-top: 28px;
+  padding: 18px 0;
+  border-top: 1px solid var(--line)
+}
+.repo-experience {
+  margin-top: 22px;
+  padding: 22px 24px;
+  border: 1px solid var(--line-dark);
+  border-radius: 14px;
+  background: var(--paper)
+}
+.repo-experience h2 {
+  margin-bottom: 8px;
+  font-family: var(--serif);
+  font-size: 24px;
+  font-weight: 600;
+  letter-spacing: -0.03em
+}
+.repo-experience p {
+  color: var(--ink-soft);
+  font-size: 14px;
+  line-height: 1.95
+}
+.repo-tool > p {
+  max-width: 700px;
+  margin-top: 9px;
+  color: var(--ink-soft);
+  font-size: 12.5px;
+  line-height: 1.85
+}
+.repo-tool__experience {
+  display: flex;
+  gap: 16px;
+  margin-top: 12px;
+  padding-top: 11px;
+  border-top: 1px dashed var(--line)
+}
+.repo-meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 7px 16px;
+  margin-top: 20px;
+  color: var(--muted);
+  font-size: 10px
+}
+.repo-meta a {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  margin-left: auto;
+  color: var(--ink);
+  text-decoration: none
+}
+.repo-meta a:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px
+}
+.repo-readme {
+  margin-top: 44px;
+  padding-top: 18px;
+  border-top: 1px solid var(--line)
+}
+.repo-readme__text {
+  margin-top: 12px
+}
+.repo-readme__text p {
+  max-width: 720px;
+  margin-bottom: 13px;
+  color: var(--ink-soft);
+  font-size: 12.5px;
+  line-height: 1.95;
+  white-space: pre-wrap
+}
+.repo-readme__empty {
+  margin-top: 12px;
+  color: var(--muted);
+  font-size: 11px
+}
+.repo-comments {
+  margin-top: 56px;
+  padding-top: 10px;
+  border-top: 1px solid var(--line)
+}
+.repo-empty {
+  padding: 80px 0;
+  color: var(--muted);
+  font-size: 13px
+}
+.repo-empty .text-link {
+  margin-top: 12px
+}
+@media (max-width: 700px) {
+  .repo-page {
+    padding: 26px 0 64px
+  }
+  .repo-head {
+    align-items: flex-start
+  }
+  .repo-head h1 {
+    font-size: 36px
+  }
+  .repo-favorite {
+    margin-top: 12px
+  }
+  .repo-meta a {
+    width: 100%;
+    margin-left: 0
+  }
+}

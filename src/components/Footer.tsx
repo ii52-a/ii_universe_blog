@@ -1,7 +1,14 @@
+/**
+ * 页脚组件
+ * 职责：站点页脚、链接与回到顶部。
+ * 样式：src/css/components/footer.css
+ */
+
 import { Link } from 'react-router-dom'
 import { ArrowUp } from 'lucide-react'
 import { Brand } from './Brand'
 import { usePosts } from '../lib/postsStore'
+import versions from '../content/versions.json'
 
 export function Footer() {
   const allPosts = usePosts()
@@ -36,7 +43,7 @@ export function Footer() {
 
         <div className="site-footer__column">
           <h2>别处</h2>
-          <a href="https://github.com/ii52-a/ii_universe_blog" target="_blank" rel="noreferrer">
+          <a href={versions.repository.url} target="_blank" rel="noreferrer">
             GitHub <span aria-hidden="true">↗</span>
           </a>
           <a href="https://www.instagram.com/" target="_blank" rel="noreferrer">
@@ -63,7 +70,7 @@ export function Footer() {
       <div className="site-footer__word" aria-hidden="true" />
 
       <div className="site-footer__bottom">
-        <span>© 2026 半日 · v2.6.0</span>
+        <span>© 2026 半日 · v{versions.blog}</span>
         <span>文字采用 CC BY-NC-SA 4.0</span>
         <span>用纸、茶和一点耐心做的</span>
       </div>

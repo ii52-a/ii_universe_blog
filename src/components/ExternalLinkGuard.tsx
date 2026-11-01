@@ -1,3 +1,9 @@
+/**
+ * 外链守卫
+ * 职责：站外链接确认弹窗。
+ * 样式：src/css/components/external-guard.css
+ */
+
 import { useEffect, useRef, useState } from 'react'
 import { ArrowUpRight, ShieldAlert } from 'lucide-react'
 
@@ -50,6 +56,13 @@ export function ExternalLinkGuard() {
     // Keep the raw target if the browser cannot parse it.
   }
 
+  const inUniverse =
+    window.location.pathname === '/universe' ||
+    window.location.pathname === '/starmap' ||
+    window.location.pathname.startsWith('/radio') ||
+    window.location.pathname.startsWith('/github-lab')
+  const stayLabel = inUniverse ? '留在 ii universe' : '留在半日'
+
   return (
     <div className="external-guard" role="presentation" onMouseDown={() => setOpen(false)}>
       <div className="external-guard__orbit" aria-hidden="true">
@@ -70,9 +83,9 @@ export function ExternalLinkGuard() {
         </span>
         <span className="external-guard__eyebrow">EXTERNAL ROUTE</span>
         <h2 id="external-guard-title">
-          走入黑夜中，
+          走入黑夜中
           <br />
-          小道分叉。
+          小道分叉
         </h2>
         <p id="external-guard-desc">请保护个人财产和账号安全。</p>
         <code>{host}</code>
@@ -89,7 +102,7 @@ export function ExternalLinkGuard() {
             继续前往 <ArrowUpRight size={14} aria-hidden="true" />
           </button>
           <button type="button" className="external-guard__stay" onClick={() => setOpen(false)}>
-            留在半日
+            {stayLabel}
           </button>
         </div>
       </div>

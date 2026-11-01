@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getAuthUser, isAdmin } from '../../../../lib/auth'
+import { getAuthUser, hasPermission } from '../../../../lib/auth'
 import { ensureDatabase, getDatabase } from '../../../../lib/db'
 import { ApiError, handleRouteError, readJson } from '../../../../lib/http'
 import { categorySchema } from '../../../../lib/validation'
@@ -13,14 +13,16 @@ export async function PATCH(
   try {
     const user = await getAuthUser(request)
     if (!user) throw new ApiError(401, 'UNAUTHORIZED', '请先登录')
-    if (!isAdmin(user)) throw new ApiError(403, 'FORBIDDEN', '只有管理员可以修改分类')
+    if (!hasPermission(user, 'tags.manage')) {
+      throw new ApiError(403, 'FORBIDDEN', '需要标签管理权限才能修改分类')
+    }
 
     const { id } = await params
     const body = categorySchema.parse(await readJson(request))
     await ensureDatabase()
     const db = await getDatabase()
-    const current = await db.query<{ name: string }>(
-      'SELECT name FROM categories WHERE id = $1 LIMIT 1',
+    const current = await db.query<{ name: string; protected: boolean }>(
+      'SELECT name, protected FROM categories WHERE id = $1 LIMIT 1',
       [id],
     )
     const oldName = current.rows[0]?.name
@@ -37,12 +39,13 @@ export async function PATCH(
       'UPDATE categories SET name = $1, updated_at = now() WHERE id = $2 RETURNING *',
       [body.name, id],
     )
-    const row = result.rows[0] as Record<string, string>
+    const row = result.rows[0] as Record<string, string | boolean>
     return NextResponse.json({
       category: {
         id: row.id,
         name: row.name,
-        createdAt: new Date(row.created_at).toISOString(),
+        protected: Boolean(row.protected),
+        createdAt: new Date(String(row.created_at)).toISOString(),
       },
     })
   } catch (error) {
@@ -57,29 +60,21 @@ export async function DELETE(
   try {
     const user = await getAuthUser(request)
     if (!user) throw new ApiError(401, 'UNAUTHORIZED', '请先登录')
-    if (!isAdmin(user)) throw new ApiError(403, 'FORBIDDEN', '只有管理员可以修改分类')
+    if (!hasPermission(user, 'tags.manage')) {
+      throw new ApiError(403, 'FORBIDDEN', '需要标签管理权限才能修改分类')
+    }
 
     const { id } = await params
     await ensureDatabase()
     const db = await getDatabase()
-    const current = await db.query<{ name: string }>(
-      'SELECT name FROM categories WHERE id = $1 LIMIT 1',
+    const current = await db.query<{ name: string; protected: boolean }>(
+      'SELECT name, protected FROM categories WHERE id = $1 LIMIT 1',
       [id],
     )
     const name = current.rows[0]?.name
     if (!name) throw new ApiError(404, 'CATEGORY_NOT_FOUND', '没有这个分类')
 
-    const used = await db.query<{ count: number }>(
-      'SELECT count(*)::int AS count FROM posts WHERE category = $1',
-      [name],
-    )
-    const force = request.nextUrl.searchParams.get('force') === 'true'
-    if (Number(used.rows[0]?.count ?? 0) > 0 && !force) {
-      throw new ApiError(409, 'CATEGORY_IN_USE', '还有文章在这个分类里，先移走再删')
-    }
-    if (force) {
-      await db.query("UPDATE posts SET category = '' WHERE category = $1", [name])
-    }
+    await db.query("UPDATE posts SET category = '' WHERE category = $1", [name])
     await db.query('DELETE FROM categories WHERE id = $1', [id])
     return NextResponse.json({ ok: true })
   } catch (error) {

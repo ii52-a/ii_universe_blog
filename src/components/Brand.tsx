@@ -1,3 +1,9 @@
+/**
+ * 品牌组件
+ * 职责：站点品牌字标与昼夜主题切换。
+ * 样式：src/css/components/header.css
+ */
+
 import { Link } from 'react-router-dom'
 import { useTheme } from '../context/ThemeContext'
 
