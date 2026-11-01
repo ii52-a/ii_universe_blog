@@ -1,7 +1,7 @@
 /**
- * ii universe 载入动画
- * 职责：从收紧的目镜光圈推入，完成深空对焦后展开到导航页。
- * 样式：src/css/pages/universe.css
+ * 星图载入动画
+ * 职责：从收紧的目镜光圈推入，完成深空对焦后展开到星图页。
+ * 样式：src/css/pages/starmap.css
  */
 
 import { useEffect, useMemo, useState, type CSSProperties } from 'react'
@@ -17,7 +17,7 @@ function smoothstep(min: number, max: number, value: number) {
   return x * x * (3 - 2 * x)
 }
 
-export function UniverseLoader() {
+export function StarmapLoader() {
   const [progress, setProgress] = useState(0)
   const [active, setActive] = useState(true)
 
@@ -75,21 +75,24 @@ export function UniverseLoader() {
 
   const stage2 = smoothstep(0.02, 0.32, progress)
   const stage3 = smoothstep(0.28, 0.78, progress)
-  const reveal = smoothstep(0.86, 1, progress)
-  const aperture = 7 + stage2 * 13 + stage3 * 24 + reveal * 120
+  const expand = smoothstep(0.88, 1, progress)
+  const reveal = smoothstep(0.95, 1, progress)
+  const aperture = 7 + stage2 * 13 + stage3 * 24 + expand * 120
   const blur = 13 - stage2 * 5 - stage3 * 8
   const scale = 0.72 + stage2 * 0.16 + stage3 * 0.14
-  const overlayOpacity = smoothstep(0, 0.08, progress) * (1 - reveal)
+  const overlayOpacity = 1 - reveal
   const ringOpacity = stage3 * 0.58
   const constellationOpacity = smoothstep(0.5, 0.82, progress)
 
   return (
     <div
-      className="universe-loader"
+      className="starmap-loader"
       style={{ opacity: overlayOpacity }}
+      onClick={() => setActive(false)}
+      aria-hidden="true"
     >
       <div
-        className="universe-loader__aperture"
+        className="starmap-loader__aperture"
         style={{
           width: `${aperture * 2}vmin`,
           height: `${aperture * 2}vmin`,
@@ -97,11 +100,11 @@ export function UniverseLoader() {
           transform: `scale(${scale})`,
         }}
       >
-        <div className="universe-loader__nebula" />
-        <div className="universe-loader__stars">
+        <div className="starmap-loader__nebula" />
+        <div className="starmap-loader__stars">
           {stars.map((star) => (
             <span
-              className="universe-loader__star"
+              className="starmap-loader__star"
               key={star.id}
               style={{
                 left: star.left,
@@ -114,7 +117,7 @@ export function UniverseLoader() {
             />
           ))}
         </div>
-        <svg className="universe-loader__constellation" viewBox="0 0 600 600" style={{ opacity: constellationOpacity }}>
+        <svg className="starmap-loader__constellation" viewBox="0 0 600 600" style={{ opacity: constellationOpacity }}>
           <g fill="none" stroke="rgba(255, 255, 255, 0.22)" strokeWidth="0.9" strokeDasharray="3 5">
             <polyline points="188,238 255,202 318,246 378,198 428,258 354,338 270,322 188,238" />
             <polyline points="255,202 294,142 362,136 378,198" />
@@ -137,7 +140,7 @@ export function UniverseLoader() {
       </div>
 
       <div
-        className="universe-loader__rim"
+        className="starmap-loader__rim"
         style={{
           width: `${aperture * 2}vmin`,
           height: `${aperture * 2}vmin`,
@@ -146,7 +149,7 @@ export function UniverseLoader() {
       />
 
       <div
-        className="universe-loader__ring"
+        className="starmap-loader__ring"
         style={{
           width: `${aperture * 2.04}vmin`,
           height: `${aperture * 2.04}vmin`,
@@ -164,16 +167,7 @@ export function UniverseLoader() {
         </svg>
       </div>
 
-      <div className="universe-loader__vignette" style={{ '--aperture': `${aperture}vmin` } as CSSProperties} />
-
-      <button
-        type="button"
-        className="universe-loader__skip"
-        onClick={() => setActive(false)}
-        aria-label="跳过载入动画"
-      >
-        跳过
-      </button>
+      <div className="starmap-loader__vignette" style={{ '--aperture': `${aperture}vmin` } as CSSProperties} />
     </div>
   )
 }

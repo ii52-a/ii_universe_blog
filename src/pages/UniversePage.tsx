@@ -24,7 +24,6 @@ import content from '../content/navigation.json'
 import { usePageTitle } from '../hooks/usePageTitle'
 import { UniverseTop } from '../components/UniverseTop'
 import { UniverseMeteors } from '../components/UniverseMeteors'
-import { UniverseLoader } from '../components/UniverseLoader'
 
 const icons: Record<string, LucideIcon> = {
   sun: Sun,
@@ -46,7 +45,6 @@ export function UniversePage() {
 
   return (
     <div className="universe-page">
-      <UniverseLoader />
       <div className="universe-lines" aria-hidden="true">
         <svg viewBox="0 0 1440 900" preserveAspectRatio="none">
           <path d="M-120 210C220 150 420 300 760 210S1200 120 1560 240" />
