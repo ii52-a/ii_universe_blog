@@ -12,6 +12,98 @@
   background: #000000;
   color: #f5f1e6
 }
+
+.universe-text-deep {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 50% 48%, rgba(255, 255, 255, 0.06), transparent 52%),
+    #000000;
+  pointer-events: none;
+  opacity: 0.82
+}
+
+.universe-text-deep__nebula {
+  position: absolute;
+  inset: -14%;
+  background:
+    radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.32) 0%, rgba(255, 255, 255, 0.09) 20%, transparent 52%),
+    radial-gradient(ellipse 64% 38% at 55% 50%, rgba(255, 255, 255, 0.12) 0%, transparent 68%),
+    radial-gradient(circle at 42% 58%, rgba(255, 255, 255, 0.06) 0%, transparent 46%);
+  filter: blur(22px);
+  animation: universeTextDeepNebula 16s ease-in-out infinite
+}
+
+.universe-text-deep__field {
+  position: absolute;
+  inset: -4%;
+  animation: universeTextDeepDrift 42s ease-in-out infinite alternate;
+  will-change: transform
+}
+
+.universe-text-deep__star {
+  position: absolute;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: 0 0 5px rgba(255, 255, 255, 0.62);
+  animation: universeTextDeepTwinkle 3s ease-in-out infinite
+}
+
+.universe-text-deep__constellation {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0.7
+}
+
+.universe-text-deep__ring {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: min(78vmin, 900px);
+  aspect-ratio: 1;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 50%;
+  box-shadow:
+    0 0 50px rgba(255, 255, 255, 0.05),
+    inset 0 0 50px rgba(255, 255, 255, 0.04);
+  transform: translate(-50%, -50%);
+  animation: universeTextDeepRing 110s linear infinite
+}
+
+.universe-text-deep__ring svg {
+  width: 100%;
+  height: 100%
+}
+
+.universe-text-deep__vignette {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% 50%, transparent 38%, rgba(0, 0, 0, 0.68) 92%, #000000 100%)
+}
+
+@keyframes universeTextDeepTwinkle {
+  0%, 100% { opacity: 0.25; transform: scale(0.8); }
+  50% { opacity: 1; transform: scale(1.25); }
+}
+
+@keyframes universeTextDeepNebula {
+  0%, 100% { transform: scale(1) rotate(0deg); opacity: 0.7; }
+  50% { transform: scale(1.06) rotate(1.4deg); opacity: 1; }
+}
+
+@keyframes universeTextDeepDrift {
+  0% { transform: translate3d(0, 0, 0) scale(1); }
+  100% { transform: translate3d(-1.2%, 0.8%, 0) scale(1.04); }
+}
+
+@keyframes universeTextDeepRing {
+  0% { transform: translate(-50%, -50%) rotate(0deg); }
+  100% { transform: translate(-50%, -50%) rotate(360deg); }
+}
 .universe-text-page .universe-top {
   position: fixed;
   top: 0;

@@ -7,6 +7,7 @@
 import type { CSSProperties } from 'react'
 import { usePageTitle } from '../hooks/usePageTitle'
 import { UniverseTop } from '../components/UniverseTop'
+import { UniverseDeepField } from '../components/UniverseDeepField'
 
 const ORBIT_COUNT = 4
 const ORBIT_BASE = 36
@@ -26,6 +27,7 @@ export function UniverseTextPage() {
 
   return (
     <div className="universe-text-page">
+      <UniverseDeepField />
       <UniverseTop />
       <main className="universe-text-stage">
         <div className="universe-text-system" aria-hidden="true">

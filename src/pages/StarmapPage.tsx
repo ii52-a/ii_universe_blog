@@ -9,7 +9,6 @@ import starmap from '../content/starmap.json'
 import { usePageTitle } from '../hooks/usePageTitle'
 import { UniverseMark } from '../components/UniverseMark'
 import { StarmapScene } from '../components/StarmapScene'
-import { StarmapLoader } from '../components/StarmapLoader'
 import versions from '../content/versions.json'
 
 export function StarmapPage() {
@@ -17,7 +16,6 @@ export function StarmapPage() {
 
   return (
     <div className="starmap-page">
-      <StarmapLoader />
       <StarmapScene />
       <div className="starmap-veil" aria-hidden="true" />
       <header className="starmap-top">
