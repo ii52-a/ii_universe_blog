@@ -360,32 +360,55 @@ export interface RadioEntry {
   id: string
   title: string
   body: string
+  category: string
   createdAt: string
   updatedAt: string
 }
 
+export interface RadioCategory {
+  id: string
+  name: string
+}
+
 export const radioApi = {
-  list: (page = 1, limit = 10) =>
+  list: (page = 1, limit = 10, category = '') =>
     apiFetch<{
       entries: RadioEntry[]
       total: number
       page: number
       pageSize: number
-    }>(`/api/radio?page=${page}&limit=${limit}`),
+    }>(
+      `/api/radio?page=${page}&limit=${limit}${category ? `&category=${encodeURIComponent(category)}` : ''}`,
+    ),
   get: (id: string) =>
     apiFetch<{ entry: RadioEntry }>(`/api/radio/${encodeURIComponent(id)}`),
-  create: (input: { title: string; body: string }) =>
+  create: (input: { title: string; body: string; category: string }) =>
     apiFetch<{ entry: RadioEntry }>('/api/radio', {
       method: 'POST',
       body: JSON.stringify(input),
     }),
-  update: (id: string, input: { title: string; body: string }) =>
+  update: (id: string, input: { title?: string; body?: string; category?: string }) =>
     apiFetch<{ entry: RadioEntry }>(`/api/radio/${encodeURIComponent(id)}`, {
       method: 'PATCH',
       body: JSON.stringify(input),
     }),
   remove: (id: string) =>
     apiFetch<{ ok: true }>(`/api/radio/${encodeURIComponent(id)}`, { method: 'DELETE' }),
+  categories: () => apiFetch<{ categories: RadioCategory[] }>('/api/radio/categories'),
+  createCategory: (name: string) =>
+    apiFetch<{ category: RadioCategory }>('/api/radio/categories', {
+      method: 'POST',
+      body: JSON.stringify({ name }),
+    }),
+  updateCategory: (id: string, name: string) =>
+    apiFetch<{ category: RadioCategory }>(`/api/radio/categories/${encodeURIComponent(id)}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ name }),
+    }),
+  removeCategory: (id: string) =>
+    apiFetch<{ ok: true }>(`/api/radio/categories/${encodeURIComponent(id)}`, {
+      method: 'DELETE',
+    }),
 }
 
 export interface VersionRelease {

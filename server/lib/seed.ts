@@ -287,33 +287,73 @@ export async function seedDatabase(db: DbClient) {
     )
   }
 
+  const radioCategories = [
+    { id: '00000000-0000-4000-8000-000000000601', name: '日常' },
+    { id: '00000000-0000-4000-8000-000000000602', name: '写作' },
+    { id: '00000000-0000-4000-8000-000000000603', name: '星图' },
+  ]
+  const radioCategorySeed = await db.query<{ value: string }>(
+    "SELECT value FROM app_meta WHERE key = 'radio_categories_seeded' LIMIT 1",
+  )
+  if (!radioCategorySeed.rows[0]) {
+    const categoryCount = await db.query<{ count: number }>(
+      'SELECT count(*)::int AS count FROM radio_categories',
+    )
+    if (Number(categoryCount.rows[0]?.count ?? 0) === 0) {
+      for (const category of radioCategories) {
+        await db.query(
+          `INSERT INTO radio_categories (id, name)
+           VALUES ($1, $2)
+           ON CONFLICT (name) DO NOTHING`,
+          [category.id, category.name],
+        )
+      }
+    }
+    await db.query(
+      `INSERT INTO app_meta (key, value)
+       VALUES ('radio_categories_seeded', '1')
+       ON CONFLICT (key) DO NOTHING`,
+    )
+  }
+
   const radioEntries = [
     {
       id: '00000000-0000-4000-8000-000000000501',
       title: '为什么叫半日？',
       body: '半天用来忙，半天用来浪费。\n\n这是最初的想法，后来也没有改。',
+      category: '日常',
       createdAt: '2026-10-21T20:10:00+08:00',
     },
     {
       id: '00000000-0000-4000-8000-000000000502',
       title: '这里会写什么？',
       body: '散步、旧物、食物，和一些没忘掉的小事。\n\n不追热点，也不保证更新。',
+      category: '写作',
       createdAt: '2026-10-23T21:40:00+08:00',
     },
     {
       id: '00000000-0000-4000-8000-000000000503',
       title: '星图里的链接是怎么选的？',
       body: '大多是平时会反复打开的地方：找参考、读长文、听电台。\n\n没有排名，也没有合作。',
+      category: '星图',
       createdAt: '2026-10-28T19:20:00+08:00',
     },
   ]
   for (const entry of radioEntries) {
     await db.query(
-      `INSERT INTO radio_entries (id, title, body, created_at, updated_at)
-       VALUES ($1, $2, $3, $4, $4)
+      `INSERT INTO radio_entries (id, title, body, category, created_at, updated_at)
+       VALUES ($1, $2, $3, $4, $5, $5)
        ON CONFLICT (id) DO NOTHING`,
-      [entry.id, entry.title, entry.body, entry.createdAt],
+      [entry.id, entry.title, entry.body, entry.category, entry.createdAt],
     )
+  }
+  if (!radioCategorySeed.rows[0]) {
+    for (const entry of radioEntries) {
+      await db.query(
+        `UPDATE radio_entries SET category = $2 WHERE id = $1 AND category = ''`,
+        [entry.id, entry.category],
+      )
+    }
   }
 
   for (const release of seedReleases) {

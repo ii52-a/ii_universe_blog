@@ -35,7 +35,8 @@ npm run dev
 - `github_tools`：ii tool 的仓库、描述、使用体验、分类与维护人
 - `github_tool_categories`：ii tool 分类
 - `github_favorites`：账号级 GitHub 仓库收藏
-- `radio_entries`：电台问答的问题与 Markdown 回答
+- `radio_entries`：电台问答的问题、Markdown 回答与分类
+- `radio_categories`：电台分类，仅「全部」为界面内置项
 - `version_releases`：全部版本更新记录，最新一条的内容由 `versions.json` 的 `latest` 覆盖
 - `site_visits`：按 Asia/Shanghai 日期汇总的网站访问量
 - `app_meta`：一次性初始化标记，避免删除分类后重启被 seed 补回
@@ -62,11 +63,15 @@ npm run dev
 | GET | `/api/posts` | 可选 | `limit`（最大 10）`cursor` `category` `q` `author` `mine` |
 | POST | `/api/posts` | ii52A1 | 只有 ii52A1 可以新建；直接发布，标题可空 |
 | POST | `/api/essays` | `essays.write` | 随笔：只有标题和正文，自动使用「随笔」分类、无封面、note 排版 |
-| GET | `/api/radio` | - | 电台问答列表，`page` / `limit`，每页最多 10 条 |
-| POST | `/api/radio` | ii52A1 | 新增问答，标题与内容可为空 |
+| GET | `/api/radio` | - | 电台问答列表，`page` / `limit` / `category`，每页最多 10 条 |
+| POST | `/api/radio` | ii52A1 | 新增问答，标题与内容可为空，必须选择分类 |
 | GET | `/api/radio/:id` | - | 单条问答 |
-| PATCH | `/api/radio/:id` | ii52A1 | 修改标题与 Markdown 内容 |
+| PATCH | `/api/radio/:id` | ii52A1 | 修改标题、Markdown 内容或分类 |
 | DELETE | `/api/radio/:id` | ii52A1 | 删除问答 |
+| GET | `/api/radio/categories` | - | 电台分类 |
+| POST | `/api/radio/categories` | ii52A1 | 新增电台分类 |
+| PATCH | `/api/radio/categories/:id` | ii52A1 | 分类改名，并同步条目分类 |
+| DELETE | `/api/radio/categories/:id` | ii52A1 | 永久删除分类，条目分类清空 |
 | GET | `/api/posts/:slug` | 可选 | 公开页；未发布仅作者 / 审核权限可见 |
 | PATCH | `/api/posts/:slug` | ii52A1 | 只有 ii52A1 可以修改，可编辑任意文章 |
 | DELETE | `/api/posts/:slug` | JWT | 作者或 `posts.delete` 权限 |

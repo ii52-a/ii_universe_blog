@@ -9,7 +9,7 @@ import { Navigate, Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { RadioTop } from '../components/RadioTop'
 import { useAuth } from '../context/AuthContext'
 import { usePageTitle } from '../hooks/usePageTitle'
-import { radioApi, BackendError } from '../lib/backend'
+import { radioApi, BackendError, type RadioCategory } from '../lib/backend'
 
 export function RadioWritePage() {
   const { user, ready } = useAuth()
@@ -18,10 +18,29 @@ export function RadioWritePage() {
   const id = params.get('id')
   const [title, setTitle] = useState('')
   const [body, setBody] = useState('')
+  const [category, setCategory] = useState('')
+  const [categories, setCategories] = useState<RadioCategory[]>([])
   const [loading, setLoading] = useState(Boolean(id))
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
   usePageTitle(id ? '编辑电台' : '写电台', 'ii universe')
+
+  useEffect(() => {
+    let cancelled = false
+    radioApi
+      .categories()
+      .then((payload) => {
+        if (cancelled) return
+        setCategories(payload.categories)
+        setCategory((current) => current || payload.categories[0]?.name || '')
+      })
+      .catch(() => {
+        if (!cancelled) setCategories([])
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   useEffect(() => {
     if (!id) return
@@ -32,6 +51,7 @@ export function RadioWritePage() {
         if (cancelled) return
         setTitle(payload.entry.title)
         setBody(payload.entry.body)
+        setCategory(payload.entry.category)
       })
       .catch((caught) => {
         if (!cancelled) {
@@ -68,10 +88,10 @@ export function RadioWritePage() {
     setError('')
     try {
       if (id) {
-        await radioApi.update(id, { title, body })
+        await radioApi.update(id, { title, body, category })
         navigate(`/radio/${id}`)
       } else {
-        const payload = await radioApi.create({ title, body })
+        const payload = await radioApi.create({ title, body, category })
         navigate(`/radio/${payload.entry.id}`)
       }
     } catch (caught) {
@@ -97,6 +117,18 @@ export function RadioWritePage() {
               placeholder="标题"
               aria-label="标题"
             />
+            <select
+              className="radio-editor__category"
+              value={category}
+              onChange={(event) => setCategory(event.target.value)}
+              aria-label="分类"
+            >
+              {categories.map((item) => (
+                <option value={item.name} key={item.id}>
+                  {item.name}
+                </option>
+              ))}
+            </select>
             <textarea
               className="radio-editor__body"
               value={body}
@@ -106,7 +138,7 @@ export function RadioWritePage() {
             />
             {error && <p className="radio-editor__error">{error}</p>}
             <div className="radio-editor__foot">
-              <button type="submit" disabled={saving}>
+              <button type="submit" disabled={saving || !category}>
                 {saving ? '保存中' : '保存'}
               </button>
             </div>

@@ -23,6 +23,7 @@ import {
 import content from '../content/navigation.json'
 import { usePageTitle } from '../hooks/usePageTitle'
 import { UniverseTop } from '../components/UniverseTop'
+import { UniverseMeteors } from '../components/UniverseMeteors'
 
 const icons: Record<string, LucideIcon> = {
   sun: Sun,
@@ -53,6 +54,7 @@ export function UniversePage() {
       </div>
 
       <UniverseTop />
+      <UniverseMeteors />
 
       <main className="universe-content">
         <div className="universe-groups">

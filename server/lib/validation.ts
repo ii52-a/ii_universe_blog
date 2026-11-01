@@ -135,6 +135,17 @@ export const githubFavoriteSchema = z.object({
 export const radioEntrySchema = z.object({
   title: z.string().max(200).default(''),
   body: z.string().max(50000).default(''),
+  category: z.string().trim().min(1, '请选择分类').max(24),
+})
+
+export const radioEntryUpdateSchema = z.object({
+  title: z.string().max(200).optional(),
+  body: z.string().max(50000).optional(),
+  category: z.string().trim().min(1, '请选择分类').max(24).optional(),
+})
+
+export const radioCategorySchema = z.object({
+  name: z.string().trim().min(1, '分类不能为空').max(24),
 })
 
 export const permissionsUpdateSchema = z.object({

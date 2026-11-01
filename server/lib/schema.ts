@@ -118,14 +118,22 @@ export const schemaStatements = [
     views integer NOT NULL DEFAULT 0,
     updated_at timestamptz NOT NULL DEFAULT now()
   )`,
+  `CREATE TABLE IF NOT EXISTS radio_categories (
+    id uuid PRIMARY KEY,
+    name text NOT NULL UNIQUE,
+    created_at timestamptz NOT NULL DEFAULT now()
+  )`,
   `CREATE TABLE IF NOT EXISTS radio_entries (
     id uuid PRIMARY KEY,
     title text NOT NULL DEFAULT '',
     body text NOT NULL DEFAULT '',
+    category text NOT NULL DEFAULT '',
     created_at timestamptz NOT NULL DEFAULT now(),
     updated_at timestamptz NOT NULL DEFAULT now()
   )`,
+  `ALTER TABLE radio_entries ADD COLUMN IF NOT EXISTS category text NOT NULL DEFAULT ''`,
   `CREATE INDEX IF NOT EXISTS radio_entries_feed_idx ON radio_entries (created_at DESC, id DESC)`,
+  `CREATE INDEX IF NOT EXISTS radio_entries_category_idx ON radio_entries (category)`,
   `CREATE TABLE IF NOT EXISTS version_releases (
     id integer PRIMARY KEY,
     version text NOT NULL UNIQUE,

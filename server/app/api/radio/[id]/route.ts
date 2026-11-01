@@ -3,7 +3,8 @@ import { getAuthUser, isAdmin } from '../../../../lib/auth'
 import { ensureDatabase, getDatabase } from '../../../../lib/db'
 import { ApiError, handleRouteError, readJson } from '../../../../lib/http'
 import { getRadioEntry, updateRadioEntry } from '../../../../lib/radio'
-import { radioEntrySchema } from '../../../../lib/validation'
+import { findRadioCategory } from '../../../../lib/radioCategories'
+import { radioEntryUpdateSchema } from '../../../../lib/validation'
 
 export const dynamic = 'force-dynamic'
 
@@ -41,11 +42,20 @@ export async function PATCH(
     if (!isAdmin(user)) throw new ApiError(403, 'FORBIDDEN', '没有权限')
 
     const id = await getId(context)
-    const input = radioEntrySchema.parse(await readJson(request))
+    const input = radioEntryUpdateSchema.parse(await readJson(request))
     await ensureDatabase()
     const db = await getDatabase()
-    const entry = await updateRadioEntry(db, id, input)
-    if (!entry) throw new ApiError(404, 'RADIO_NOT_FOUND', '没有这一条')
+    const current = await getRadioEntry(db, id)
+    if (!current) throw new ApiError(404, 'RADIO_NOT_FOUND', '没有这一条')
+    const category = input.category ?? current.category
+    if (!(await findRadioCategory(db, category))) {
+      throw new ApiError(400, 'RADIO_CATEGORY_REQUIRED', '没有这个分类')
+    }
+    const entry = await updateRadioEntry(db, id, {
+      title: input.title ?? current.title,
+      body: input.body ?? current.body,
+      category,
+    })
     return NextResponse.json({ entry })
   } catch (error) {
     return handleRouteError(error)

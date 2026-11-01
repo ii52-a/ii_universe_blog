@@ -43,7 +43,7 @@ export async function listVersionReleases(db: DbClient, page: number, limit: num
   const [rows, total] = await Promise.all([
     db.query<VersionReleaseRow>(
       `SELECT * FROM version_releases
-       ORDER BY released_at DESC, id ASC
+       ORDER BY released_at DESC, version DESC
        LIMIT $1 OFFSET $2`,
       [safeLimit, offset],
     ),

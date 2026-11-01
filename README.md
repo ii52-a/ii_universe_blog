@@ -161,8 +161,9 @@ node scripts/backend-test.mjs  # 后端 API 集成测试（先启动 server）
 
 - `/radio`：独立页面，顶部是星图 logo、返回宇宙与账号信息
 - 论坛式一问一答列表，每页最多 10 条；卡片显示问题、时间与回答前 30 字
-- `/radio/:id`：Markdown 回答详情
-- ii52A1 可写可改；编辑页只有标题与内容，不限制字数
+- 分类筛选只有「全部」为内置项；ii52A1 可新增、删除分类，删除后条目分类清空
+- `/radio/:id`：Markdown 回答详情；ii52A1 可在详情内修改或删除当前分类
+- ii52A1 可写可改；编辑页为分类、标题与内容，不限制字数
 
 ### GitHub 研究所
 
@@ -289,8 +290,12 @@ node scripts/backend-test.mjs  # 后端 API 集成测试（先启动 server）
 | GET | `/api/categories` | 文章分类 |
 | POST | `/api/categories` | `tags.manage` 新增文章分类 |
 | PATCH / DELETE | `/api/categories/:id` | `tags.manage` 改名 / 永久删除；仅「全部」为界面内置筛选项 |
+| GET / POST | `/api/radio` | 电台列表（可按 `category` 筛选）/ ii52A1 发布 |
+| GET / PATCH / DELETE | `/api/radio/:id` | 详情 / ii52A1 修改内容或分类 / 删除 |
+| GET / POST | `/api/radio/categories` | 电台分类 / ii52A1 新增 |
+| PATCH / DELETE | `/api/radio/categories/:id` | ii52A1 改名 / 永久删除；删除后条目分类清空 |
 
-数据库表：`users`、`verification_codes`、`posts`、`categories`、`github_tools`、`github_tool_categories`、`github_favorites`、`site_visits`、`app_meta`。`users.role` 区分普通 / 特权，`users.permissions` 保存下发的五项权限；`posts.status` 为 `draft / pending / published / rejected`，`posts.kind` 为 `post / essay`，`posts.style` 为 `paper / quiet / magazine / note`，`posts.cover` 可为 `none`；`app_meta` 记录分类是否已完成首次初始化，删除分类后重启不会重新补回。开发环境 `server/.data/halfday` 是 PGlite 数据目录，生产环境设置 `DATABASE_URL` 即可。
+数据库表：`users`、`verification_codes`、`posts`、`categories`、`radio_entries`、`radio_categories`、`github_tools`、`github_tool_categories`、`github_favorites`、`site_visits`、`app_meta`。`users.role` 区分普通 / 特权，`users.permissions` 保存下发的五项权限；`posts.status` 为 `draft / pending / published / rejected`，`posts.kind` 为 `post / essay`，`posts.style` 为 `paper / quiet / magazine / note`，`posts.cover` 可为 `none`；`app_meta` 记录分类是否已完成首次初始化，删除分类后重启不会重新补回。开发环境 `server/.data/halfday` 是 PGlite 数据目录，生产环境设置 `DATABASE_URL` 即可。
 
 ## 内容文件
 
