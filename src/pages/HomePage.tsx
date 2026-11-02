@@ -1,3 +1,7 @@
+import { useEffect, useState } from 'react'
+import { useAuth } from '../context/AuthContext'
+import { postsApi, type ApiPost } from '../lib/backend'
+import { isGuest } from '../lib/account'
 /**
  * 首页
  * 职责：主视觉、今日组件、最近文章、侧栏与留言簿。
@@ -29,6 +33,18 @@ import { GuestbookSection } from '../components/GuestbookSection'
 
 export function HomePage() {
   usePageTitle('')
+  const { user } = useAuth()
+  const [submissions, setSubmissions] = useState<ApiPost[]>([])
+  useEffect(() => {
+    let cancelled = false
+    setSubmissions([])
+    if (user && !isGuest(user)) {
+      postsApi.mine().then(({ posts }) => {
+        if (!cancelled) setSubmissions(posts.filter((post) => post.status === 'pending'))
+      }).catch(() => {})
+    }
+    return () => { cancelled = true }
+  }, [user])
   const content = site.home
   const clock = useClock()
   const allPosts = usePosts()
@@ -38,6 +54,10 @@ export function HomePage() {
   return (
     <>
       <Ticker />
+      {submissions.length > 0 && <section className="page-container home-submissions" aria-label="我的待审核文章">
+        <h2>我提交的页</h2>
+        {submissions.map((post) => <Link key={post.slug} to={`/articles/${post.slug}`}><strong>{displayTitle(post)}</strong><span className="comment__badge">审核中</span></Link>)}
+      </section>}
       <div className="page-container home">
         <section className="hero-grid" aria-labelledby="hero-title">
           <div className="hero-card">

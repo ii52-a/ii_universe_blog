@@ -11,6 +11,33 @@
 .lab-page .page-container {
   max-width: 980px
 }
+
+.lab-home .lab-hero { padding-top: clamp(24px, 5vh, 64px); }
+.lab-hero__description { margin-top: 20px; color: var(--muted); font-size: 15px; }
+.lab-quick-searches { display: flex; justify-content: center; flex-wrap: wrap; gap: 8px; margin: 18px 0 24px; }
+.lab-quick-searches a { display: inline-flex; gap: 16px; padding: 8px 13px; border: 1px solid var(--line); border-radius: 999px; font-size: 12px; color: var(--ink-soft); }
+.lab-quick-searches a:hover { background: var(--paper); border-color: var(--ink); }
+.lab-home .lab-entries { margin: 20px 0 0; }
+.lab-start { margin-top: 64px; padding-top: 28px; border-top: 1px solid var(--line); }
+.lab-start__head > span { color: var(--muted); font-family: var(--mono); font-size: 11px; }
+.lab-start h2, .lab-glossary h2 { font-family: var(--serif); font-size: 28px; letter-spacing: -.03em; }
+.lab-start__head p { margin-top: 8px; color: var(--muted); font-size: 13px; }
+.lab-guide-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin-top: 24px; }
+.lab-guide { display: flex; flex-direction: column; padding: 24px; border: 1px solid var(--line); border-radius: 18px; background: var(--paper); }
+.lab-guide__step { font-family: var(--mono); color: var(--muted-light); font-size: 12px; }
+.lab-guide h3 { font-size: 18px; margin-top: 18px; }
+.lab-guide p { flex: 1; margin: 12px 0 22px; font-size: 13px; line-height: 1.9; color: var(--ink-soft); }
+.lab-guide a { font-size: 12px; text-decoration: underline; text-underline-offset: 4px; }
+.lab-glossary { margin-top: 42px; }
+.lab-glossary > div { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 24px; margin-top: 16px; }
+.lab-glossary details { border-top: 1px solid var(--line); padding: 14px 0; }
+.lab-glossary summary { cursor: pointer; font-family: var(--mono); font-size: 13px; }
+.lab-glossary details p { margin-top: 10px; color: var(--ink-soft); font-size: 13px; line-height: 1.85; }
+@media (max-width: 700px) {
+  .lab-guide-grid, .lab-glossary > div { grid-template-columns: 1fr; }
+  .lab-start { margin-top: 36px; }
+  .lab-guide { padding: 20px; }
+}
 .lab-hero {
   padding-top: 7vh;
   text-align: center

@@ -18,19 +18,25 @@ export function ExternalLinkGuard() {
       const anchor = element?.closest('a')
       if (!anchor) return
       const href = anchor.getAttribute('href')
-      if (!href || !/^https?:\/\//i.test(href)) return
+      if (!href || (event.type === 'auxclick' && event.button !== 1)) return
+      let resolved: URL
       try {
-        if (new URL(href).origin === window.location.origin) return
+        resolved = new URL(href, window.location.href)
+        if (!['http:', 'https:'].includes(resolved.protocol) || resolved.origin === window.location.origin) return
       } catch {
         return
       }
       event.preventDefault()
-      setTarget(href)
+      setTarget(resolved.href)
       setOpen(true)
     }
 
     document.addEventListener('click', onClick, true)
-    return () => document.removeEventListener('click', onClick, true)
+    document.addEventListener('auxclick', onClick, true)
+    return () => {
+      document.removeEventListener('click', onClick, true)
+      document.removeEventListener('auxclick', onClick, true)
+    }
   }, [])
 
   useEffect(() => {

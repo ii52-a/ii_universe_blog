@@ -4,6 +4,7 @@ import seedReleases from '../db/seed-releases.json'
 import versions from '../../src/content/versions.json'
 import type { ContentBlock } from '../../src/data/posts'
 import type { DbClient } from './db'
+import { syncVersionReleases } from './releases'
 
 export const DEMO_USER_ID = '00000000-0000-4000-8000-000000000001'
 export const ADMIN_USER_ID = '00000000-0000-4000-8000-000000000002'
@@ -57,11 +58,11 @@ const seedUsers: SeedUser[] = [
   {
     id: DEMO_USER_ID,
     email: 'hello@halfday.club',
-    username: 'DeepS先生',
+    username: '游客',
     handle: 'deepseek',
     password: 'halfday',
     role: 'member',
-    bio: 'DeepS先生，在杭州写一些不着急的事。',
+    bio: '游客账号，仅供浏览。',
     location: '杭州',
     website: 'halfday.club',
     github: 'https://github.com/ii52-a/ii_universe_blog',
@@ -237,6 +238,8 @@ export async function seedDatabase(db: DbClient) {
     )
   }
 
+  await db.query("UPDATE users SET username = '游客', permissions = '{}' WHERE id = $1", [DEMO_USER_ID])
+
   const categorySeed = await db.query<{ value: string }>(
     "SELECT value FROM app_meta WHERE key = 'categories_seeded' LIMIT 1",
   )
@@ -356,17 +359,7 @@ export async function seedDatabase(db: DbClient) {
     }
   }
 
-  for (const release of seedReleases) {
-    await db.query(
-      `INSERT INTO version_releases (id, version, released_at, items)
-       VALUES ($1, $2, $3, $4::jsonb)
-       ON CONFLICT (id) DO UPDATE SET
-         version = EXCLUDED.version,
-         released_at = EXCLUDED.released_at,
-         items = EXCLUDED.items`,
-      [release.id, release.version, release.date, JSON.stringify(release.items)],
-    )
-  }
+  await syncVersionReleases(db, seedReleases)
 
   if (versions.blog && !versions.latest.placeholder) {
     const version = `v${versions.blog}`

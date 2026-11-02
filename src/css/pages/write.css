@@ -168,7 +168,7 @@
 .write-body-field textarea {
   min-height: 330px;
   font-family: var(--sans);
-  font-size: 14px;
+  font-size: 16px;
   line-height: 1.9
 }
 .write-actions {
@@ -499,3 +499,8 @@
   transform-origin: left center;
   animation: inkDraw 3.6s ease-in-out infinite
 }
+
+.write-toolbar { flex-wrap: wrap; }
+.write-preview__body { font-size: 12.5px; }
+
+.write-preview__body .markdown-body, .write-preview__body .markdown-body p, .write-preview__body .markdown-body li { font-size: 12px; }

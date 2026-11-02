@@ -5,7 +5,7 @@
  */
 
 import { useEffect, useRef, useState } from 'react'
-import type { WeatherKind } from '../hooks/useWeather'
+import type { WeatherKind } from '../lib/weather'
 
 export function Mascot({
   onPat,

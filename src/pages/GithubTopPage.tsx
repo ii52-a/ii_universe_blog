@@ -13,6 +13,7 @@ import { usePageTitle } from '../hooks/usePageTitle'
 import { useToast } from '../context/ToastContext'
 import { useAuth } from '../context/AuthContext'
 import { LabTop } from '../components/LabTop'
+import { parseGithubRepository } from '../lib/github'
 
 const languages = [
   { label: '全部', value: '' },
@@ -94,6 +95,8 @@ export function GithubTopPage() {
 
   const submit = (event: FormEvent) => {
     event.preventDefault()
+    const repository = parseGithubRepository(query)
+    if (repository) { navigate(repository.path); return }
     const params = new URLSearchParams()
     if (query.trim()) params.set('q', query.trim())
     if (activeLanguage) params.set('language', activeLanguage)
@@ -102,6 +105,7 @@ export function GithubTopPage() {
 
   const chooseLanguage = (value: string) => {
     const params = new URLSearchParams()
+    if (activeQuery) params.set('q', activeQuery)
     if (value) params.set('language', value)
     setSearchParams(params)
   }

@@ -8,6 +8,7 @@ import { useEffect, useState, type FormEvent } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { PenLine, Plus, X } from 'lucide-react'
 import { RadioTop } from '../components/RadioTop'
+import versions from '../content/versions.json'
 import { useAuth } from '../context/AuthContext'
 import { useToast } from '../context/ToastContext'
 import { usePageTitle } from '../hooks/usePageTitle'
@@ -28,7 +29,7 @@ function excerpt(value: string) {
     .replace(/[#>*_`~\-]+/g, ' ')
     .replace(/\s+/g, ' ')
     .trim()
-  return plain.length > 30 ? `${plain.slice(0, 30)}...` : plain
+  return plain.length > 50 ? `${plain.slice(0, 50)}...` : plain
 }
 
 export function RadioPage() {
@@ -129,7 +130,7 @@ export function RadioPage() {
       <RadioTop />
       <main className="radio-main">
         <header className="radio-head">
-          <h1>电台</h1>
+          <h1>电台 <span className="lab-version">v{versions.radio}</span></h1>
           {user?.role === 'admin' && (
             <Link className="radio-write" to="/radio/write">
               <PenLine size={14} aria-hidden="true" />

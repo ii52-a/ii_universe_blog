@@ -43,7 +43,7 @@ npm run dev
 
 账号：
 
-- 普通：`hello@halfday.club` / `halfday`
+- 游客：`hello@halfday.club` / `halfday`（仅供浏览，不能投稿、评论或留言）
 - 特权：`ii52A1` / `0000`，默认拥有全部权限
 
 ## 接口
@@ -61,7 +61,7 @@ npm run dev
 | PATCH | `/api/users/me` | JWT | 改用户名、简介、城市、GitHub、头像 |
 | GET | `/api/users/:handle` | - | 公开用户、文章、使用统计 |
 | GET | `/api/posts` | 可选 | `limit`（最大 10）`cursor` `category` `q` `author` `mine` |
-| POST | `/api/posts` | ii52A1 | 只有 ii52A1 可以新建；直接发布，标题可空 |
+| POST | `/api/posts` | 普通账号 / ii52A1 | 普通账号提交审核，ii52A1 直接发布；游客禁止投稿，标题可空 |
 | POST | `/api/essays` | `essays.write` | 随笔：只有标题和正文，自动使用「随笔」分类、无封面、note 排版 |
 | GET | `/api/radio` | - | 电台问答列表，`page` / `limit` / `category`，每页最多 10 条 |
 | POST | `/api/radio` | ii52A1 | 新增问答，标题与内容可为空，必须选择分类 |
@@ -73,7 +73,7 @@ npm run dev
 | PATCH | `/api/radio/categories/:id` | ii52A1 | 分类改名，并同步条目分类 |
 | DELETE | `/api/radio/categories/:id` | ii52A1 | 永久删除分类，条目分类清空 |
 | GET | `/api/posts/:slug` | 可选 | 公开页；未发布仅作者 / 审核权限可见 |
-| PATCH | `/api/posts/:slug` | ii52A1 | 只有 ii52A1 可以修改，可编辑任意文章 |
+| PATCH | `/api/posts/:slug` | 作者 / ii52A1 | 作者可修改自己的文章并重新提交审核；ii52A1 可直接修改任意文章 |
 | DELETE | `/api/posts/:slug` | JWT | 作者或 `posts.delete` 权限 |
 | GET | `/api/review` | `posts.review` | 待审核队列（随笔） |
 | PATCH | `/api/review/:slug` | `posts.review` | `approve` / `reject` |

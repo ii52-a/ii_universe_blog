@@ -1,3 +1,4 @@
+import { lazy, Suspense } from 'react'
 /**
  * 应用入口
  * 职责：组装路由、全局 Provider、外链守卫与访问统计。
@@ -12,34 +13,34 @@ import { ToastProvider } from './context/ToastContext'
 import { Layout } from './components/Layout'
 import { ExternalLinkGuard } from './components/ExternalLinkGuard'
 import { VisitTracker } from './components/VisitTracker'
-import { HomePage } from './pages/HomePage'
-import { ArticlesPage } from './pages/ArticlesPage'
-import { ArticlePage } from './pages/ArticlePage'
-import { AboutPage } from './pages/AboutPage'
-import { LoginPage } from './pages/LoginPage'
-import { ProfilePage } from './pages/ProfilePage'
-import { TopicPage } from './pages/TopicPage'
-import { UserPage } from './pages/UserPage'
-import { SunsetPage } from './pages/SunsetPage'
-import { SunsetVersionPage } from './pages/SunsetVersionPage'
-import { WritePage } from './pages/WritePage'
-import { EssayPage } from './pages/EssayPage'
-import { SpacePage } from './pages/SpacePage'
-import { ReviewPage } from './pages/ReviewPage'
-import { PermissionsPage } from './pages/PermissionsPage'
-import { UniversePage } from './pages/UniversePage'
-import { UniverseTextPage } from './pages/UniverseTextPage'
-import { StarmapPage } from './pages/StarmapPage'
-import { RadioPage } from './pages/RadioPage'
-import { RadioEntryPage } from './pages/RadioEntryPage'
-import { RadioWritePage } from './pages/RadioWritePage'
-import { GithubLabPage } from './pages/GithubLabPage'
-import { GithubTopPage } from './pages/GithubTopPage'
-import { GithubFavoritesPage } from './pages/GithubFavoritesPage'
-import { GithubToolsPage } from './pages/GithubToolsPage'
-import { GithubRepoPage } from './pages/GithubRepoPage'
-import { ForgotPasswordPage } from './pages/ForgotPasswordPage'
-import { NotFoundPage } from './pages/NotFoundPage'
+const HomePage = lazy(() => import('./pages/HomePage').then((module) => ({ default: module.HomePage })))
+const ArticlesPage = lazy(() => import('./pages/ArticlesPage').then((module) => ({ default: module.ArticlesPage })))
+const ArticlePage = lazy(() => import('./pages/ArticlePage').then((module) => ({ default: module.ArticlePage })))
+const AboutPage = lazy(() => import('./pages/AboutPage').then((module) => ({ default: module.AboutPage })))
+const LoginPage = lazy(() => import('./pages/LoginPage').then((module) => ({ default: module.LoginPage })))
+const ProfilePage = lazy(() => import('./pages/ProfilePage').then((module) => ({ default: module.ProfilePage })))
+const TopicPage = lazy(() => import('./pages/TopicPage').then((module) => ({ default: module.TopicPage })))
+const UserPage = lazy(() => import('./pages/UserPage').then((module) => ({ default: module.UserPage })))
+const SunsetPage = lazy(() => import('./pages/SunsetPage').then((module) => ({ default: module.SunsetPage })))
+const SunsetVersionPage = lazy(() => import('./pages/SunsetVersionPage').then((module) => ({ default: module.SunsetVersionPage })))
+const WritePage = lazy(() => import('./pages/WritePage').then((module) => ({ default: module.WritePage })))
+const EssayPage = lazy(() => import('./pages/EssayPage').then((module) => ({ default: module.EssayPage })))
+const SpacePage = lazy(() => import('./pages/SpacePage').then((module) => ({ default: module.SpacePage })))
+const ReviewPage = lazy(() => import('./pages/ReviewPage').then((module) => ({ default: module.ReviewPage })))
+const PermissionsPage = lazy(() => import('./pages/PermissionsPage').then((module) => ({ default: module.PermissionsPage })))
+const UniversePage = lazy(() => import('./pages/UniversePage').then((module) => ({ default: module.UniversePage })))
+const UniverseTextPage = lazy(() => import('./pages/UniverseTextPage').then((module) => ({ default: module.UniverseTextPage })))
+const StarmapPage = lazy(() => import('./pages/StarmapPage').then((module) => ({ default: module.StarmapPage })))
+const RadioPage = lazy(() => import('./pages/RadioPage').then((module) => ({ default: module.RadioPage })))
+const RadioEntryPage = lazy(() => import('./pages/RadioEntryPage').then((module) => ({ default: module.RadioEntryPage })))
+const RadioWritePage = lazy(() => import('./pages/RadioWritePage').then((module) => ({ default: module.RadioWritePage })))
+const GithubLabPage = lazy(() => import('./pages/GithubLabPage').then((module) => ({ default: module.GithubLabPage })))
+const GithubTopPage = lazy(() => import('./pages/GithubTopPage').then((module) => ({ default: module.GithubTopPage })))
+const GithubFavoritesPage = lazy(() => import('./pages/GithubFavoritesPage').then((module) => ({ default: module.GithubFavoritesPage })))
+const GithubToolsPage = lazy(() => import('./pages/GithubToolsPage').then((module) => ({ default: module.GithubToolsPage })))
+const GithubRepoPage = lazy(() => import('./pages/GithubRepoPage').then((module) => ({ default: module.GithubRepoPage })))
+const ForgotPasswordPage = lazy(() => import('./pages/ForgotPasswordPage').then((module) => ({ default: module.ForgotPasswordPage })))
+const NotFoundPage = lazy(() => import('./pages/NotFoundPage').then((module) => ({ default: module.NotFoundPage })))
 
 export default function App() {
   return (
@@ -50,9 +51,10 @@ export default function App() {
         <WidgetsProvider>
           <AuthProvider>
             <ToastProvider>
+              <Suspense fallback={<div role="status">正在加载…</div>}>
               <Routes>
                 <Route path="/universe" element={<UniversePage />} />
-                <Route path="/universe/text" element={<UniverseTextPage />} />
+                <Route path="/universe/test" element={<UniverseTextPage />} />
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/starmap" element={<StarmapPage />} />
                 <Route path="/radio" element={<RadioPage />} />
@@ -82,6 +84,7 @@ export default function App() {
                   <Route path="*" element={<NotFoundPage />} />
                 </Route>
               </Routes>
+              </Suspense>
             </ToastProvider>
           </AuthProvider>
         </WidgetsProvider>

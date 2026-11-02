@@ -1,0 +1,19 @@
+{
+  "searches": [
+    { "label": "学习 Python", "query": "topic:python topic:tutorial archived:false" },
+    { "label": "前端学习", "query": "topic:javascript topic:tutorial archived:false" },
+    { "label": "实用工具", "query": "topic:productivity archived:false" },
+    { "label": "自托管应用", "query": "topic:self-hosted archived:false" }
+  ],
+  "guides": [
+    { "step": "01", "title": "我想直接用", "text": "先看项目官网或 Releases，寻找适合自己系统的安装包。源码 ZIP 通常不是可直接运行的软件。", "label": "了解如何下载", "url": "https://docs.github.com/en/repositories/working-with-files/using-files/downloading-files-from-github" },
+    { "step": "02", "title": "我想学习源码", "text": "先读 README 的安装说明，再克隆项目到本地。仓库详情页可以复制 HTTPS、SSH 或 GitHub CLI 命令。", "label": "了解如何克隆", "url": "https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository" },
+    { "step": "03", "title": "我想参与项目", "text": "从文档和适合新手的 Issue 入手。提问前先搜索已有问题，报告问题时附上环境、复现步骤和预期结果。", "label": "了解如何提 Issue", "url": "https://docs.github.com/en/issues/tracking-your-work-with-issues/using-issues/creating-an-issue" }
+  ],
+  "glossary": [
+    { "term": "Star", "text": "在 GitHub 标记感兴趣的项目。本研究所的收藏只保存在 ii universe 账号中，不会替你点 GitHub Star。" },
+    { "term": "Fork", "text": "在自己的 GitHub 账号下创建项目副本，常用于修改项目并向原作者提交贡献。" },
+    { "term": "Issue", "text": "项目的问题与需求讨论区。遇到问题可以先搜索，再按项目模板描述情况。" },
+    { "term": "Release", "text": "作者发布的版本，可能提供安装包；Source code 则是源代码归档。" }
+  ]
+}

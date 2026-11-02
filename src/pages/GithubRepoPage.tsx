@@ -6,13 +6,15 @@
 
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
-import { ArrowLeft, ArrowUpRight, Star } from 'lucide-react'
+import { ArrowLeft, ArrowUpRight, Copy, Star } from 'lucide-react'
 import { CommentSection } from '../components/CommentSection'
 import { githubApi, type GithubRepoDetail, type GithubTool } from '../lib/backend'
 import { usePageTitle } from '../hooks/usePageTitle'
 import { useToast } from '../context/ToastContext'
 import { useAuth } from '../context/AuthContext'
 import { LabTop } from '../components/LabTop'
+import { MarkdownBody } from '../components/MarkdownBody'
+import { GithubRepoQuickStart } from '../components/GithubRepoQuickStart'
 
 function formatStars(value: number) {
   if (value >= 10000) return `${(value / 10000).toFixed(1)} 万`
@@ -29,6 +31,8 @@ export function GithubRepoPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [favorite, setFavorite] = useState(false)
+  const [favoriteBusy, setFavoriteBusy] = useState(false)
+  const [reload, setReload] = useState(0)
 
   usePageTitle(repo ? `${repo.fullName} · GitHub 研究所` : 'GitHub 研究所', 'ii universe')
 
@@ -36,6 +40,8 @@ export function GithubRepoPage() {
     let cancelled = false
     setLoading(true)
     setError('')
+    setRepo(null)
+    setTool(null)
     githubApi
       .repo(owner, name)
       .then((data) => {
@@ -61,14 +67,16 @@ export function GithubRepoPage() {
     return () => {
       cancelled = true
     }
-  }, [owner, name])
+  }, [owner, name, reload])
 
   useEffect(() => {
     if (!repo || !user) {
       setFavorite(false)
+      setFavoriteBusy(false)
       return
     }
     let cancelled = false
+    setFavoriteBusy(true)
     githubApi
       .favorites()
       .then((data) => {
@@ -77,13 +85,14 @@ export function GithubRepoPage() {
       .catch(() => {
         if (!cancelled) setFavorite(false)
       })
+      .finally(() => { if (!cancelled) setFavoriteBusy(false) })
     return () => {
       cancelled = true
     }
   }, [repo, user])
 
   const toggleFavorite = async () => {
-    if (!repo) return
+    if (!repo || favoriteBusy) return
     if (!user) {
       showToast('登录 ii universe 后才能收藏。', 'info')
       navigate(
@@ -91,6 +100,7 @@ export function GithubRepoPage() {
       )
       return
     }
+    setFavoriteBusy(true)
     try {
       if (favorite) {
         await githubApi.removeFavorite(repo.fullName)
@@ -103,18 +113,19 @@ export function GithubRepoPage() {
       }
     } catch (caught) {
       showToast(caught instanceof Error ? caught.message : '收藏没有保存。', 'error')
+    } finally {
+      setFavoriteBusy(false)
     }
   }
 
-  const languageNames =
-    /English|简体中文|繁體中文|日本語|한국어|Türkçe|Русский|Tiếng Việt|ไทย|Deutsch|Español|Français|Українська|Polski|Português|العربية|Bahasa Indonesia|Italiano|Ελληνικά|עברית|اردو|Română/g
-  const paragraphs = (repo?.readme.text ?? '')
-    .split(/\n{2,}/)
-    .map((part) => part.trim())
-    .filter((part) => part.length >= 40 && (part.match(/\n/g)?.length ?? 0) <= 3)
-    .filter((part) => (part.match(languageNames)?.length ?? 0) < 3)
-    .slice(0, 4)
-    .map((part) => (part.length > 520 ? `${part.slice(0, 520)}…` : part))
+  const pushedDate = repo?.pushedAt && Number.isFinite(Date.parse(repo.pushedAt))
+    ? new Intl.DateTimeFormat('zh-CN', { year: 'numeric', month: 'short', day: 'numeric' }).format(new Date(repo.pushedAt)) : '暂无记录'
+
+  const copyLink = async () => {
+    if (!repo) return
+    try { await navigator.clipboard.writeText(repo.url); showToast('仓库链接已复制。') }
+    catch { showToast('没有复制成功，可以复制地址栏。', 'error') }
+  }
 
   return (
     <div className="repo-page">
@@ -129,15 +140,16 @@ export function GithubRepoPage() {
         ) : error || !repo ? (
           <div className="repo-empty">
             <p>{error || '没有找到这个仓库。'}</p>
+            <button type="button" className="text-link" onClick={() => setReload((value) => value + 1)}>重试</button>
             <Link className="text-link" to="/github-lab">
-              回排行榜 <ArrowUpRight size={13} aria-hidden="true" />
+              回研究所 <ArrowUpRight size={13} aria-hidden="true" />
             </Link>
           </div>
         ) : (
           <>
             <Link className="repo-back" to="/github-lab">
               <ArrowLeft size={13} aria-hidden="true" />
-              排行榜
+              返回研究所
             </Link>
 
             <header className="repo-head">
@@ -145,16 +157,30 @@ export function GithubRepoPage() {
                 <span className="repo-owner">{repo.owner}</span>
                 <h1>{repo.name}</h1>
               </div>
-              <button
+              <div className="repo-head__actions"><button type="button" className="repo-favorite" onClick={() => void copyLink()} aria-label="复制仓库链接"><Copy size={14} /> 链接</button><button
                 type="button"
                 className={`repo-favorite${favorite ? ' is-favorite' : ''}`}
                 onClick={() => void toggleFavorite()}
                 aria-pressed={favorite}
+                disabled={favoriteBusy}
+                title="收藏到 ii universe 账号，不会更改 GitHub Star"
               >
                 <Star size={14} fill={favorite ? 'currentColor' : 'none'} aria-hidden="true" />
                 {favorite ? '已收藏' : '收藏'}
-              </button>
+              </button></div>
             </header>
+
+            {repo.archived && <p className="repo-archived" role="status">已归档 · 作者将仓库设为只读，使用前可查看最后更新和相关说明。</p>}
+            <div className="repo-metrics" aria-label="仓库概况">
+              <div><strong>{formatStars(repo.stars)}</strong><span>GitHub Stars</span></div>
+              <div><strong>{formatStars(repo.forks)}</strong><span>Forks</span></div>
+              <div><strong>{formatStars(repo.openIssues)}</strong><span>开放 Issue / PR</span></div>
+              <div><strong>{pushedDate}</strong><span>最近代码更新</span></div>
+            </div>
+            <div className="repo-topic-list">{repo.topics.map((topic) => <Link key={topic} to={`/github-lab/top?q=${encodeURIComponent(`topic:${topic}`)}`}>{topic}</Link>)}</div>
+            <nav className="repo-content-nav" aria-label="仓库内容"><a href="#repo-intro-title">简介</a><a href="#repo-readme-title">README</a><a href="#repo-discussion">交流</a><a href={repo.url} target="_blank" rel="noopener noreferrer">在 GitHub 打开 <ArrowUpRight size={12} /></a></nav>
+
+            <div className="repo-workspace"><div className="repo-workspace__main">
 
             <section className="repo-intro" aria-labelledby="repo-intro-title">
               <div className="repo-section-head">
@@ -179,34 +205,26 @@ export function GithubRepoPage() {
               </section>
             )}
 
-            <div className="repo-meta">
-              <span>★ {formatStars(repo.stars)}</span>
-              <span>Fork {formatStars(repo.forks)}</span>
-              {repo.language && <span>{repo.language}</span>}
-              <a href={repo.url} target="_blank" rel="noreferrer">
-                在 GitHub 打开 <ArrowUpRight size={11} aria-hidden="true" />
-              </a>
-            </div>
-
             <section className="repo-readme" aria-labelledby="repo-readme-title">
               <div className="repo-section-head">
                 <h2 id="repo-readme-title">README 预览</h2>
                 {repo.readme.truncated && <span>节选</span>}
+                <a href={repo.readme.htmlUrl} target="_blank" rel="noopener noreferrer">查看原文 ↗</a>
               </div>
-              {paragraphs.length > 0 ? (
+              {repo.readme.markdown || repo.readme.text ? (
                 <div className="repo-readme__text">
-                  {paragraphs.map((paragraph) => (
-                    <p key={paragraph}>{paragraph}</p>
-                  ))}
+                  <MarkdownBody source={repo.readme.markdown || repo.readme.text} baseUrl={repo.readme.htmlUrl} imageBaseUrl={repo.readme.rawUrl || undefined} />
+                  {repo.readme.truncated && <p className="repo-readme__empty">预览展示前 20,000 个字符，完整内容请查看原文。</p>}
                 </div>
               ) : (
-                <p className="repo-readme__empty">这个仓库没有 README。</p>
+                <p className="repo-readme__empty">{repo.readme.status === 'missing' ? '这个仓库没有 README。' : repo.readme.status === 'available' ? 'README 目前为空。' : 'README 暂时未能加载，可以查看 GitHub 原文。'}</p>
               )}
             </section>
 
-            <section className="repo-comments" aria-label="仓库评论">
+            <section className="repo-comments" id="repo-discussion" aria-label="仓库评论">
               <CommentSection postId={`github:${repo.fullName}`} />
             </section>
+            </div><aside className="repo-workspace__aside"><GithubRepoQuickStart key={repo.fullName} repo={repo} /></aside></div>
           </>
         )}
       </div>

@@ -1,3 +1,4 @@
+import { isGuest } from '../lib/account'
 /**
  * 个人空间
  * 职责：登录后的文章管理、权限概览与公开主页入口。
@@ -162,8 +163,8 @@ export function SpacePage() {
             </h1>
             <p>{user.bio || '介绍还空着。'}</p>
             <div className="space-actions">
-              {user.role === 'admin' && (
-                <Link className="button button--ink" to="/write">
+              {!isGuest(user) && (
+              <Link className="button button--ink" to="/write">
                   <PenLine size={15} aria-hidden="true" />
                   写一页
                 </Link>
@@ -315,8 +316,8 @@ export function SpacePage() {
                 </span>
                 <h3>这一页还很空。</h3>
                 <p>从散步、饭、旧东西，或者一件没做成的小事写起。</p>
-                {user.role === 'admin' && (
-                  <Link className="button button--ink button--small" to="/write">
+                {!isGuest(user) && (
+              <Link className="button button--ink button--small" to="/write">
                     写第一页 <ArrowUpRight size={14} aria-hidden="true" />
                   </Link>
                 )}
@@ -330,7 +331,6 @@ export function SpacePage() {
                 <UserRound size={16} />
               </span>
               <h2>公开的那一面</h2>
-              <p>别人能看到名字、头像、文章和留言。邮箱不公开。</p>
               <Link className="text-link" to={`/u/${user.handle}`}>
                 看看公开主页 <ArrowUpRight size={13} aria-hidden="true" />
               </Link>
@@ -343,7 +343,7 @@ export function SpacePage() {
                 <h2>手上的钥匙</h2>
                 <p>
                   {user.role === 'admin'
-                    ? 'ii52A1 拥有全部高级权限，也可以把其中几把交给其他账号。'
+                    ? '累了，就停下来休息一下吧，整理之后再出发'
                     : `已获得：${user.permissions
                         .map(
                           (permission) =>

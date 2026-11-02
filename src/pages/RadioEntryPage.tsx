@@ -1,3 +1,4 @@
+import { MarkdownBody } from '../components/MarkdownBody'
 /**
  * 电台详情页
  * 职责：展示问题、时间与 Markdown 回答。
@@ -157,6 +158,7 @@ export function RadioEntryPage() {
             )}
             <div className="radio-answer">
               {parseArticleBody(entry.body).map((block, index) => {
+                if (block.type === 'markdown') return <MarkdownBody key={index} source={block.text} />
                 if (block.type === 'h2') return <h2 key={index}>{block.text}</h2>
                 if (block.type === 'quote') return <blockquote key={index}>{block.text}</blockquote>
                 if (block.type === 'list') {

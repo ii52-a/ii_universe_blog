@@ -38,6 +38,14 @@ const latest =
 const all = latest
   ? [latest, ...releases.filter((release) => release.version !== latest.version)]
   : releases
-const withIds = all.map((release, index) => ({ id: index + 1, ...release, version: `v${release.version}` }))
+// Preserve existing detail URLs; append IDs for new versions instead of renumbering history.
+const previous = JSON.parse(fs.readFileSync('server/db/seed-releases.json', 'utf8'))
+const ids = new Map(previous.map((release) => [release.version, release.id]))
+let nextId = Math.max(0, ...ids.values())
+for (const release of [...all].reverse()) {
+  const version = `v${release.version}`
+  if (!ids.has(version)) ids.set(version, ++nextId)
+}
+const withIds = all.map((release) => ({ id: ids.get(`v${release.version}`), ...release, version: `v${release.version}` }))
 fs.writeFileSync('server/db/seed-releases.json', `${JSON.stringify(withIds, null, 2)}\n`, 'utf8')
 console.log(JSON.stringify({ count: withIds.length, versions: withIds.map((release) => release.version) }, null, 2))

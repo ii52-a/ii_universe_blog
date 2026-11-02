@@ -65,11 +65,11 @@ assert.equal(
 )
 
 await page.goto(`${base}/write`, { waitUntil: 'networkidle' })
-await page.getByRole('heading', { name: '这里暂不开放。' }).waitFor()
-assert.equal(await page.locator('#write-body').count(), 0)
-assert.equal(await page.locator('.write-link').count(), 0)
+await page.locator('#write-body').waitFor()
+assert.equal(await page.getByRole('button', { name: '提交审核', exact: true }).count(), 1)
+assert.equal(await page.locator('.write-link').count(), 1)
 await page.goto(`${base}/space`, { waitUntil: 'networkidle' })
-assert.equal(await page.locator('.space-actions a[href="/write"]').count(), 0)
+assert.equal(await page.locator('.space-actions a[href="/write"]').count(), 1)
 
 await logout()
 await login('ii52A1', '0000')
@@ -126,9 +126,9 @@ await page.waitForTimeout(500)
 assert.equal(await page.evaluate(() => document.documentElement.dataset.theme), 'light')
 
 await page.goto(`${base}/articles/a-rainy-walk-from-mantoushan`, { waitUntil: 'networkidle' })
-await page.getByRole('link', { name: 'DeepS先生' }).first().click()
+await page.locator('.article-byline__link').click()
 await page.waitForURL('**/u/deepseek', { timeout: 10000 })
-assert.equal((await page.locator('.user-hero').innerText()).includes('DeepS先生'), true)
+assert.equal((await page.locator('.user-hero').innerText()).includes('游客'), true)
 
 await page.goto(`${base}/`, { waitUntil: 'networkidle' })
 await page.getByRole('link', { name: /GitHub/ }).first().click()
@@ -235,7 +235,7 @@ const sunsetMetaSelect = await mobile.evaluate(
   () => getComputedStyle(document.querySelector('.sunset-hero__meta')).userSelect,
 )
 const sunsetBodySelect = await mobile.evaluate(
-  () => getComputedStyle(document.querySelector('.release-item__copy p')).userSelect,
+  () => getComputedStyle(document.querySelector('.release-entry li')).userSelect,
 )
 assert.equal(sunsetMetaSelect, 'none')
 assert.notEqual(sunsetBodySelect, 'none')

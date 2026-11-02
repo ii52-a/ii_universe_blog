@@ -2,7 +2,9 @@
 
 一个以白色、纸张感和玩具感为基调的个人博客。内容围绕散步、旧物、食物和普通的日常，页面以紧凑的 bento 网格组织，日期、天气、时钟、在线状态、跟屏玩偶小满等小组件填满边角。
 
-当前版本：**v2.7.2**
+当前版本：**v2.8.1**
+
+模块版本：ii universe **v1.22 alpha** · GitHub 研究所 **v0.3 alpha** · 电台 **v0.2.1** · 星图 **v1.2.1**。
 
 仓库：**https://github.com/ii52-a/ii_universe_blog**
 
@@ -52,8 +54,8 @@ node scripts/backend-test.mjs  # 后端 API 集成测试（先启动 server）
 
 ## 演示账号
 
-- 普通账号：`hello@halfday.club` / `halfday`（留言、评论、收藏；不开放写文章）
-- 特权账号：`ii52A1` / `0000`（唯一可以写文章的账号；全部高级权限 + 权限下发；密码由 `server/.env` 的 `ADMIN_PASSWORD` 提供）
+- 游客账号：`hello@halfday.club` / `halfday`（仅供浏览，不能投稿、评论或留言）
+- 特权账号：`ii52A1` / `0000`（文章直接发布；全部高级权限 + 权限下发；密码由 `server/.env` 的 `ADMIN_PASSWORD` 提供）
 
 登录页点「演示账号」可以一键进入普通演示账号；管理员没有快捷登录，需要手动填写账号和 `.env` 里的密码。登录是 ii universe 级别的：博客、GitHub 研究所和 ii tool 共用一个账号，收藏与权限都跟着账号走。账号、文章、验证码、收藏、访问统计和审核状态由 Next.js API 写入 PostgreSQL / PGlite；头像和草稿仍保存在本机。
 
@@ -167,7 +169,7 @@ node scripts/backend-test.mjs  # 后端 API 集成测试（先启动 server）
 
 ### GitHub 研究所
 
-- `/github-lab`：独立子功能，版本 `v0.2 alpha`
+- `/github-lab`：独立子功能，版本 `v0.3 alpha`
 - 首页只有标题、搜索框、空段和三个入口：top 排行榜 / 收藏 / ii tool
 - `top 排行榜`：按语言看前十，仓库详情在站内打开
 - `收藏`：独立子页面，必须登录；收藏保存在账号里
@@ -203,7 +205,7 @@ node scripts/backend-test.mjs  # 后端 API 集成测试（先启动 server）
 - 版本索引读取全部版本记录，每页 5 条，可翻页
 - 点击版本进入 `/sunset/version_set/:id`，通过后端接口读取该次更新
 - ii52A1 可点「延续更新」：把当前最新记录归档到历史，并将 `versions.json` 的 `blog` 清空、`latest` 写成占位；占位状态下按钮不可点，新版本号由手动填写
-- 版本种子由 `node scripts/build-release-seed.mjs` 从 `CHANGELOG.md` 与 `versions.json` 生成
+- 版本种子由 `node scripts/build-release-seed.mjs` 从 `CHANGELOG.md` 与 `versions.json` 生成；保留已有记录 ID，数据库按版本同步并保留管理员归档记录
 - 删除了原来的「更早的改动」折叠区
 - 日期、标签、版本号、印章等元信息不可选中
 
@@ -398,3 +400,16 @@ node scripts/backend-test.mjs  # 后端 API 集成测试（先启动 server）
 - `screenshots/v27-mobile-admin-menu.png`
 - `screenshots/v13-article-dark.png`
 - `screenshots/v13-login-dark.png`
+
+普通账号可从「写一页」提交文章；提交后作者首页显示「审核中」，管理员在「审核文章」中通过后公开。编辑普通账号文章会重新进入审核。编辑器支持常用 Markdown、表格和任务列表。
+
+
+## 本次更新配置与验证
+
+- `src/content/universe-animations.json`：两种背景动画的概率、数量、半径、速度、星尾及光晕参数，包含中文说明。
+- `src/content/navigation.json`：导航分组与链接，支持 `url` / `href`；HTTP(S) 外链显示确认窗。
+- `src/content/github-lab.json`：GitHub 用途搜索、入门引导与术语说明。
+- `node scripts/universe-animation-check.mjs`：概率、动画参数、光晕、播放间隔及生命周期。
+- `node scripts/github-lab-check.mjs`：外链确认、地址直达、克隆命令复制、README 和响应式布局。
+- `node scripts/posts-regression-check.mjs` / `node scripts/publishing-regression-check.mjs`：文章分页、错误重试与普通账号投稿审核。
+- 在 `server` 目录运行 `npx tsx scripts/release-history-test.ts`：验证历史版本链接与管理员归档不会被更新覆盖。

@@ -11,6 +11,7 @@ export interface DbClient {
     params?: unknown[],
   ): Promise<{ rows: T[] }>
   exec(text: string): Promise<void>
+  transaction<T>(run: (db: DbClient) => Promise<T>): Promise<T>
 }
 
 type GlobalDb = typeof globalThis & {
@@ -29,6 +30,27 @@ async function createDatabase(): Promise<DbClient> {
     })
     return {
       kind: 'postgres',
+      async transaction<T>(run: (db: DbClient) => Promise<T>) {
+        const client = await pool.connect()
+        const tx: DbClient = {
+          kind: 'postgres',
+          async query<R extends Record<string, unknown>>(text: string, params: unknown[] = []) {
+            const result = await client.query(text, params)
+            return { rows: result.rows as R[] }
+          },
+          async exec(text: string) { await client.query(text) },
+          async transaction<R>(nested: (db: DbClient) => Promise<R>) { return nested(tx) },
+        }
+        try {
+          await client.query('BEGIN')
+          const result = await run(tx)
+          await client.query('COMMIT')
+          return result
+        } catch (error) {
+          await client.query('ROLLBACK')
+          throw error
+        } finally { client.release() }
+      },
       async query<T extends Record<string, unknown>>(text: string, params: unknown[] = []) {
         const result = await pool.query(text, params)
         return { rows: result.rows as T[] }
@@ -48,6 +70,20 @@ async function createDatabase(): Promise<DbClient> {
   await pglite.waitReady
   return {
     kind: 'pglite',
+    async transaction<T>(run: (db: DbClient) => Promise<T>) {
+      return pglite.transaction(async (client) => {
+        const tx: DbClient = {
+          kind: 'pglite',
+          async query<R extends Record<string, unknown>>(text: string, params: unknown[] = []) {
+            const result = await client.query<R>(text, params)
+            return { rows: result.rows }
+          },
+          async exec(text: string) { await client.exec(text) },
+          async transaction<R>(nested: (db: DbClient) => Promise<R>) { return nested(tx) },
+        }
+        return run(tx)
+      })
+    },
     async query<T extends Record<string, unknown>>(text: string, params: unknown[] = []) {
       const result = await pglite.query<T>(text, params)
       return { rows: result.rows }

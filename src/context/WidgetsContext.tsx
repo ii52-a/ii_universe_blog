@@ -8,7 +8,7 @@ import {
   type ReactNode,
 } from 'react'
 import { widgetsApi } from '../lib/backend'
-import type { WeatherKind } from '../hooks/useWeather'
+import type { WeatherKind } from '../lib/weather'
 
 interface WidgetsData {
   location: { city: string; district: string; latitude: number; longitude: number }

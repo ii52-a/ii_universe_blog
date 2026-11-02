@@ -1,3 +1,5 @@
+import { isGuest } from '../lib/account'
+import { MarkdownBody } from '../components/MarkdownBody'
 /**
  * 写文章页
  * 职责：文章标题、摘要、分类、标签、封面、排版与正文。
@@ -10,7 +12,7 @@ import { ArrowLeft, Check, Eye, Image, PenLine, Plus } from 'lucide-react'
 import type { ArticleStyle, CoverVariant } from '../data/posts'
 import { categories as fallbackCategories } from '../data/posts'
 import { useCategories } from '../hooks/useCategories'
-import { parseArticleBody, countCharacters, stringifyArticleBody } from '../lib/markdown'
+import { parseArticleBody, stringifyArticleBody } from '../lib/markdown'
 import { publishPost, updatePost } from '../lib/postsStore'
 import { postsApi, BackendError } from '../lib/backend'
 import { readStorage, removeStorage, writeStorage } from '../lib/storage'
@@ -91,7 +93,7 @@ export function WritePage() {
   }, [names, form.category])
 
   const blocks = useMemo(() => parseArticleBody(form.body), [form.body])
-  const characters = useMemo(() => countCharacters(blocks), [blocks])
+  const characters = useMemo(() => form.body.replace(/\s/g, '').length, [form.body])
   const tags = form.tags
     .split(/[,，]/)
     .map((tag) => tag.trim())
@@ -156,11 +158,11 @@ export function WritePage() {
 
   if (!user) return <Navigate to={`/login?from=${encodeURIComponent(editingSlug ? `/write?edit=${editingSlug}` : '/write')}`} replace />
 
-  if (user.role !== 'admin') {
+  if (isGuest(user)) {
     return (
       <div className="write-page">
         <div className="page-container review-denied">
-          <h1>这里暂不开放。</h1>
+          <h1>游客账号仅供浏览，请注册账号后写一页。</h1>
           <Link className="text-link" to="/articles">
             回到文章
           </Link>
@@ -246,7 +248,7 @@ export function WritePage() {
       removeStorage('write-draft.v1')
       if (post.status === 'pending') {
         showToast('已提交，等管理员审核。', 'info')
-        navigate('/space')
+        navigate('/')
         return
       }
       showToast(editingSlug ? '这一页改好了。' : '这一页已经放进风里。')
@@ -412,7 +414,7 @@ export function WritePage() {
               <div className="write-body-head">
                 <label htmlFor="write-body">正文</label>
                 <span className="field-hint">
-                  支持 <code>## 小标题</code>、<code>&gt; 引用</code>、<code>- 列表</code>
+                  支持标题、粗体、斜体、链接、图片、代码、表格和任务列表
                 </span>
               </div>
               <div className="write-toolbar" role="group" aria-label="插入正文格式">
@@ -425,6 +427,15 @@ export function WritePage() {
                 <button type="button" onClick={() => insert('- ')}>
                   <Plus size={13} aria-hidden="true" /> 列表
                 </button>
+                <button type="button" onClick={() => insert('**', '**')}>粗体</button>
+                <button type="button" onClick={() => insert('*', '*')}>斜体</button>
+                <button type="button" onClick={() => insert('[', '](https://)')}>链接</button>
+                <button type="button" onClick={() => insert('![图片说明](', ')')}>图片</button>
+                <button type="button" onClick={() => insert('1. ')}>有序列表</button>
+                <button type="button" onClick={() => insert('- [ ] ')}>任务</button>
+                <button type="button" onClick={() => insert('```text\n', '\n```')}>代码块</button>
+                <button type="button" onClick={() => insert('| 列一 | 列二 |\n| --- | --- |\n| 内容 | 内容 |')}>表格</button>
+                <button type="button" onClick={() => insert('\n---\n')}>分隔线</button>
                 <span className="write-toolbar__count">{characters} 字</span>
               </div>
               <textarea
@@ -449,7 +460,7 @@ export function WritePage() {
             <div className="write-actions">
               <button type="submit" className="button button--ink" disabled={saving}>
                 {saving ? <span className="spinner" aria-hidden="true" /> : <Check size={16} aria-hidden="true" />}
-                {saving ? '正在保存…' : editingSlug ? '保存修改' : '发布这一页'}
+                {saving ? '正在保存…' : editingSlug ? '保存修改' : user.role === 'admin' ? '发布这一页' : '提交审核'}
               </button>
               <span className="write-draft-state" role="status">
                 {editingSlug
@@ -495,25 +506,7 @@ export function WritePage() {
                 {user.name}
               </div>
               <div className="write-preview__body">
-                {blocks.length === 0 ? (
-                  <p className="write-preview__empty">正文写下来以后，会在这里排成一页。</p>
-                ) : (
-                  blocks.map((block, index) => {
-                    if (block.type === 'h2') return <h3 key={index}>{block.text}</h3>
-                    if (block.type === 'p') return <p key={index}>{block.text}</p>
-                    if (block.type === 'quote') return <blockquote key={index}>{block.text}</blockquote>
-                    if (block.type === 'list') {
-                      return (
-                        <ul key={index}>
-                          {block.items.map((item) => (
-                            <li key={item}>{item}</li>
-                          ))}
-                        </ul>
-                      )
-                    }
-                    return null
-                  })
-                )}
+                {form.body.trim() ? <MarkdownBody source={form.body} /> : <p className="write-preview__empty">正文写下来以后，会在这里排成一页。</p>}
               </div>
             </div>
             <div className="write-side__note">

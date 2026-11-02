@@ -10,6 +10,8 @@ import { Search } from 'lucide-react'
 import { usePageTitle } from '../hooks/usePageTitle'
 import { LabTop } from '../components/LabTop'
 import versions from '../content/versions.json'
+import content from '../content/github-lab.json'
+import { githubSearchPath } from '../lib/github'
 
 export function GithubLabPage() {
   usePageTitle('GitHub 研究所', 'ii universe')
@@ -18,8 +20,7 @@ export function GithubLabPage() {
 
   const submit = (event: FormEvent) => {
     event.preventDefault()
-    const keyword = query.trim()
-    navigate(`/github-lab/top${keyword ? `?q=${encodeURIComponent(keyword)}` : ''}`)
+    navigate(githubSearchPath(query))
   }
 
   return (
@@ -32,6 +33,7 @@ export function GithubLabPage() {
             GitHub 研究所
             <span className="lab-version">v{versions.github}</span>
           </h1>
+          <p className="lab-hero__description">找到项目，读懂它，再开始使用。</p>
 
           <form className="lab-search lab-search--hero" onSubmit={submit} role="search">
             <Search size={18} aria-hidden="true" />
@@ -48,7 +50,9 @@ export function GithubLabPage() {
           </form>
         </section>
 
-        <div className="lab-blank" aria-hidden="true" />
+        <div className="lab-quick-searches" aria-label="按用途探索">
+          {content.searches.map((item) => <Link key={item.label} to={githubSearchPath(item.query)}>{item.label} <span aria-hidden="true">↗</span></Link>)}
+        </div>
 
         <nav className="lab-entries" aria-label="GitHub 研究所功能">
           <Link to="/github-lab/top">top 排行榜</Link>
@@ -57,6 +61,19 @@ export function GithubLabPage() {
           <span aria-hidden="true">/</span>
           <Link to="/github-lab/tools">ii tool</Link>
         </nav>
+
+        <section className="lab-start" aria-labelledby="lab-start-title">
+          <div className="lab-start__head"><span>从这里开始</span><h2 id="lab-start-title">你想用 GitHub 做什么？</h2><p>不熟悉术语也没关系，先选一个目标。</p></div>
+          <div className="lab-guide-grid">
+            {content.guides.map((guide) => <article className="lab-guide" key={guide.step}>
+              <span className="lab-guide__step">{guide.step}</span><h3>{guide.title}</h3><p>{guide.text}</p>
+              <a href={guide.url} target="_blank" rel="noopener noreferrer">{guide.label} <span aria-hidden="true">↗</span></a>
+            </article>)}
+          </div>
+        </section>
+        <section className="lab-glossary" aria-labelledby="lab-glossary-title"><h2 id="lab-glossary-title">四个常见词</h2>
+          <div>{content.glossary.map((item) => <details key={item.term}><summary>{item.term}</summary><p>{item.text}</p></details>)}</div>
+        </section>
       </div>
     </div>
   )

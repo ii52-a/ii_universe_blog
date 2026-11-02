@@ -6,6 +6,15 @@ const listeners = new Set<() => void>()
 let snapshot: Post[] = []
 let loadPromise: Promise<Post[]> | null = null
 let loadError: Error | null = null
+let loadedAt = 0
+let state = { loading: true, error: null as Error | null }
+function setState(loading: boolean, error: Error | null) {
+  state = { loading, error }
+  listeners.forEach((listener) => listener())
+}
+export function usePostsStatus() {
+  return useSyncExternalStore(subscribePosts, () => state, () => state)
+}
 
 function emit(next: Post[]) {
   snapshot = next
@@ -58,24 +67,42 @@ export function getPostBySlug(slug?: string) {
   return snapshot.find((post) => post.slug === slug)
 }
 
-export async function refreshPosts() {
-  const result = await postsApi.list({ limit: 10 })
-  const next = result.posts.map(mapApiPost)
-  loadError = null
-  emit(next)
-  return next
+export async function refreshPosts(): Promise<Post[]> {
+  if (loadPromise) {
+    await loadPromise
+    return refreshPosts()
+  }
+  loadedAt = 0
+  return loadPosts()
 }
 
-export async function loadPosts() {
+export async function loadPosts(): Promise<Post[]> {
   if (loadPromise) return loadPromise
-  loadPromise = refreshPosts()
-    .catch((error) => {
+  if (loadedAt && Date.now() - loadedAt < 60_000) return snapshot
+  setState(true, null)
+  loadPromise = (async () => {
+    try {
+      const next: Post[] = []
+      let cursor: string | undefined
+      const seen = new Set<string>()
+      do {
+        const result = await postsApi.list({ limit: 10, cursor })
+        next.push(...result.posts.map(mapApiPost))
+        cursor = result.nextCursor ?? undefined
+        if (cursor && seen.has(cursor)) throw new Error('文章分页异常，请重试')
+        if (cursor) seen.add(cursor)
+      } while (cursor)
+      loadError = null
+      loadedAt = Date.now()
+      emit([...new Map(next.map((post) => [post.id, post])).values()])
+    } catch (error) {
       loadError = error instanceof Error ? error : new Error('文章加载失败')
-      return snapshot
-    })
-    .finally(() => {
+    } finally {
+      setState(false, loadError)
       loadPromise = null
-    })
+    }
+    return snapshot
+  })()
   return loadPromise
 }
 

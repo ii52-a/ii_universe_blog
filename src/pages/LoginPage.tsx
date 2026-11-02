@@ -170,7 +170,6 @@ export function LoginPage() {
           <Avatar name={user.name} color={user.avatarColor} src={user.avatar} size="xl" />
           <span className="signed-card__eyebrow">已登录 ii universe</span>
           <h1>{user.name}，你在这里。</h1>
-          <p>博客、GitHub 研究所和 ii tool 都认这个账号。</p>
           <div className="signed-card__actions">
             <Link className="button button--ink" to="/space">
               去个人空间
@@ -199,7 +198,7 @@ export function LoginPage() {
     <LoginShell>
       <aside className="login-universe" aria-label="ii universe 账号说明">
         <div className="login-universe__brand" aria-label="ii universe">
-          <span className="login-universe__ii">ii</span>
+          {/* <span className="login-universe__ii">ii</span> */}
           <span className="login-universe__word">universe</span>
         </div>
 
@@ -224,10 +223,10 @@ export function LoginPage() {
             <span className="auth-card__mark" aria-hidden="true">
               <KeyRound size={18} />
             </span>
-            <h1 id="auth-title">{mode === 'login' ? 'ii universe。' : '注册账号。'}</h1>
+            <h1 id="auth-title">{mode === 'login' ? 'ii universe' : '注册账号'}</h1>
             <p>
               {mode === 'login'
-                ? '浩瀚如初，感谢归来'
+                ? '浩瀚如初，欢迎回来'
                 : '记录足迹'}
             </p>
           </div>
@@ -259,7 +258,7 @@ export function LoginPage() {
             </button>
           </div>
 
-          <form className="auth-form" onSubmit={handleSubmit} noValidate>
+          <form className={`auth-form${mode === 'register' ? ' auth-form--register' : ''}`} onSubmit={handleSubmit} noValidate>
             {mode === 'register' ? (
               <>
                 <div className="field">
@@ -271,7 +270,7 @@ export function LoginPage() {
                       name="username"
                       type="text"
                       autoComplete="username"
-                      placeholder="比如：DeepS先生"
+                      placeholder="给自己起个名字"
                       value={username}
                       onChange={(event) => setUsername(event.target.value)}
                       aria-invalid={Boolean(errors.username)}

@@ -641,3 +641,57 @@
     animation: none
   }
 }
+
+/* Keep the form in view; the illustration yields space on compact screens. */
+.login-page--universe { min-height: 100dvh; }
+.login-page--universe .login-page__inner { align-items: center; padding-block: 20px; }
+.login-page--universe .auth-card { padding: 22px 28px 18px; }
+.login-page--universe .auth-card__mark { width: 32px; height: 32px; margin-bottom: 6px; }
+.login-page--universe .auth-card__head p { margin-bottom: 12px; }
+.login-page--universe .auth-tabs { margin-block: 12px; }
+.login-page--universe .auth-form { gap: 12px; }
+.login-page--universe .demo-account { margin-top: 14px; padding: 10px 12px; }
+.login-page--universe .auth-card__foot { margin-top: 12px; padding-top: 10px; }
+@media (max-width: 860px) {
+  .login-page--universe .login-page__inner { width: min(440px, calc(100% - 32px)); gap: 0; padding-block: 16px; }
+  .login-page--universe .login-universe { display: none; }
+}
+@media (max-height: 740px) and (min-width: 861px) {
+  .login-page--universe .login-cube-scene { height: 220px; }
+  .login-page--universe .login-page__inner { padding-block: 12px; }
+}
+
+.login-page--universe .auth-card { min-width: 0; width: 100%; box-sizing: border-box; }
+.login-page--universe .auth-code-row { min-width: 0; }
+.login-page--universe .field__control { min-width: 0; }
+.login-page--universe .field__control input { min-width: 0; }
+@media (max-height: 850px), (max-width: 860px) {
+  .login-page--universe .auth-card { padding: 16px 20px; }
+  .login-page--universe .auth-card__head h1 { font-size: 25px; }
+  .login-page--universe .auth-card__head p { margin: 3px 0 8px; }
+  .login-page--universe .auth-form { gap: 9px; }
+  .login-page--universe .field { gap: 4px; }
+  .login-page--universe .field__control { min-height: 40px; }
+  .login-page--universe .field__control input { padding-block: 8px; }
+  .login-page--universe .demo-account { grid-template-columns: 1fr auto; padding: 8px 10px; }
+  .login-page--universe .demo-account > small { display: none; }
+  .login-page--universe .auth-tabs { margin-block: 8px; }
+}
+@media (max-height: 700px) {
+  .login-page--universe .universe-top { min-height: 56px; padding-block: 10px; gap: 6px; }
+  .login-page--universe .login-page__inner { padding-block: 8px; }
+  .login-page--universe .auth-card__foot { margin-top: 8px; padding-top: 7px; }
+  .login-page--universe .auth-form .field-hint { display: none; }
+}
+
+@media (max-height: 700px) { .login-page--universe .auth-form { gap: 6px; } }
+
+/* Keep the key and greeting present at every viewport size and zoom level. */
+.login-page--universe .auth-card__mark { display: inline-grid; }
+.login-page--universe .auth-card__head p { display: block; }
+@media (max-height: 850px) {
+  .login-page--universe .auth-form--register { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .login-page--universe .auth-form--register > * { grid-column: 1 / -1; min-width: 0; }
+  .login-page--universe .auth-form--register > .field:nth-child(1),
+  .login-page--universe .auth-form--register > .field:nth-child(2) { grid-column: auto; }
+}

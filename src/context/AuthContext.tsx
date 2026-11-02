@@ -1,3 +1,4 @@
+import { isGuest } from '../lib/account'
 import {
   createContext,
   useCallback,
@@ -133,7 +134,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const can = useCallback(
     (permission: Permission) =>
-      Boolean(user && (user.role === 'admin' || user.permissions.includes(permission))),
+      Boolean(user && (!isGuest(user) && (user.role === 'admin' || user.permissions.includes(permission)))),
     [user],
   )
 

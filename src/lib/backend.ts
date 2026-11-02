@@ -162,12 +162,22 @@ export interface GithubRepo {
 export interface GithubRepoDetail extends GithubRepo {
   homepage: string
   updatedAt: string
+  pushedAt: string
+  defaultBranch: string
+  license: string | null
+  archived: boolean
+  isFork: boolean
+  hasIssues: boolean
+  openIssues: number
   summary: string
   summaryLang: 'zh' | 'en'
   readme: {
     text: string
+    markdown: string
     htmlUrl: string
+    rawUrl: string
     truncated: boolean
+    status: 'available' | 'missing' | 'unavailable'
   }
 }
 
@@ -236,7 +246,16 @@ export const postsApi = {
     if (params.author) search.set('author', params.author)
     return apiFetch<{ posts: ApiPost[]; nextCursor: string | null }>(`/api/posts?${search.toString()}`)
   },
-  mine: () => apiFetch<{ posts: ApiPost[]; nextCursor: string | null }>('/api/posts?mine=true&limit=10'),
+  mine: async () => {
+    const posts: ApiPost[] = []
+    let cursor: string | null = null
+    do {
+      const result: { posts: ApiPost[]; nextCursor: string | null } = await apiFetch(`/api/posts?mine=true&limit=10${cursor ? `&cursor=${encodeURIComponent(cursor)}` : ''}`)
+      posts.push(...result.posts)
+      cursor = result.nextCursor
+    } while (cursor)
+    return { posts, nextCursor: null }
+  },
   get: (slug: string) => apiFetch<{ post: ApiPost }>(`/api/posts/${encodeURIComponent(slug)}`),
   create: (input: PostInput) =>
     apiFetch<{ post: ApiPost }>('/api/posts', {

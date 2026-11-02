@@ -95,7 +95,7 @@ export function ReviewPage() {
         <header className="review-head">
           <div>
             <span className="page-hero__note">审核权限 · 审核队列</span>
-            <h1>等一等的页。</h1>
+            <h1>审核文章</h1>
           </div>
           <span className="review-count">
             <ClipboardCheck size={15} aria-hidden="true" />
@@ -143,7 +143,7 @@ export function ReviewPage() {
                   </div>
                   <h2>{displayTitle(post)}</h2>
                   <p>{post.excerpt}</p>
-                  <span className="review-card__tags">{post.category} · {post.readMinutes} 分钟</span>
+                  <span className="review-card__tags">{post.kind === 'essay' ? '随笔' : '文章'} · {post.category} · {post.readMinutes} 分钟</span>
                 </div>
                 <div className="review-card__actions">
                   {rejecting === post.slug ? (

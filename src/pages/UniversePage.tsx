@@ -23,7 +23,9 @@ import {
 import content from '../content/navigation.json'
 import { usePageTitle } from '../hooks/usePageTitle'
 import { UniverseTop } from '../components/UniverseTop'
-import { UniverseMeteors } from '../components/UniverseMeteors'
+import { UniverseDeepField } from '../components/UniverseDeepField'
+import { UniverseBackgroundEffects } from '../components/UniverseBackgroundEffects'
+import { resolveNavigationLink } from '../lib/navigation'
 
 const icons: Record<string, LucideIcon> = {
   sun: Sun,
@@ -54,7 +56,8 @@ export function UniversePage() {
       </div>
 
       <UniverseTop />
-      <UniverseMeteors />
+      <UniverseDeepField />
+      <UniverseBackgroundEffects />
 
       <main className="universe-content">
         <div className="universe-groups">
@@ -82,14 +85,7 @@ export function UniversePage() {
                     )
                   }
 
-                  const href = 'href' in link && link.href ? link.href : '/'
-                  const external = 'external' in link && link.external
-                  const raw =
-                    external ||
-                    href.startsWith('http') ||
-                    href.startsWith('mailto') ||
-                    href.startsWith('/api') ||
-                    href.endsWith('.xml')
+                  const destination = resolveNavigationLink(link, window.location.origin)
 
                   const inner = (
                     <>
@@ -106,13 +102,15 @@ export function UniversePage() {
                     </>
                   )
 
+                  if (!destination) return <span className="universe-link universe-link--soon" key={link.label} aria-disabled="true">{inner}</span>
+                  const { href, external, raw } = destination
                   return raw ? (
                     <a
                       className="universe-link"
                       href={href}
                       key={link.label}
-                      target={href.startsWith('mailto') ? undefined : '_blank'}
-                      rel="noreferrer"
+                      target={external ? '_blank' : undefined}
+                      rel="noopener noreferrer"
                     >
                       {inner}
                     </a>

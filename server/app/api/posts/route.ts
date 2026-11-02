@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getAuthUser, isAdmin } from '../../../lib/auth'
+import { getAuthUser, isAdmin, isGuest } from '../../../lib/auth'
 import { ensureDatabase, getDatabase } from '../../../lib/db'
 import { ApiError, handleRouteError, readJson } from '../../../lib/http'
 import { createPost, listPosts } from '../../../lib/posts'
@@ -35,11 +35,11 @@ export async function POST(request: NextRequest) {
   try {
     const user = await getAuthUser(request)
     if (!user) throw new ApiError(401, 'UNAUTHORIZED', '请先登录')
-    if (!isAdmin(user)) throw new ApiError(403, 'FORBIDDEN', '没有权限')
+    if (isGuest(user)) throw new ApiError(403, 'FORBIDDEN', '游客账号仅供浏览，请注册普通账号后投稿')
     const body = postCreateSchema.parse(await readJson(request))
     await ensureDatabase()
     const db = await getDatabase()
-    const post = await createPost(db, user.id, body, 'published')
+    const post = await createPost(db, user.id, body, isAdmin(user) ? 'published' : 'pending')
     return NextResponse.json({ post }, { status: 201 })
   } catch (error) {
     return handleRouteError(error)

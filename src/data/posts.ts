@@ -13,6 +13,7 @@ export type CoverVariant =
 export type ArticleStyle = 'paper' | 'quiet' | 'magazine' | 'note'
 
 export type ContentBlock =
+  | { type: 'markdown'; text: string }
   | { type: 'p'; text: string }
   | { type: 'h2'; text: string }
   | { type: 'quote'; text: string; cite?: string }

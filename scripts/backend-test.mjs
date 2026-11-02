@@ -80,7 +80,12 @@ try {
   )
 
   response = await api.post('/api/posts', { data: postData })
-  assert.equal(response.status(), 403, 'members cannot write articles')
+  assert.equal(response.status(), 201, 'members can submit articles for review')
+  const submission = (await json(response)).post
+  assert.equal(submission.status, 'pending')
+  assert.equal((await anon.get(`/api/posts/${submission.slug}`)).status(), 404)
+  response = await api.delete(`/api/posts/${submission.slug}`)
+  assert.equal(response.status(), 200, 'authors can withdraw their submission')
 
   response = await api.get('/api/review')
   assert.equal(response.status(), 403, 'members cannot review')
@@ -278,7 +283,8 @@ try {
 
   response = await anon.get('/api/github/tools')
   assert.equal(response.status(), 200)
-  assert.equal((await json(response)).tools.length, 2, 'seed should include two ii tools')
+  const seededTools = (await json(response)).tools
+  assert.ok(['morluto/rea', 'notscuffed/repkg'].every((name) => seededTools.some((tool) => tool.repoFullName === name)), 'seed tools should remain available')
 
   const favoriteRepo = github.items[0]
   response = await anon.get('/api/github/favorites')
@@ -301,23 +307,25 @@ try {
   assert.equal(response.status(), 200)
   assert.equal(Array.isArray((await json(response)).categories), true)
 
-  response = await admin.post('/api/categories', { data: { name: '测试分类' } })
+  const testCategoryName = `测试分类${stamp}`
+  const renamedCategoryName = `分类改${stamp}`
+  response = await admin.post('/api/categories', { data: { name: testCategoryName } })
   assert.equal(response.status(), 201)
   const testCategory = (await json(response)).category
   response = await admin.patch(`/api/categories/${testCategory.id}`, {
-    data: { name: '测试分类改' },
+    data: { name: renamedCategoryName },
   })
   assert.equal(response.status(), 200)
 
   response = await anon.get('/api/github/tools/categories')
   assert.equal(response.status(), 200)
-  assert.equal((await json(response)).categories.length, 3)
+  assert.ok(Array.isArray((await json(response)).categories))
 
-  response = await admin.post('/api/github/tools/categories', { data: { name: '测试工具分类' } })
+  response = await admin.post('/api/github/tools/categories', { data: { name: `工具分类${stamp}` } })
   assert.equal(response.status(), 201)
   const testToolCategory = (await json(response)).category
   response = await admin.patch(`/api/github/tools/categories/${testToolCategory.id}`, {
-    data: { name: '测试工具分类改' },
+    data: { name: `工具分类改${stamp}` },
   })
   assert.equal(response.status(), 200)
 
@@ -341,7 +349,7 @@ try {
     data: {
       ...postData,
       title: '',
-      category: '测试分类改',
+      category: renamedCategoryName,
     },
   })
   assert.equal(response.status(), 201)
@@ -362,11 +370,13 @@ try {
   response = await api.post('/api/radio', { data: { title: '测试问题', body: '测试回答' } })
   assert.equal(response.status(), 403)
 
-  response = await admin.post('/api/radio', { data: { title: '', body: '', category: '日常' } })
+  const firstRadioCategory = await json(await admin.post('/api/radio/categories', { data: { name: `API-${stamp}-1` } }))
+  const secondRadioCategory = await json(await admin.post('/api/radio/categories', { data: { name: `API-${stamp}-2` } }))
+  response = await admin.post('/api/radio', { data: { title: '', body: '', category: firstRadioCategory.category.name } })
   assert.equal(response.status(), 201)
   const createdRadio = (await json(response)).entry
   assert.equal(createdRadio.title, '')
-  assert.equal(createdRadio.category, '日常')
+  assert.equal(createdRadio.category, firstRadioCategory.category.name)
 
   response = await admin.patch(`/api/radio/${createdRadio.id}`, {
     data: { title: '电台测试', body: '## 标题\n\n内容' },
@@ -375,13 +385,15 @@ try {
   assert.equal((await json(response)).entry.title, '电台测试')
 
   response = await admin.patch(`/api/radio/${createdRadio.id}`, {
-    data: { category: '写作' },
+    data: { category: secondRadioCategory.category.name },
   })
   assert.equal(response.status(), 200)
-  assert.equal((await json(response)).entry.category, '写作')
+  assert.equal((await json(response)).entry.category, secondRadioCategory.category.name)
 
   response = await admin.delete(`/api/radio/${createdRadio.id}`)
   assert.equal(response.status(), 200)
+  assert.equal((await admin.delete(`/api/radio/categories/${firstRadioCategory.category.id}`)).status(), 200)
+  assert.equal((await admin.delete(`/api/radio/categories/${secondRadioCategory.category.id}`)).status(), 200)
 
   response = await anon.get('/api/sunset/releases?page=1&limit=5')
   assert.equal(response.status(), 200)

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getAuthUser, hasPermission, isAdmin } from '../../../../lib/auth'
+import { getAuthUser, hasPermission, isAdmin, isGuest } from '../../../../lib/auth'
 import { ensureDatabase, getDatabase } from '../../../../lib/db'
 import { ApiError, handleRouteError, readJson } from '../../../../lib/http'
 import { deletePost, getPost, updatePost } from '../../../../lib/posts'
@@ -39,12 +39,12 @@ export async function PATCH(
   try {
     const user = await getAuthUser(request)
     if (!user) throw new ApiError(401, 'UNAUTHORIZED', '请先登录')
-    if (!isAdmin(user)) throw new ApiError(403, 'FORBIDDEN', '没有权限')
+    if (isGuest(user)) throw new ApiError(403, 'FORBIDDEN', '游客账号仅供浏览')
     const body = postUpdateSchema.parse(await readJson(request))
     await ensureDatabase()
     const { slug } = await params
     const db = await getDatabase()
-    const post = await updatePost(db, slug, user.id, body, 'published', true)
+    const post = await updatePost(db, slug, user.id, body, isAdmin(user) ? 'published' : 'pending', isAdmin(user))
     return NextResponse.json({ post })
   } catch (error) {
     return handleRouteError(error)

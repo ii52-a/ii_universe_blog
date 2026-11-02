@@ -2,34 +2,57 @@
   "title": "导航",
   "groups": [
     {
-      "id": "blog",
-      "title": "博客",
-      "links": [
-        { "label": "半日", "href": "/", "icon": "sun", "desc": "首页 · 天气与随笔" },
-        { "label": "风吹散的页", "href": "/articles", "icon": "wind", "desc": "全部文章的归档" },
-        { "label": "日落", "href": "/sunset", "icon": "sunset", "desc": "版本记录与更新日志" },
-        { "label": "关于", "href": "/about", "icon": "user", "desc": "站点与作者介绍" }
-      ]
-    },
-    {
-      "id": "links",
-      "title": "链接",
-      "links": [
-        { "label": "GitHub", "href": "https://github.com/ii52-a/ii_universe_blog", "external": true, "icon": "github", "desc": "源代码仓库" },
-        { "label": "Instagram", "href": "https://instagram.com", "external": true, "icon": "instagram", "desc": "照片与日常" },
-        { "label": "Open-Meteo", "href": "https://open-meteo.com", "external": true, "icon": "cloud-sun", "desc": "天气数据来源" },
-        { "label": "项目文档", "href": "https://github.com/ii52-a/ii_universe_blog#readme", "external": true, "icon": "file-text", "desc": "README 与部署说明" }
-      ]
-    },
-    {
       "id": "lab",
       "title": "实验",
       "links": [
-        { "label": "GitHub 研究所", "href": "/github-lab", "icon": "flask", "desc": "仓库探索与实验场" },
-        { "label": "星图", "href": "/starmap", "icon": "sparkles", "desc": "全站内容的星空导航" },
-        { "label": "电台", "href": "/radio", "icon": "radio","desc": "自己的知识学习思考，疑问自答。" },
-        { "label": "旧物仓", "status": "soon", "icon": "archive", "desc": "正在筹备中" }
+        {
+          "label": "半日",
+          "href": "/",
+          "icon": "sun",
+          "desc": "首页 · 天气与随笔"
+        },
+        {
+          "label": "GitHub 研究所",
+          "href": "/github-lab",
+          "icon": "flask",
+          "desc": "仓库探索与实验场"
+        },
+        {
+          "label": "星图",
+          "href": "/starmap",
+          "icon": "sparkles",
+          "desc": "全站内容的星空导航"
+        },
+        {
+          "label": "电台",
+          "href": "/radio",
+          "icon": "radio",
+          "desc": "自己的知识学习思考，疑问自答。"
+        },
+        {
+          "label": "旧物仓",
+          "status": "soon",
+          "icon": "archive",
+          "desc": "正在筹备中"
+        }
+      ]
+    },
+    {
+      "id": "reference",
+      "title": "星河浩瀚",
+      "links": [
+        {
+          "label": "weather-fighter",
+          "url": "https://lolikonnn.github.io/weather-fighter/",
+          "desc": "老实看天气预报很枯燥吧"
+        },
+        {
+          "label": "Radio Garden",
+          "url": "https://radio.garden",
+          "desc": "听一听世界的频率"
+        }
       ]
     }
-  ]
+  ],
+  "_comment": "导航链接支持 url 或 href（url 优先）；站内地址以 / 开头，站外链接使用完整 http(s) 地址，点击后显示外链确认窗。status: soon 表示筹备中。"
 }

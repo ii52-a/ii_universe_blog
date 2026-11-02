@@ -53,15 +53,6 @@
   stroke-dasharray: none;
 }
 
-.universe-meteors {
-  position: fixed;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-  z-index: 1
-}
-
 /* 顶部导航栏 */
 .universe-top {
   position: sticky;
@@ -451,4 +442,22 @@
 .universe-link__badge {
   border-color: rgba(255, 255, 255, 0.12);
   color: rgba(255, 255, 255, 0.4);
+}
+
+.universe-page .universe-lines { display: none; }
+.universe-page .universe-content, .universe-page > .universe-top { position: relative; z-index: 1; }
+
+/* 顶栏与导航卡片共用整屏星图，顶栏不再覆盖黑色底板。 */
+.universe-page > .universe-top {
+  background: transparent;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+.universe-background-effects {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  pointer-events: none;
 }

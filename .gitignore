@@ -8,3 +8,4 @@ dist/
 .references/astro-bento-portfolio/
 server/.data/
 server/.next/
+screenshots/current-*.png

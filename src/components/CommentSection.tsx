@@ -1,3 +1,4 @@
+import { isGuest } from '../lib/account'
 /**
  * 留言组件
  * 职责：留言列表、输入、点赞与删除。
@@ -124,6 +125,8 @@ export function CommentComposer({
   const [body, setBody] = useState('')
   const [sending, setSending] = useState(false)
   const [error, setError] = useState('')
+
+  if (isGuest(user)) return <div className="comment-login"><p>游客账号不能评论或留言，请切换普通账号。</p><Link to="/login">切换账号</Link></div>
 
   if (!user) {
     return (

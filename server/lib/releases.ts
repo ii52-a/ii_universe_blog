@@ -64,3 +64,28 @@ export async function getVersionRelease(db: DbClient, id: number) {
   )
   return result.rows[0] ? mapVersionRelease(result.rows[0]) : null
 }
+
+/** Preserve IDs and versions archived by the administrator when applying a new release seed. */
+export async function syncVersionReleases(db: DbClient, releases: VersionRelease[]) {
+  await db.transaction(async (transaction) => {
+    const current = await transaction.query<{ id: number; version: string }>(
+      'SELECT id, version FROM version_releases',
+    )
+    const ids = new Map(current.rows.map((row) => [row.version, Number(row.id)]))
+    const used = new Set(current.rows.map((row) => Number(row.id)))
+    let nextId = Math.max(0, ...used, ...releases.map((release) => release.id))
+    for (const release of releases) {
+      const id = ids.get(release.version) ?? (used.has(release.id) ? ++nextId : release.id)
+      await transaction.query(
+        `INSERT INTO version_releases (id, version, released_at, items)
+         VALUES ($1, $2, $3, $4::jsonb)
+         ON CONFLICT (version) DO UPDATE SET
+           released_at = EXCLUDED.released_at,
+           items = EXCLUDED.items`,
+        [id, release.version, release.date, JSON.stringify(release.items)],
+      )
+      ids.set(release.version, id)
+      used.add(id)
+    }
+  })
+}

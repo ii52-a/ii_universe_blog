@@ -7,7 +7,7 @@
 import { Link, useParams } from 'react-router-dom'
 import { ArrowLeft } from 'lucide-react'
 import { postAuthor } from '../data/posts'
-import { usePosts } from '../lib/postsStore'
+import { usePosts, usePostsStatus, refreshPosts } from '../lib/postsStore'
 import { usePageTitle } from '../hooks/usePageTitle'
 import { PostRow } from '../components/PostCard'
 
@@ -15,6 +15,7 @@ export function TopicPage() {
   const { topic = '' } = useParams()
   usePageTitle(`话题：${topic}`)
   const allPosts = usePosts()
+  const { loading, error } = usePostsStatus()
   const matched = allPosts.filter(
     (post) =>
       post.category === topic ||
@@ -36,13 +37,13 @@ export function TopicPage() {
       <header className="topic-hero">
         <span className="page-hero__note">关于这个小小的话题</span>
         <h1>「{topic}」</h1>
-        {matched.length === 0 && <p>这个话题还没有文章。</p>}
+        {!loading && !error && matched.length === 0 && <p>这个话题还没有文章。</p>}
         <span className="topic-hero__star" aria-hidden="true">
           ✳
         </span>
       </header>
 
-      {matched.length > 0 ? (
+      {loading ? <p role="status">正在加载文章…</p> : error ? <div role="alert">{error.message}<button type="button" onClick={() => void refreshPosts()}>重试</button></div> : matched.length > 0 ? (
         <div className="archive-list">
           {matched.map((post) => (
             <PostRow key={post.slug} post={post} />

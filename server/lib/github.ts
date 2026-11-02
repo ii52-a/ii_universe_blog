@@ -16,12 +16,22 @@ export interface GithubRepo {
 export interface GithubRepoDetail extends GithubRepo {
   homepage: string
   updatedAt: string
+  pushedAt: string
+  defaultBranch: string
+  license: string | null
+  archived: boolean
+  isFork: boolean
+  hasIssues: boolean
+  openIssues: number
   summary: string
   summaryLang: 'zh' | 'en'
   readme: {
     text: string
+    markdown: string
     htmlUrl: string
+    rawUrl: string
     truncated: boolean
+    status: 'available' | 'missing' | 'unavailable'
   }
 }
 
@@ -41,6 +51,13 @@ interface GithubItem {
   topics?: string[]
   homepage?: string | null
   updated_at?: string
+  pushed_at?: string
+  default_branch?: string
+  license?: { spdx_id?: string; name?: string } | null
+  archived?: boolean
+  fork?: boolean
+  has_issues?: boolean
+  open_issues_count?: number
   owner?: { login?: string }
 }
 
@@ -168,24 +185,27 @@ export async function getGithubRepo(owner: string, repo: string): Promise<Github
   const item = (await response.json()) as GithubItem
   let rawReadme = ''
   let readmeUrl = `${item.html_url}#readme`
+  let rawUrl = ''
+  let readmeStatus: GithubRepoDetail['readme']['status'] = 'unavailable'
 
   try {
     const readmeResponse = await fetch(
       `https://api.github.com/repos/${owner}/${repo}/readme`,
       {
-        headers: {
-          ...headers(),
-          Accept: 'application/vnd.github.raw+json',
-        },
+        headers: headers(),
         signal: AbortSignal.timeout(9000),
         cache: 'no-store',
       },
     )
     if (readmeResponse.ok) {
-      rawReadme = await readmeResponse.text()
-      const meta = readmeResponse.headers.get('content-location')
-      if (meta) readmeUrl = meta
-    }
+      const meta = await readmeResponse.json() as { content?: string; encoding?: string; html_url?: string; download_url?: string }
+      if (meta.encoding === 'base64' && typeof meta.content === 'string') {
+        rawReadme = Buffer.from(meta.content, 'base64').toString('utf8')
+        readmeStatus = 'available'
+      }
+      if (meta.html_url) readmeUrl = meta.html_url
+      if (meta.download_url) rawUrl = meta.download_url
+    } else if (readmeResponse.status === 404) readmeStatus = 'missing'
   } catch {
     // A repository may not have a README; the description still works.
   }
@@ -198,12 +218,22 @@ export async function getGithubRepo(owner: string, repo: string): Promise<Github
     ...mapRepo(item),
     homepage: item.homepage ?? '',
     updatedAt: item.updated_at ?? '',
+    pushedAt: item.pushed_at ?? '',
+    defaultBranch: item.default_branch ?? '',
+    license: item.license ? (item.license.spdx_id && item.license.spdx_id !== 'NOASSERTION' ? item.license.spdx_id : item.license.name ?? null) : null,
+    archived: Boolean(item.archived),
+    isFork: Boolean(item.fork),
+    hasIssues: item.has_issues !== false,
+    openIssues: item.open_issues_count ?? 0,
     summary: summary.slice(0, 240),
     summaryLang,
     readme: {
       text: readmeText.slice(0, 7000),
+      markdown: rawReadme.replace(/^---\r?\n[\s\S]*?\r?\n---\r?\n/, '').slice(0, 20000),
       htmlUrl: readmeUrl,
-      truncated: readmeText.length > 7000,
+      rawUrl,
+      truncated: rawReadme.length > 20000,
+      status: readmeStatus,
     },
   }
   repoCache.set(key, { data, expiresAt: Date.now() + CACHE_MS })

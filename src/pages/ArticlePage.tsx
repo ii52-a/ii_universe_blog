@@ -1,3 +1,4 @@
+import { MarkdownBody } from '../components/MarkdownBody'
 /**
  * 文章详情页
  * 职责：文章正文、封面、作者、目录与留言。
@@ -30,6 +31,17 @@ import { PostCard } from '../components/PostCard'
 import { NotFoundPage } from './NotFoundPage'
 
 function getHeadings(post: Post) {
+  const markdown = post.content.find((block) => block.type === 'markdown')
+  if (markdown && 'text' in markdown) {
+    let fenced = false
+    const headings: Array<{ id: string; text: string }> = []
+    for (const line of markdown.text.split('\n')) {
+      if (/^\s*(```|~~~)/.test(line)) { fenced = !fenced; continue }
+      const match = !fenced && line.match(/^##\s+(.+?)(?:\s+#+)?$/)
+      if (match) headings.push({ id: `section-${headings.length + 1}`, text: match[1] })
+    }
+    return headings
+  }
   return post.content
     .filter((block): block is Extract<ContentBlock, { type: 'h2' }> => block.type === 'h2')
     .map((block, index) => ({ id: `section-${index + 1}`, text: block.text }))
@@ -319,6 +331,7 @@ export function ArticlePage() {
         <div className="article-layout">
           <article className="article-body" id="article-body">
             {post.content.map((block, index) => {
+              if (block.type === 'markdown') return <MarkdownBody key={index} source={block.text} />
               if (block.type === 'h2') {
                 headingIndex += 1
                 return (

@@ -580,3 +580,20 @@
   font-size: 15.5px;
   line-height: 2.05
 }
+
+.markdown-body { overflow-wrap: anywhere; }
+.article-body .markdown-body { font-size: 18px; line-height: 1.9; }
+.article-body .markdown-body p, .article-body .markdown-body li { font-size: inherit; }
+.markdown-body pre { overflow-x: auto; padding: 16px; background: var(--paper, #f3f3f0); border: 1px solid var(--line); border-radius: 10px; }
+.markdown-body code { font-family: var(--mono); font-size: .88em; }
+.markdown-body :not(pre) > code { background: var(--paper, #eee); padding: 2px 5px; border-radius: 4px; }
+.markdown-body img { max-width: 100%; height: auto; border-radius: 10px; }
+.markdown-table { max-width: 100%; overflow-x: auto; }
+.markdown-body table { width: 100%; border-collapse: collapse; }
+.markdown-body th, .markdown-body td { border: 1px solid var(--line); padding: 8px 12px; text-align: left; }
+.markdown-body h1 { font-size: 2em; }
+.markdown-body h3 { font-size: 1.3em; }
+.markdown-body h4, .markdown-body h5, .markdown-body h6 { font-size: 1.1em; }
+.markdown-body hr { margin: 24px 0; border: 0; border-top: 1px solid var(--line); }
+.home-submissions { padding-block: 20px; }
+.home-submissions a { display: flex; align-items: center; gap: 12px; padding: 10px 0; }

@@ -82,3 +82,13 @@
   width: 22px;
   height: 22px
 }
+
+.lab-top__brand, .lab-top__login { white-space: nowrap; }
+@media (max-width: 700px) {
+  .lab-top { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 10px 14px; }
+  .lab-top__brand { grid-column: 1; grid-row: 1; }
+  .lab-top__login, .lab-top__account { grid-column: 2; grid-row: 1; justify-self: end; }
+  .lab-top > a:not(.lab-top__brand):not(.lab-top__login) { grid-column: 1; grid-row: 2; white-space: nowrap; }
+  .lab-top__section { grid-column: 2; grid-row: 2; max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: right; }
+  .lab-top__spacer { display: none; }
+}

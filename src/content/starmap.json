@@ -19,14 +19,6 @@
         { "title": "Bandcamp", "url": "https://bandcamp.com", "desc": "独立音乐" },
         { "title": "YouTube", "url": "https://www.youtube.com", "desc": "视频与音乐" }
       ]
-    },
-    {
-      "id": "reference",
-      "title": "星河浩瀚",
-      "links": [
-        { "title": "weather-fighter", "url": "https://lolikonnn.github.io/weather-fighter/", "desc": "老实看天气预报很枯燥吧" },
-        { "title": "Radio Garden", "url": "https://radio.garden", "desc": "听一听世界的频率" }
-      ]
     }
   ]
 }

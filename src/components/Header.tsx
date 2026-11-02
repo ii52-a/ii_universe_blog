@@ -1,3 +1,4 @@
+import { isGuest } from '../lib/account'
 /**
  * 顶栏组件
  * 职责：导航、搜索、写文章入口、账号菜单与移动菜单。
@@ -80,7 +81,7 @@ export function Header() {
               <span>搜一搜</span>
               <kbd aria-hidden="true">⌘ K</kbd>
             </button>
-            {user?.role === 'admin' && (
+            {user && !isGuest(user) && (
               <Link className="write-link" to="/write">
                 <PenLine size={14} aria-hidden="true" />
                 <span>写一页</span>
@@ -132,8 +133,8 @@ export function Header() {
             <Search size={17} aria-hidden="true" />
             搜索文章
           </button>
-          {user?.role === 'admin' && (
-            <Link className="mobile-menu__write" to="/write" onClick={() => setMobileOpen(false)}>
+          {user && !isGuest(user) && (
+              <Link className="mobile-menu__write" to="/write" onClick={() => setMobileOpen(false)}>
               <PenLine size={16} aria-hidden="true" />
               写一页
             </Link>
@@ -225,8 +226,8 @@ function AuthMenu() {
             <UserRound size={15} aria-hidden="true" />
             公开主页
           </Link>
-          {user.role === 'admin' && (
-            <Link to="/write" className="auth-menu__item" role="menuitem">
+          {!isGuest(user) && (
+              <Link to="/write" className="auth-menu__item" role="menuitem">
               <PenLine size={15} aria-hidden="true" />
               写一页
             </Link>

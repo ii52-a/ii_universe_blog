@@ -87,12 +87,12 @@ export function publicUser(row: UserRow): PublicUser {
   return {
     id: row.id,
     email: row.email,
-    username: row.username,
-    name: row.username,
+    username: row.id === '00000000-0000-4000-8000-000000000001' ? '游客' : row.username,
+    name: row.id === '00000000-0000-4000-8000-000000000001' ? '游客' : row.username,
     handle: row.handle,
     role: row.role ?? 'member',
     permissions:
-      row.role === 'admin'
+      row.id === '00000000-0000-4000-8000-000000000001' ? [] : row.role === 'admin'
         ? [...PERMISSIONS]
         : normalizePermissions(row.permissions),
     bio: row.bio,
@@ -105,6 +105,10 @@ export function publicUser(row: UserRow): PublicUser {
   }
 }
 
+export function isGuest(user: PublicUser | null): boolean {
+  return user?.id === '00000000-0000-4000-8000-000000000001'
+}
+
 export function isAdmin(user: PublicUser | null): boolean {
   return user?.role === 'admin'
 }
@@ -113,7 +117,7 @@ export function hasPermission(
   user: PublicUser | null,
   permission: Permission,
 ): boolean {
-  if (!user) return false
+  if (!user || isGuest(user)) return false
   return user.role === 'admin' || user.permissions.includes(permission)
 }
 

@@ -8,7 +8,7 @@ import { useDeferredValue, useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { ArrowUpRight, Search } from 'lucide-react'
 import { displayTitle, postAuthor } from '../data/posts'
-import { usePosts } from '../lib/postsStore'
+import { usePosts, usePostsStatus, refreshPosts } from '../lib/postsStore'
 import { CoverArt } from './CoverArt'
 
 interface SearchDialogProps {
@@ -25,6 +25,7 @@ export function SearchDialog({ open, onClose }: SearchDialogProps) {
   const deferredQuery = useDeferredValue(query)
   const normalized = deferredQuery.trim().toLowerCase()
   const allPosts = usePosts()
+  const { loading, error } = usePostsStatus()
 
   useEffect(() => {
     const dialog = dialogRef.current
@@ -114,7 +115,7 @@ export function SearchDialog({ open, onClose }: SearchDialogProps) {
             )}
           </div>
 
-          {results.length > 0 ? (
+          {loading ? <p role="status">正在加载文章…</p> : error ? <div role="alert">{error.message}<button type="button" onClick={() => void refreshPosts()}>重试</button></div> : results.length > 0 ? (
             <ul className="search-results">
               {results.map((post) => (
                 <li key={post.slug}>

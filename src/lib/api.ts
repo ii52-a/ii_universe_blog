@@ -1,5 +1,7 @@
+import { authApi } from './backend'
+import { isGuest } from './account'
 import { seedComments, type Comment } from '../data/comments'
-import { makeId, readStorage, sleep, writeStorage } from './storage'
+import { makeId, readStorage, writeStorage } from './storage'
 
 const COMMENTS_KEY = 'comments.v1'
 const COMMENT_LIKES_KEY = 'comment-likes.v1'
@@ -25,7 +27,6 @@ function persist(next: Comment[]) {
 
 export const commentsApi = {
   async list(postId: string): Promise<Comment[]> {
-    await sleep(240)
     return allComments()
       .filter((comment) => comment.postId === postId)
       .sort((a, b) => +new Date(a.createdAt) - +new Date(b.createdAt))
@@ -39,7 +40,6 @@ export const commentsApi = {
   },
 
   async byAuthor(authorId: string, authorName: string): Promise<Comment[]> {
-    await sleep(220)
     return allComments()
       .filter(
         (comment) =>
@@ -58,7 +58,9 @@ export const commentsApi = {
     authorAvatar?: string
     body: string
   }): Promise<Comment> {
-    await sleep(520)
+    const { user } = await authApi.me()
+    if (isGuest(user)) throw new Error('游客账号不能评论或留言')
+    if (input.authorId !== user.id) throw new Error('请使用当前账号发表评论')
     const body = input.body.trim()
     if (!body) throw new Error('写点什么再发吧。')
     if (body.length > 280) throw new Error('留言最多 280 个字。')
@@ -81,7 +83,6 @@ export const commentsApi = {
   },
 
   async remove(id: string): Promise<void> {
-    await sleep(280)
     persist(allComments().filter((comment) => comment.id !== id))
   },
 
@@ -140,7 +141,6 @@ export const reactionsApi = {
 
 export const newsletterApi = {
   async subscribe(email: string): Promise<void> {
-    await sleep(620)
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       throw new Error('邮箱格式不太对，检查一下。')
     }
