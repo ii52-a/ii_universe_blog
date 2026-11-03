@@ -1,206 +1,136 @@
-/* ============================================================
-   StarmapPage
-   星图链接页。
-   ============================================================ */
-
+/* 计算机星系：所有科目与天体参数来自 starmap.json。 */
 .starmap-page {
-  min-height: 100vh;
-  padding-bottom: 90px;
-  background: var(--canvas);
-  color: var(--ink)
-}
-.starmap-top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 24px;
-  max-width: 1120px;
-  margin: 0 auto;
-  padding: 18px 28px;
-  border-bottom: 1px solid var(--line)
-}
-.starmap-logo {
-  display: inline-flex;
-  align-items: center;
-  gap: 12px;
-  color: var(--ink);
-  text-decoration: none
-}
-.starmap-logo__title {
-  font-family: var(--serif);
-  font-size: 21px;
-  font-weight: 600;
-  letter-spacing: -0.04em
-}
-.starmap-back {
-  color: var(--muted);
-  font-family: var(--mono);
-  font-size: 11px;
-  letter-spacing: 0.08em;
-  text-decoration: none;
-  transition: color 160ms var(--ease)
-}
-.starmap-back:hover {
-  color: var(--ink)
-}
-.starmap-content {
-  max-width: 1120px;
-  margin: 0 auto;
-  padding: 42px 28px 0
-}
-.starmap-group {
-  margin-top: 38px
-}
-.starmap-group:first-of-type {
-  margin-top: 0
-}
-.starmap-group h2 {
-  margin-bottom: 2px;
-  color: var(--muted);
-  font-family: var(--mono);
-  font-size: 20px;
-  font-weight: 500;
-  letter-spacing: 0.16em
-}
-.starmap-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
-  column-gap: 28px
-}
-.starmap-link {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-  padding: 14px 0 16px;
-  border-top: 1px solid var(--line);
-  color: var(--ink);
-  text-decoration: none
-}
-.starmap-link:focus-visible {
-  outline: 2px solid var(--blue);
-  outline-offset: 2px
-}
-.starmap-link__title {
-  display: flex;
-  align-items: baseline;
-  gap: 6px;
-  font-family: var(--serif);
-  font-size: 17px;
-  font-weight: 600;
-  line-height: 1.3;
-  letter-spacing: -0.03em;
-  transition: color 160ms var(--ease)
-}
-.starmap-link__title::after {
-  content: '↗';
-  font-family: var(--sans);
-  font-size: 11px;
-  color: var(--muted-light);
-  transition: color 160ms var(--ease), transform 160ms var(--ease)
-}
-.starmap-link:hover .starmap-link__title {
-  color: var(--blue)
-}
-.starmap-link:hover .starmap-link__title::after {
-  color: var(--blue);
-  transform: translate(2px, -2px)
-}
-.starmap-link__desc {
-  color: var(--muted);
-  font-size: 12px;
-  line-height: 1.5
-}
-@media (max-width: 760px) {
-  .starmap-top {
-    padding: 16px 18px
-  }
-  .starmap-content {
-    padding: 28px 18px 0
-  }
-  .starmap-group {
-    margin-top: 30px
-  }
-  .starmap-grid {
-    column-gap: 20px
-  }
-  .starmap-link__title {
-    font-size: 16px
-  }
-  .starmap-link__desc {
-    font-size: 11.5px
-  }
-}
-
-.starmap-page {
+  --orbit-line: #242424;
   position: relative;
-  background: #050b1a url('/ii-universe/background.webp') center / cover no-repeat fixed;
-  color: #f4f1e8
-}
-.starmap-scene,
-.starmap-veil {
-  position: fixed;
-  inset: 0;
+  isolation: isolate;
   width: 100%;
-  height: 100%;
-  pointer-events: none
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+  background: #000;
+  color: #e6e3da;
+  color-scheme: dark;
 }
-.starmap-scene {
-  z-index: 0
+.starmap-top { position: absolute; inset: 0 28px auto; z-index: 3; height: 64px; display: flex; align-items: center; justify-content: space-between; pointer-events: none; }
+.starmap-top > :is(a,button) { display: flex; align-items: center; gap: 12px; color: #b1b1ac; font: 10px var(--mono); pointer-events: auto; min-height: 36px; }
+.starmap-top > :is(a,button):hover { color: #fff; }
+.starmap-breadcrumbs { position: absolute; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 12px; pointer-events: auto; }
+.starmap-breadcrumbs > span { display: flex; align-items: center; gap: 12px; }
+.starmap-breadcrumbs button,.starmap-breadcrumbs h1 { font: 400 12px var(--sans); color: #b2b2aa; letter-spacing: .06em; white-space: nowrap; }
+.starmap-breadcrumbs button { color: #8f8f89; min-height: 36px; }
+.starmap-breadcrumbs svg { color: #64645e; }
+.starmap-breadcrumbs h1:focus { outline: none; }
+.starmap-stage { position: absolute; inset: 64px 28px 28px; display: grid; place-items: center; min-width: 0; min-height: 0; transition: right .45s cubic-bezier(.16,1,.3,1); }
+.starmap-page[data-selected='true'] .starmap-stage { right: 390px; }
+.starmap-motion { position: fixed; top: 15px; right: 23px; z-index: 5; display: grid; place-items: center; width: 34px; height: 34px; color: #9c9c95; }
+.starmap-motion:hover { color: #f1eee3; }
+.starmap-motion:disabled { opacity: .35; cursor: default; }
+.starmap-system { --system-scale: .8; position: relative; width: min(100%,calc(100dvh - 104px)); aspect-ratio: 1; min-width: 0; }
+.starmap-view { position: absolute; inset: 0; min-width: 0; }
+.starmap-viewport { position: absolute; inset: 0; overflow: hidden; touch-action: none; cursor: grab; user-select: none; -webkit-user-select: none; }
+.starmap-viewport[data-dragging='true'],.starmap-viewport[data-dragging='true'] .starmap-planet { cursor: grabbing; }
+.starmap-viewport:focus-visible { outline: 1px solid #77756a; outline-offset: -3px; }
+.starmap-camera { position: absolute; inset: 0; z-index: 1; transform-origin: 50% 50%; will-change: transform; }
+.starmap-view .starmap-system { position: absolute; width: min(100cqw,100cqh); left: 50%; top: 50%; transform: translate(-50%,-50%); }
+.starmap-viewport { container-type: size; }
+.starmap-zoom { position: absolute; z-index: 5; right: 12px; bottom: 8px; display: flex; align-items: center; gap: 3px; background: #090b0ce0; border: 1px solid #303538; padding: 3px; user-select: none; -webkit-user-select: none; }
+.starmap-zoom button { display: grid; place-items: center; width: 32px; height: 30px; color: #c9d0cd; }
+.starmap-zoom button:disabled { opacity: .3; }
+.starmap-zoom button:hover:not(:disabled) { background: #ffffff0d; }
+.starmap-zoom output { font: 9px var(--mono); color: #a5afae; width: 43px; text-align: center; }
+.starmap-dust { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; fill: #cad4d9; }
+.starmap-dust circle { animation: starmap-dust 14s ease-in-out infinite; }
+.starmap-system[data-kind='cluster'] { --orbit-line: #171b20; }
+.starmap-system[data-dense='true'] { --orbit-line: #181818; }
+.starmap-star--core .starmap-star__body { background: #000; border: 1px solid #dbe5ec; box-shadow: 0 0 3px #f5f3e5c0,0 0 12px #b7c6d047,inset 0 0 3px #e2e9eb9c; }
+.starmap-star--core .starmap-star__corona { inset: -45%; background: conic-gradient(from 0deg,#b9c9d00a,#acbdcb73 45deg,transparent 100deg,#d9c7a46b 200deg,transparent 280deg); mask-image: radial-gradient(circle,transparent 35%,#000 38%,transparent 64%); animation-duration: 38s; }
+.starmap-galaxy { position: absolute; width: clamp(35px,calc(var(--planet-size)*2.1*var(--system-scale)),108px); aspect-ratio: 1; left: 50%; top: 50%; transform: translate(-50%,-50%) rotate(-22deg); pointer-events: none; }
+.starmap-galaxy > svg { width: 100%; height: 100%; overflow: visible; animation: starmap-corona var(--galaxy-spin) linear infinite; filter: drop-shadow(0 0 2px var(--planet-color)); }
+.starmap-galaxy path { fill: none; stroke: var(--planet-color); stroke-width: 2; opacity: .55; stroke-linecap: round; stroke-dasharray: .8 1.6 2.8 1.3; }
+.starmap-galaxy circle { fill: #fff2d6; }
+.starmap-galaxy > span { position: absolute; inset: 12%; background: radial-gradient(ellipse,#fff3d9a1 0%,var(--planet-color) 2%,transparent 54%); opacity: .45; border-radius: 50%; transform: scaleY(.62); }
+.starmap-planet--galaxy { z-index: 3; }
+.starmap-planet--galaxy:hover .starmap-galaxy { filter: brightness(1.7); }
+.starmap-planet--galaxy[data-blink='true'] .starmap-galaxy > span { animation: starmap-blink var(--blink-duration) ease-in-out both; }
+.starmap-system[data-paused='true'] .starmap-galaxy > svg { animation-play-state: paused; }
+.starmap-transit { position: absolute; left: 50%; top: 50%; width: 170vmax; aspect-ratio: 1; pointer-events: none; opacity: 0; transform: translate(-50%,-50%); background: repeating-conic-gradient(from 13deg,transparent 0 12deg,#b2c6d336 12.03deg 12.1deg,transparent 12.2deg 23deg); mask-image: radial-gradient(circle,transparent 12%,#0007 25%,transparent 55%); }
+.starmap-page[data-transition='out'] .starmap-view { transform-origin: var(--dive-x,50%) var(--dive-y,50%); animation: starmap-dive-out .43s cubic-bezier(.6,0,.8,.2) both; }
+.starmap-page[data-transition='in'] .starmap-view { animation: starmap-dive-in .65s cubic-bezier(.16,1,.3,1) both; }
+.starmap-page[data-transition='out'] .starmap-transit { animation: starmap-transit .43s ease-in both; }
+.starmap-page[data-transition='in'] .starmap-transit { animation: starmap-transit .65s ease-out reverse both; }
+@keyframes starmap-dive-out { to { transform: scale(5); opacity: 0; filter: blur(5px); } }
+@keyframes starmap-dive-in { from { transform: scale(.38); opacity: 0; filter: blur(6px); } to { transform: scale(1); opacity: 1; filter: blur(0); } }
+.starmap-page[data-direction='up'][data-transition='out'] .starmap-view { transform-origin: 50% 50%; animation-name: starmap-rise-out; }
+.starmap-page[data-direction='up'][data-transition='in'] .starmap-view { animation-name: starmap-rise-in; }
+@keyframes starmap-rise-out { to { transform: scale(.35); opacity: 0; filter: blur(4px); } }
+@keyframes starmap-rise-in { from { transform: scale(2.5); opacity: 0; filter: blur(5px); } to { transform: scale(1); opacity: 1; filter: blur(0); } }
+@keyframes starmap-transit { from { opacity: 0; transform: translate(-50%,-50%) scale(.3); } to { opacity: .8; transform: translate(-50%,-50%) scale(1.5); } }
+@keyframes starmap-dust { 50% { opacity: .08; } }
+.starmap-orbits { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
+.starmap-orbits > circle { fill: none; stroke: var(--orbit-line); stroke-width: .75; vector-effect: non-scaling-stroke; transition: stroke .4s; }
+.starmap-orbits > circle.is-selected { stroke: #797366; }
+.starmap-star { position: absolute; width: clamp(28px,calc(var(--star-size)*var(--system-scale)),var(--star-size)); aspect-ratio: 1; left: 50%; top: 50%; transform: translate(-50%,-50%); pointer-events: none; }
+.starmap-star--interactive { pointer-events: auto; cursor: pointer; z-index: 3; }
+.starmap-belt { transform-origin: 500px 500px; animation: starmap-corona var(--belt-period) linear infinite; }
+.starmap-belt__ring { fill: none; stroke: currentColor; opacity: .075; }
+.starmap-belt__rock { fill: currentColor; }
+.starmap-system[data-paused='true'] .starmap-belt { animation-play-state: paused; }
+.starmap-levels { position: absolute; bottom: 18px; left: 12px; display: flex; gap: 15px; align-items: center; font: 9px var(--sans); color: #b3b5ae; user-select: none; pointer-events: none; }
+.starmap-levels span { display: flex; align-items: center; gap: 6px; }
+.starmap-levels i { width: 4px; height: 4px; border-radius: 50%; background: #a7b8ab; }
+.starmap-levels [data-level='advanced'] i { background: #c2a979; }
+.starmap-levels [data-level='research'] i { background: #9caccb; }
+.starmap-panel__enter { display: flex; align-items: center; justify-content: space-between; width: 100%; min-height: 38px; padding: 0 12px; margin-top: 20px; border: 1px solid #4b4b41; font-size: 11px; color: #dedbcb; }
+.starmap-top > button { max-width: 24%; }
+.starmap-top > button span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.starmap-star__body { position: absolute; inset: 0; border-radius: 50%; background: radial-gradient(circle at 35% 35%,#fffef4,var(--star-color) 45%,#d6b078 95%); box-shadow: 0 0 12px #fff3d050,0 0 45px #e9be6920,inset 0 0 10px #fff9e1; }
+.starmap-star__corona { position: absolute; inset: -40%; border: 1px solid #c9b18425; border-radius: 50%; background: repeating-conic-gradient(from 0deg,transparent 0deg 14deg,#e0c48b20 14.2deg 14.7deg,transparent 15deg 30deg); mask-image: radial-gradient(circle,transparent 36%,#000 43%,transparent 70%); animation: starmap-corona 80s linear infinite; }
+.starmap-star__name { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); color: #302c22; font: 10px/1.35 var(--sans); white-space: nowrap; text-align: center; }
+.starmap-star__name > span { display: block; }
+.starmap-planet { position: absolute; width: 40px; height: 40px; transform: translate(-50%,-50%); border-radius: 50%; z-index: 2; touch-action: none; -webkit-tap-highlight-color: transparent; cursor: pointer; }
+.starmap-planet__body { position: absolute; top: 50%; left: 50%; width: clamp(var(--planet-min-size),calc(var(--planet-size)*var(--system-scale)),var(--planet-size)); aspect-ratio: 1; border-radius: 50%; transform: translate(-50%,-50%); background: radial-gradient(circle at 29% 23%,var(--planet-highlight),var(--planet-color) 32%,var(--planet-shade) 85%,#060606); box-shadow: inset -1px -1px 2px #0008,0 0 2px #ffffff18; }
+.starmap-planet__body::before { content: ''; position: absolute; inset: 2%; border-radius: inherit; opacity: .22; background: repeating-linear-gradient(10deg,transparent 0 3px,#0007 4px 5px,transparent 6px); }
+.starmap-planet__body::after { content: ''; position: absolute; inset: -12px; border-radius: inherit; background: radial-gradient(circle,#fff9df9c,transparent 65%); opacity: 0; }
+.starmap-planet[data-blink='true'] .starmap-planet__body::after { animation: starmap-blink var(--blink-duration) ease-in-out both; }
+.starmap-planet__ring { position: absolute; top: 50%; left: 50%; width: clamp(23px,calc(var(--planet-size)*2.3*var(--system-scale)),72px); height: clamp(7px,calc(var(--planet-size)*.72*var(--system-scale)),24px); border: 1px solid var(--planet-color); border-radius: 50%; transform: translate(-50%,-50%) rotate(-27deg); box-shadow: 0 0 0 2px #0008,inset 0 0 0 1px #000; opacity: .72; pointer-events: none; }
+.starmap-planet.is-selected .starmap-planet__body { outline: 1px solid #d7d1c0; outline-offset: 5px; }
+.starmap-subject-label { position: absolute; inset: 0; z-index: 2; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #fffcec; background: transparent; opacity: 0; transition: opacity .25s; pointer-events: none; text-align: center; white-space: nowrap; font: 10px/1.35 var(--sans); text-shadow: 0 1px 3px #000,0 0 5px #000c; user-select: none; -webkit-user-select: none; }
+.starmap-viewport[data-labels='true'] .starmap-subject-label { opacity: 1; }
+.starmap-top,.starmap-star__name,.starmap-panel__prerequisites { user-select: none; -webkit-user-select: none; }
+.starmap-system[data-paused='true'] .starmap-star__corona { animation-play-state: paused; }
+.starmap-page :is(button,a):focus-visible { outline: 1px solid #e7dfc9; outline-offset: 5px; }
+.starmap-planet:focus-visible { outline-offset: 0 !important; }
+.starmap-panel { position: absolute; z-index: 4; top: 72px; bottom: 24px; right: 24px; width: 326px; padding: 34px 27px; border: 1px solid #292929; background: #080808; overflow-y: auto; scrollbar-width: thin; scrollbar-color: #49473f #080808; animation: starmap-panel-enter .35s cubic-bezier(.16,1,.3,1); }
+.starmap-panel__close { position: absolute; top: 13px; right: 13px; width: 28px; height: 28px; display: grid; place-items: center; color: #acaaa0; }
+.starmap-panel h2 { margin-top: 18px; font: 500 28px/1.4 var(--serif); letter-spacing: -.04em; }
+.starmap-panel h2:focus { outline: none; }
+.starmap-panel__intro { margin-top: 23px; font-size: 13px; line-height: 2; color: #bcb9b0; }
+.starmap-panel h3 { margin-bottom: 15px; font: 400 11px/1.5 var(--sans); letter-spacing: .08em; color: #9c998f; }
+.starmap-panel__topics,.starmap-panel__prerequisites { margin-top: 27px; padding-top: 23px; border-top: 1px solid #272621; }
+.starmap-panel__topics ul { display: grid; gap: 13px; font-size: 12px; color: #d5d1c5; }
+.starmap-panel__topics li { display: flex; align-items: center; gap: 11px; }
+.starmap-panel__topics li::before { content: ''; width: 3px; height: 3px; background: #a39675; border-radius: 50%; }
+.starmap-panel__prerequisites button { display: flex; align-items: center; gap: 11px; width: 100%; min-height: 35px; text-align: left; font-size: 11px; color: #d0ccbe; }
+.starmap-panel__prerequisites i { width: 5px; height: 5px; border-radius: 50%; }
+@keyframes starmap-corona { to { transform: rotate(360deg); } }
+@keyframes starmap-blink { 0%,100% { opacity: 0; transform: scale(.65); } 36% { opacity: .8; transform: scale(1.18); } 70% { opacity: .12; transform: scale(.9); } }
+@keyframes starmap-panel-enter { from { opacity: 0; transform: translateX(16px); } to { opacity: 1; transform: translateX(0); } }
+@media(max-width:760px) {
+  .starmap-top { inset-inline: 18px; height: 56px; }
+  .starmap-top > a { font-size: 9px; }
+  .starmap-motion { right: 13px; top: 11px; }
+  .starmap-stage,.starmap-page[data-selected='true'] .starmap-stage { inset: 56px 12px 18px; }
+  .starmap-star__name { font-size: 10px; }
+  .starmap-panel { top: 65px; right: 12px; bottom: 12px; width: min(326px,calc(100% - 36px)); padding: 32px 24px; }
 }
-.starmap-veil {
-  z-index: 1;
-  background:
-    linear-gradient(180deg, rgba(3, 8, 20, 0.5), rgba(3, 8, 20, 0.16) 42%, rgba(3, 8, 20, 0.58)),
-    radial-gradient(circle at 50% 20%, transparent 0, rgba(3, 8, 20, 0.28) 78%)
+@media(max-width:600px) {
+  .starmap-breadcrumbs { left: auto; right: 36px; transform: none; gap: 8px; }
+  .starmap-breadcrumbs > span { gap: 8px; }
+  .starmap-breadcrumbs button,.starmap-breadcrumbs h1 { font-size: 10px; }
+  .starmap-breadcrumbs > span:not(:last-child) { display: none; }
+  .starmap-breadcrumbs > span:last-child > svg { display: none; }
+  .starmap-breadcrumbs h1 { max-width: 52vw; overflow: hidden; text-overflow: ellipsis; }
+  .starmap-levels { gap: 10px; font-size: 8px; }
+  .starmap-viewport[data-dense='true'] .starmap-subject-label { font-size: 10px; }
 }
-.starmap-top,
-.starmap-content {
-  position: relative;
-  z-index: 2
-}
-.starmap-top {
-  border-bottom-color: rgba(255, 255, 255, 0.16)
-}
-.starmap-logo {
-  color: #f7f3e8
-}
-.starmap-back {
-  display: inline-flex;
-  align-items: baseline;
-  gap: 8px;
-  color: rgba(255, 255, 255, 0.64)
-}
-.starmap-back:hover {
-  color: #fff
-}
-.starmap-version {
-  color: rgba(255, 255, 255, 0.34);
-  font-size: 9px
-}
-.starmap-group h2 {
-  color: rgba(255, 255, 255, 0.56)
-}
-.starmap-link {
-  border-top-color: rgba(255, 255, 255, 0.16);
-  color: #f4f1e8
-}
-.starmap-link__title::after {
-  color: rgba(255, 255, 255, 0.42)
-}
-.starmap-link:hover .starmap-link__title {
-  color: #ffd84d
-}
-.starmap-link:hover .starmap-link__title::after {
-  color: #ffd84d
-}
-.starmap-link__desc {
-  color: rgba(255, 255, 255, 0.58)
-}
-.starmap-link:focus-visible {
-  outline-color: #ffd84d
-}
-@media (max-width: 760px) {
-  .starmap-page {
-    background-attachment: scroll
-  }
-}
+@media(prefers-reduced-motion:reduce) { .starmap-page *, .starmap-page *::before, .starmap-page *::after { animation: none !important; transition: none !important; } }

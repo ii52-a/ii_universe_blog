@@ -6,6 +6,7 @@ import { seedDatabase } from './seed'
 
 export interface DbClient {
   kind: 'pglite' | 'postgres'
+  close?: () => Promise<void>
   query<T extends Record<string, unknown> = Record<string, unknown>>(
     text: string,
     params?: unknown[],
@@ -30,6 +31,7 @@ async function createDatabase(): Promise<DbClient> {
     })
     return {
       kind: 'postgres',
+      async close() { await pool.end() },
       async transaction<T>(run: (db: DbClient) => Promise<T>) {
         const client = await pool.connect()
         const tx: DbClient = {
@@ -70,6 +72,7 @@ async function createDatabase(): Promise<DbClient> {
   await pglite.waitReady
   return {
     kind: 'pglite',
+    async close() { await pglite.close() },
     async transaction<T>(run: (db: DbClient) => Promise<T>) {
       return pglite.transaction(async (client) => {
         const tx: DbClient = {

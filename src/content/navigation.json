@@ -9,19 +9,25 @@
           "label": "半日",
           "href": "/",
           "icon": "sun",
-          "desc": "首页 · 天气与随笔"
+          "desc": "悠闲的博客-半日"
         },
         {
           "label": "GitHub 研究所",
           "href": "/github-lab",
           "icon": "flask",
-          "desc": "仓库探索与实验场"
+          "desc": "还在探索中..."
+        },
+        {
+          "label": "星盘",
+          "href": "/starboard",
+          "icon": "gamepad",
+          "desc": "对弈 - 星系"
         },
         {
           "label": "星图",
           "href": "/starmap",
           "icon": "sparkles",
-          "desc": "全站内容的星空导航"
+          "desc": "浩瀚星河,开发中...."
         },
         {
           "label": "电台",
@@ -31,7 +37,7 @@
         },
         {
           "label": "旧物仓",
-          "status": "soon",
+          "status": "close",
           "icon": "archive",
           "desc": "正在筹备中"
         }
@@ -43,11 +49,13 @@
       "links": [
         {
           "label": "weather-fighter",
+          "icon": "cloud-sun",
           "url": "https://lolikonnn.github.io/weather-fighter/",
           "desc": "老实看天气预报很枯燥吧"
         },
         {
           "label": "Radio Garden",
+          "icon": "radio",
           "url": "https://radio.garden",
           "desc": "听一听世界的频率"
         }

@@ -1,17 +1,7 @@
 /* ============================================================
-   Universe Text
-   universe/text 动画舞台。
+   Universe Deep Field
+   ii universe 导航页共享星图背景。
    ============================================================ */
-
-.universe-text-page {
-  position: relative;
-  width: 100%;
-  height: 100vh;
-  height: 100svh;
-  overflow: hidden;
-  background: #000000;
-  color: #f5f1e6
-}
 
 .universe-text-deep {
   position: fixed;
@@ -104,20 +94,6 @@
   0% { transform: translate(-50%, -50%) rotate(0deg); }
   100% { transform: translate(-50%, -50%) rotate(360deg); }
 }
-.universe-text-page .universe-top {
-  position: fixed;
-  top: 0;
-  right: 0;
-  left: 0;
-  width: 100%;
-  max-width: none;
-  margin: 0;
-  background: transparent;
-  border-bottom-color: rgba(255, 255, 255, 0.08);
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none
-}
-
 @media (prefers-reduced-motion: reduce) {
   .universe-text-deep__nebula,
   .universe-text-deep__field,

@@ -158,13 +158,13 @@
 }
 .article-body > p {
   margin: 0 0 22px;
-  font-size: 16px;
+  font-size: 17px;
   line-height: 1.95;
   letter-spacing: 0.015em;
   color: #33332d
 }
 .article-body > p:first-of-type {
-  font-size: 17.5px;
+  font-size: 18.5px;
   color: var(--ink)
 }
 .article-section {
@@ -172,7 +172,7 @@
 }
 .article-section h2 {
   margin: 44px 0 16px;
-  font-size: 29px;
+  font-size: 27px;
   letter-spacing: -0.045em
 }
 .article-body blockquote {
@@ -204,7 +204,7 @@
 .article-list li {
   position: relative;
   padding: 10px 0 10px 20px;
-  font-size: 13.5px;
+  font-size: 14.5px;
   line-height: 1.75;
   color: var(--ink-soft)
 }
@@ -422,15 +422,15 @@
     padding-top: 30px
   }
   .article-body > p {
-    font-size: 15px;
+    font-size: 16px;
     line-height: 1.95
   }
   .article-body > p:first-of-type {
-    font-size: 16px
+    font-size: 17px
   }
   .article-section h2 {
     margin-top: 36px;
-    font-size: 25px
+    font-size: 23px
   }
   .article-body blockquote {
     margin: 26px 0;
@@ -577,12 +577,12 @@
     #fffdf5
 }
 .article-page--style-note .article-body > p {
-  font-size: 15.5px;
+  font-size: 16.5px;
   line-height: 2.05
 }
 
 .markdown-body { overflow-wrap: anywhere; }
-.article-body .markdown-body { font-size: 18px; line-height: 1.9; }
+.article-body .markdown-body { font-size: 19px; line-height: 1.9; }
 .article-body .markdown-body p, .article-body .markdown-body li { font-size: inherit; }
 .markdown-body pre { overflow-x: auto; padding: 16px; background: var(--paper, #f3f3f0); border: 1px solid var(--line); border-radius: 10px; }
 .markdown-body code { font-family: var(--mono); font-size: .88em; }
@@ -592,8 +592,14 @@
 .markdown-body table { width: 100%; border-collapse: collapse; }
 .markdown-body th, .markdown-body td { border: 1px solid var(--line); padding: 8px 12px; text-align: left; }
 .markdown-body h1 { font-size: 2em; }
+.article-body .markdown-body h2 { font-size: 25px; }
+.article-body .markdown-body h3 { font-size: 21.4px; }
+.article-body .markdown-body :is(h4,h5,h6) { font-size: 17.8px; }
 .markdown-body h3 { font-size: 1.3em; }
 .markdown-body h4, .markdown-body h5, .markdown-body h6 { font-size: 1.1em; }
 .markdown-body hr { margin: 24px 0; border: 0; border-top: 1px solid var(--line); }
+.markdown-body--preserve :is(p,li,h1,h2,h3,h4,h5,h6,th,td), .article-body > p, .article-body blockquote p, .article-section h2, .article-list li, .write-preview__body > p { white-space: break-spaces; tab-size: 4; }
+.markdown-body pre, .markdown-body pre code { white-space: pre; }
+.markdown-gap { margin: 0; padding: 0; line-height: inherit; }
 .home-submissions { padding-block: 20px; }
 .home-submissions a { display: flex; align-items: center; gap: 12px; padding: 10px 0; }

@@ -29,7 +29,9 @@ const SpacePage = lazy(() => import('./pages/SpacePage').then((module) => ({ def
 const ReviewPage = lazy(() => import('./pages/ReviewPage').then((module) => ({ default: module.ReviewPage })))
 const PermissionsPage = lazy(() => import('./pages/PermissionsPage').then((module) => ({ default: module.PermissionsPage })))
 const UniversePage = lazy(() => import('./pages/UniversePage').then((module) => ({ default: module.UniversePage })))
-const UniverseTextPage = lazy(() => import('./pages/UniverseTextPage').then((module) => ({ default: module.UniverseTextPage })))
+const UnformPage = lazy(() => import('./pages/UnformPage').then((module) => ({ default: module.UnformPage })))
+const StarboardPage = lazy(() => import('./pages/StarboardPage').then((module) => ({ default: module.StarboardPage })))
+const GomokuPage = lazy(() => import('./pages/GomokuPage').then((module) => ({ default: module.GomokuPage })))
 const StarmapPage = lazy(() => import('./pages/StarmapPage').then((module) => ({ default: module.StarmapPage })))
 const RadioPage = lazy(() => import('./pages/RadioPage').then((module) => ({ default: module.RadioPage })))
 const RadioEntryPage = lazy(() => import('./pages/RadioEntryPage').then((module) => ({ default: module.RadioEntryPage })))
@@ -54,7 +56,9 @@ export default function App() {
               <Suspense fallback={<div role="status">正在加载…</div>}>
               <Routes>
                 <Route path="/universe" element={<UniversePage />} />
-                <Route path="/universe/test" element={<UniverseTextPage />} />
+                <Route path="/universe/test" element={<UnformPage />} />
+                <Route path="/starboard" element={<StarboardPage />} />
+                <Route path="/starboard/gomoku" element={<GomokuPage />} />
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/starmap" element={<StarmapPage />} />
                 <Route path="/radio" element={<RadioPage />} />

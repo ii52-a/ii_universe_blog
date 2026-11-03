@@ -131,12 +131,12 @@
         "max": 108.75
       },
       "tailLengthPx": {
-        "min": 55,
-        "max": 100
+        "min": 80,
+        "max": 150
       },
       "tailWidthRatio": {
-        "min": 0.35,
-        "max": 0.55
+        "min": 0.65,
+        "max": 0.95
       },
       "opacity": {
         "min": 0.75,

@@ -11,6 +11,7 @@ import {
   FileText,
   FlaskConical,
   Github,
+  Gamepad2,
   Instagram,
   Radio,
   Sparkles,
@@ -40,6 +41,7 @@ const icons: Record<string, LucideIcon> = {
   sparkles: Sparkles,
   radio: Radio,
   archive: Archive,
+  gamepad: Gamepad2,
 }
 
 export function UniversePage() {

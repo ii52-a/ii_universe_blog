@@ -36,7 +36,7 @@
 @import './pages/review.css';
 @import './pages/permissions.css';
 @import './pages/universe.css';
-@import './pages/universe-text.css';
+@import './components/universe-deep-field.css';
 @import './pages/starmap.css';
 @import './pages/github-lab.css';
 @import './pages/github-repo.css';

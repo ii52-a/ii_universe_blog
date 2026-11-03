@@ -2,9 +2,9 @@
 
 一个以白色、纸张感和玩具感为基调的个人博客。内容围绕散步、旧物、食物和普通的日常，页面以紧凑的 bento 网格组织，日期、天气、时钟、在线状态、跟屏玩偶小满等小组件填满边角。
 
-当前版本：**v2.8.1**
+当前版本：**v2.9.0**
 
-模块版本：ii universe **v1.22 alpha** · GitHub 研究所 **v0.3 alpha** · 电台 **v0.2.1** · 星图 **v1.2.1**。
+模块版本：ii universe **v1.23 alpha** · GitHub 研究所 **v0.3 alpha** · 电台 **v0.2.1** · 星图 **v2.0.0** · 星盘 **v0.1.0** · UNFORM **v0.1.0**。
 
 仓库：**https://github.com/ii52-a/ii_universe_blog**
 
@@ -60,6 +60,23 @@ node scripts/backend-test.mjs  # 后端 API 集成测试（先启动 server）
 登录页点「演示账号」可以一键进入普通演示账号；管理员没有快捷登录，需要手动填写账号和 `.env` 里的密码。登录是 ii universe 级别的：博客、GitHub 研究所和 ii tool 共用一个账号，收藏与权限都跟着账号走。账号、文章、验证码、收藏、访问统计和审核状态由 Next.js API 写入 PostgreSQL / PGlite；头像和草稿仍保存在本机。
 
 ## 已实现
+
+### 星盘 · 游戏室
+
+- 新入口 `/starboard`，通过 ii universe「实验 → 星盘」进入；五子棋位于 `/starboard/gomoku`。
+- 自由规则、15×15、黑先、无禁手；支持本地人机与同屏双人，执黑 / 执白、悔棋、重开、手数显示和本机自动续局。
+- 棋盘在固定窗口中央，最大边长 900px，按窗口尺寸铺开。悔棋、重开和手数显示放在棋盘下方；桌面左侧显示对局设置，右侧保留可收起的分析面板，窄屏分别打开左侧设置与独立分析窗口。默认深色棋盘，可切换亮色并保留偏好。
+- 人机在 Web Worker 中运行，以太阳系、古德尔带、银河系作为三档对手，具体时长由 `src/lib/gomoku/rules.ts` 的 `searchBudget` 维护。阶段按本地对手已落子次数计算；后两档需普通账户或管理员登录，游客与未登录访问仅可选择太阳系。使用增量棋形评估、迭代加深 PVS / Alpha-Beta、置换表、威胁延伸与连续冲四搜索。
+- 引擎说明与验证方法见 `src/lib/gomoku/README.md`。
+
+### UNFORM / 不定形
+
+`/universe/test` 是独立的实时视觉首页：液态合金、粒子生长、无限回环三种形态，使用 Three.js 与本地生成的摄影棚反射环境，无远程模型或纹理依赖。
+
+- 拖动雕塑或聚焦后按方向键旋转；`1` / `2` / `3` 切换形态，空格暂停；支持强度调节、打乱视角、全屏和主动开启环境音。
+- 自动跟随系统减少动态效果设置；后台停止渲染，离开路由释放图形和声音资源；WebGL 不可用时保留矢量展览并提供重试。
+- 文案和配色：`src/content/unform.ts`；场景：`src/lib/unformScene.ts`；页面：`src/pages/UnformPage.tsx`；专属样式按路由加载。
+- 验证：`node scripts/unform-check.mjs`（需要本地前端和 Microsoft Edge），检查画面暂停、拖拽、切换、全屏、无障碍、减少动态效果、上下文恢复和响应式布局。
 
 ### 首页
 
@@ -153,11 +170,13 @@ node scripts/backend-test.mjs  # 后端 API 集成测试（先启动 server）
 
 ### 星图
 
-- `/starmap`：独立页面，不套 blog 外壳
-- 顶部是 ii universe 轨道 logo + 「星图」；右侧回到 ii universe
-- 数据来自 `src/content/starmap.json`：分类标题、链接标题、URL 三级映射
-- 每个分类一行，链接按 4 列卡片排列，卡片带序号与标题
-- 背景使用 Steam 创意工坊场景《星空》的星空图，并用 canvas 重建 Magic trinity 与 Drops 粒子
+- `/starmap`：纯黑背景的分层星图。总览以引力核心为中心，环绕「计算机」及算法、人工智能、大数据、软件开发、系统与架构、网络与安全、图形与交互、理论计算 8 条路线。收录 350 个知识节点、51 个技术星系；例如「系统与架构 → 并行计算 → GPU 计算 → CUDA C++」。返回按钮、路径与 Escape 回到实际来时的上层，共享技术不会跳回其他路线。
+- 鼠标进入最外层轨道内时显示全部名称，公转继续；名称以透明背景固定在各自星体上，随公转一起移动，不显示十六进制代号。点击展开右侧科目介绍，支持先修科目跳转、键盘选择、手动暂停和系统减少动态效果设置。
+- 支持有限拖动、滚轮缩放、按钮缩放和手机双指缩放。默认范围 65%–320%，放大到 265% 时进入最靠近视图中心的下层星系；下层缩小到 72% 时回到上层。最底层放大只改变视图，总览缩小不会继续返回。方向键平移、`+` / `-` 缩放、`0` 重置。
+- `src/content/starmap.json` 的 `subjects` 以 `0001H` 这样的四位十六进制 key 映射知识介绍、内容、先修关系及外观；可深入的科目用 `region` 指向技术星系。`regions.children` 引用行星，`levels` 按基础、进阶、研究分配轨道，`belts` 定义两条小行星带；`parent` 是跨科目跳转的默认路径，浏览中的返回路径单独保存。全部知识节点都能从「计算机」逐层到达，科目信息只存一份。
+- 中心恒星由每个区域的 `star.name` 决定：Linux 内核为 C语言、PyTorch 为 Python、CUDA C++ 为 C++；没有单一语言归属的区域继续使用技术名。点击任意层级的恒星打开右侧概览，点击科目行星深入，叶节点打开介绍。
+- 算法覆盖数论、计算几何、随机算法、近似与在线算法、参数化和细粒度复杂性；数学支撑包含数学分析、线性代数、概率统计与优化理论。研究主题与语言归属参考 JSON 中 `references` 所列的 MIT、CMU、NVIDIA、Linux 与 PyTorch 原始课程及文档；分层是本站组织方式。
+- `src/lib/starmap.ts` 处理层级与轨道坐标，`src/hooks/useStarmapCamera.ts` 处理拖动、缩放及层级切换；速度和视图限制由 JSON 的 `motion`、`interaction` 调整。`node scripts/starmap-check.mjs` 验证数据、交互、动画、响应式与无障碍。
 
 ### 电台
 
@@ -205,7 +224,7 @@ node scripts/backend-test.mjs  # 后端 API 集成测试（先启动 server）
 - 版本索引读取全部版本记录，每页 5 条，可翻页
 - 点击版本进入 `/sunset/version_set/:id`，通过后端接口读取该次更新
 - ii52A1 可点「延续更新」：把当前最新记录归档到历史，并将 `versions.json` 的 `blog` 清空、`latest` 写成占位；占位状态下按钮不可点，新版本号由手动填写
-- 版本种子由 `node scripts/build-release-seed.mjs` 从 `CHANGELOG.md` 与 `versions.json` 生成；保留已有记录 ID，数据库按版本同步并保留管理员归档记录
+- 版本种子由 `node scripts/build-release-seed.mjs` 从 `CHANGELOG.md` 与 `versions.json` 生成；保留已有记录 ID，数据库按版本同步并保留管理员归档记录；生成后在 `server` 目录执行 `npm run db:releases` 只同步更新历史，使用本地 PGlite 时先停止 API
 - 删除了原来的「更早的改动」折叠区
 - 日期、标签、版本号、印章等元信息不可选中
 
@@ -237,7 +256,7 @@ node scripts/backend-test.mjs  # 后端 API 集成测试（先启动 server）
 | `/topics/:topic` | 标签 / 分类话题页 |
 | `/sunset` | 日落与版本更新 |
 | `/universe` | 分类导航 |
-| `/starmap` | 星图链接页 |
+| `/starmap` | 计算机科目星系 |
 | `/github-lab` | GitHub 星标榜与仓库搜索 |
 | `/github-lab/top` | GitHub 排行榜 |
 | `/github-lab/favorites` | GitHub 收藏（登录后） |
@@ -306,7 +325,7 @@ node scripts/backend-test.mjs  # 后端 API 集成测试（先启动 server）
 - `src/content/site.json`：首页、归档、关于文案；字段为空字符串时对应盒子不渲染
 - `src/content/sunset.json`：日落版本记录
 - `src/content/navigation.json`：宇宙导航分类与卡片
-- `src/content/starmap.json`：星图的分类、链接标题与 URL
+- `src/content/starmap.json`：按十六进制 key 组织的科目介绍、先修关系与行星参数
 - `src/content/mascot.json`：小满台词
 - `server/db/seed-posts.json`：后端种子文章，只保留 DeepS 的两页；文章正文只在数据库与后端接口中
 

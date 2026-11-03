@@ -1,7 +1,7 @@
 /**
- * Universe Text 深空背景
+ * ii universe 导航页深空背景
  * 职责：持续循环的星团、星座连线与目镜刻度环。
- * 样式：src/css/pages/universe-text.css
+ * 样式：src/css/components/universe-deep-field.css
  */
 
 import { useMemo } from 'react'

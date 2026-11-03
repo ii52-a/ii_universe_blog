@@ -627,8 +627,8 @@
   background: rgba(17, 18, 15, 0.82)
 }
 [data-theme='dark'] .universe-link:hover {
-  background: color-mix(in srgb, var(--paper-soft) 60%, transparent)
+  background: transparent
 }
 [data-theme='dark'] .universe-group {
-  background: color-mix(in srgb, var(--paper) 88%, transparent)
+  background: transparent
 }
