@@ -31,12 +31,17 @@ const PermissionsPage = lazy(() => import('./pages/PermissionsPage').then((modul
 const UniversePage = lazy(() => import('./pages/UniversePage').then((module) => ({ default: module.UniversePage })))
 const UnformPage = lazy(() => import('./pages/UnformPage').then((module) => ({ default: module.UnformPage })))
 const StarboardPage = lazy(() => import('./pages/StarboardPage').then((module) => ({ default: module.StarboardPage })))
+const StarboardTestPage = lazy(() => import('./pages/StarboardTestPage').then((module) => ({ default: module.StarboardTestPage })))
 const GomokuPage = lazy(() => import('./pages/GomokuPage').then((module) => ({ default: module.GomokuPage })))
+const GomokuLeaderboardPage = lazy(() => import('./pages/GomokuLeaderboardPage').then((module) => ({ default: module.GomokuLeaderboardPage })))
+const GomokuRankedPage = lazy(() => import('./pages/GomokuRankedPage').then((module) => ({ default: module.GomokuRankedPage })))
 const StarmapPage = lazy(() => import('./pages/StarmapPage').then((module) => ({ default: module.StarmapPage })))
+const StarmapTestPage = lazy(() => import('./pages/StarmapTestPage').then((module) => ({ default: module.StarmapTestPage })))
 const RadioPage = lazy(() => import('./pages/RadioPage').then((module) => ({ default: module.RadioPage })))
 const RadioEntryPage = lazy(() => import('./pages/RadioEntryPage').then((module) => ({ default: module.RadioEntryPage })))
 const RadioWritePage = lazy(() => import('./pages/RadioWritePage').then((module) => ({ default: module.RadioWritePage })))
 const GithubLabPage = lazy(() => import('./pages/GithubLabPage').then((module) => ({ default: module.GithubLabPage })))
+const GithubGuidePage = lazy(() => import('./pages/GithubGuidePage').then((module) => ({ default: module.GithubGuidePage })))
 const GithubTopPage = lazy(() => import('./pages/GithubTopPage').then((module) => ({ default: module.GithubTopPage })))
 const GithubFavoritesPage = lazy(() => import('./pages/GithubFavoritesPage').then((module) => ({ default: module.GithubFavoritesPage })))
 const GithubToolsPage = lazy(() => import('./pages/GithubToolsPage').then((module) => ({ default: module.GithubToolsPage })))
@@ -58,13 +63,19 @@ export default function App() {
                 <Route path="/universe" element={<UniversePage />} />
                 <Route path="/universe/test" element={<UnformPage />} />
                 <Route path="/starboard" element={<StarboardPage />} />
+                <Route path="/starboard/test" element={<StarboardTestPage />} />
                 <Route path="/starboard/gomoku" element={<GomokuPage />} />
+                <Route path="/starboard/gomoku/leaderboard" element={<GomokuLeaderboardPage />} />
+                <Route path="/starboard/gomoku/ranked/:strength" element={<GomokuRankedPage />} />
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/starmap" element={<StarmapPage />} />
+                <Route path="/startmap/test" element={<StarmapTestPage />} />
+                <Route path="/starmap/test" element={<StarmapTestPage />} />
                 <Route path="/radio" element={<RadioPage />} />
                 <Route path="/radio/write" element={<RadioWritePage />} />
                 <Route path="/radio/:id" element={<RadioEntryPage />} />
                 <Route path="/github-lab" element={<GithubLabPage />} />
+                <Route path="/github-lab/guide" element={<GithubGuidePage />} />
                 <Route path="/github-lab/top" element={<GithubTopPage />} />
                 <Route path="/github-lab/favorites" element={<GithubFavoritesPage />} />
                 <Route path="/github-lab/tools" element={<GithubToolsPage />} />

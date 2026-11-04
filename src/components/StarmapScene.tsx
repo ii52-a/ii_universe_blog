@@ -42,7 +42,7 @@ export function StarmapScene({regionKey,parentKey,selectedKey,onSelect}:{regionK
     const host=viewport.current,point=pointer.current
     if(!host||!point){setInside(false);return}
     const width=host.clientWidth,height=host.clientHeight,size=Math.min(width,height),pose=cameraState.pose.current
-    const radius=Math.max(...entries.map(entry=>entry.planet.orbit))*size/1000*pose.zoom
+    const radius=Math.max(...entries.map(entry=>entry.planet.orbit))*size*interaction.initialScale/1000*pose.zoom
     setInside(point.x>=0&&point.y>=0&&point.x<=width&&point.y<=height&&Math.hypot(point.x-width/2-pose.x,point.y-height/2-pose.y)<=radius)
   }
 
@@ -69,7 +69,7 @@ export function StarmapScene({regionKey,parentKey,selectedKey,onSelect}:{regionK
     }
     const resize=()=>{
       width=host.clientWidth;height=host.clientHeight
-      body.style.setProperty('--system-scale',String(Math.min(width,height)/1000))
+      body.style.setProperty('--system-scale',String(Math.min(width,height)*interaction.initialScale/1000))
       updateHover.current();requestFrame()
     }
     const visibility=()=>{previous=0;if(document.hidden){cancelAnimationFrame(frame);frame=0}else requestFrame()}
@@ -102,7 +102,7 @@ export function StarmapScene({regionKey,parentKey,selectedKey,onSelect}:{regionK
       onPointerMove={event=>{if(event.pointerType!=='touch'){const rect=event.currentTarget.getBoundingClientRect();pointer.current={x:event.clientX-rect.x,y:event.clientY-rect.y};updateHover.current()}}}
       onPointerLeave={()=>{pointer.current=null;setInside(false)}}>
       <div className="starmap-camera" ref={camera}>
-        <div className="starmap-system" ref={system} data-region={regionKey} data-kind={region.kind} data-dense={entries.length>18} data-labels={showLabels} data-paused={stopped} style={{'--blink-duration':`${motion.blinkDurationMs}ms`,'--galaxy-spin':`${motion.galaxySpinPeriodSeconds}s`,'--planet-min-size':`${motion.planetMinDiameterPx}px`} as CSSProperties}>
+        <div className="starmap-system" ref={system} data-region={regionKey} data-kind={region.kind} data-dense={entries.length>18} data-labels={showLabels} data-paused={stopped} style={{'--initial-scale':interaction.initialScale,'--blink-duration':`${motion.blinkDurationMs}ms`,'--galaxy-spin':`${motion.galaxySpinPeriodSeconds}s`,'--planet-min-size':`${motion.planetMinDiameterPx}px`} as CSSProperties}>
           <svg className="starmap-orbits" viewBox="0 0 1000 1000" aria-hidden="true">{belts.map((belt,index)=><g key={index} className="starmap-belt" data-boundary={index} style={{'--belt-period':`${belt.periodSeconds}s`,color:belt.color} as CSSProperties}><circle className="starmap-belt__ring" cx="500" cy="500" r={belt.radius} strokeWidth={belt.width}/>{belt.particles.map((p,i)=><circle className="starmap-belt__rock" key={i} cx={p.x} cy={p.y} r={p.r} opacity={p.opacity}/>)}</g>)}{entries.map(({key,planet})=><circle key={key} className={selectedKey===key?'is-selected':''} cx="500" cy="500" r={planet.orbit}/>)}</svg>
           <button className={`starmap-star starmap-star--interactive${region.kind==='cluster'?' starmap-star--core':''}`} data-inspect-key={region.subjectKey??regionKey} aria-label={`${region.name}介绍`} onClick={event=>onSelect(region.subjectKey??regionKey,event.currentTarget,true)} style={{'--star-size':`${star.radius*2}px`,'--star-color':star.color} as CSSProperties}><span className="starmap-star__corona"/><span className="starmap-star__body"/><span className="starmap-star__name">{nameLines(star.name).map((line,i)=><span key={i}>{line}</span>)}</span></button>
           {entries.map(subject=>{
@@ -120,7 +120,7 @@ export function StarmapScene({regionKey,parentKey,selectedKey,onSelect}:{regionK
     </div>
     {region.levels&&<div className="starmap-levels" aria-label="学习阶段">{region.levels.map(level=><span key={level.key} data-level={level.key}><i/>{level.name}</span>)}</div>}
     <div className="starmap-zoom" role="group" aria-label="星图视图">
-      <button onClick={cameraState.zoomOut} disabled={cameraState.zoom<=interaction.minZoom+.001} aria-label="缩小星图" title="缩小"><Minus size={15}/></button><output aria-label="缩放比例">{Math.round(cameraState.zoom*100)}%</output><button onClick={cameraState.zoomIn} disabled={cameraState.zoom>=interaction.maxZoom-.001} aria-label="放大星图" title="放大"><Plus size={15}/></button><button onClick={cameraState.reset} aria-label="重置星图视图" title="重置视图"><Focus size={15}/></button>
+      <button onClick={cameraState.zoomOut} disabled={cameraState.zoom<=interaction.minZoom+.001} aria-label="缩小星图" title="缩小"><Minus size={15}/></button><output aria-label="缩放比例">{Math.round(cameraState.zoom*interaction.initialScale*100)}%</output><button onClick={cameraState.zoomIn} disabled={cameraState.zoom>=interaction.maxZoom-.001} aria-label="放大星图" title="放大"><Plus size={15}/></button><button onClick={cameraState.reset} aria-label="重置星图视图" title="重置视图"><Focus size={15}/></button>
     </div>
   </>
 }

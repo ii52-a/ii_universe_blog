@@ -14,6 +14,7 @@
 .starmap-top { position: absolute; inset: 0 28px auto; z-index: 3; height: 64px; display: flex; align-items: center; justify-content: space-between; pointer-events: none; }
 .starmap-top > :is(a,button) { display: flex; align-items: center; gap: 12px; color: #b1b1ac; font: 10px var(--mono); pointer-events: auto; min-height: 36px; }
 .starmap-top > :is(a,button):hover { color: #fff; }
+.starmap-top > .starmap-test-link { margin-left: auto; margin-right: 40px; gap: 4px; }
 .starmap-breadcrumbs { position: absolute; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 12px; pointer-events: auto; }
 .starmap-breadcrumbs > span { display: flex; align-items: center; gap: 12px; }
 .starmap-breadcrumbs button,.starmap-breadcrumbs h1 { font: 400 12px var(--sans); color: #b2b2aa; letter-spacing: .06em; white-space: nowrap; }
@@ -31,14 +32,17 @@
 .starmap-viewport[data-dragging='true'],.starmap-viewport[data-dragging='true'] .starmap-planet { cursor: grabbing; }
 .starmap-viewport:focus-visible { outline: 1px solid #77756a; outline-offset: -3px; }
 .starmap-camera { position: absolute; inset: 0; z-index: 1; transform-origin: 50% 50%; will-change: transform; }
-.starmap-view .starmap-system { position: absolute; width: min(100cqw,100cqh); left: 50%; top: 50%; transform: translate(-50%,-50%); }
+.starmap-view .starmap-system { position: absolute; width: calc(min(100cqw,100cqh)*var(--initial-scale,1)); left: 50%; top: 50%; transform: translate(-50%,-50%); }
 .starmap-viewport { container-type: size; }
 .starmap-zoom { position: absolute; z-index: 5; right: 12px; bottom: 8px; display: flex; align-items: center; gap: 3px; background: #090b0ce0; border: 1px solid #303538; padding: 3px; user-select: none; -webkit-user-select: none; }
 .starmap-zoom button { display: grid; place-items: center; width: 32px; height: 30px; color: #c9d0cd; }
 .starmap-zoom button:disabled { opacity: .3; }
 .starmap-zoom button:hover:not(:disabled) { background: #ffffff0d; }
 .starmap-zoom output { font: 9px var(--mono); color: #a5afae; width: 43px; text-align: center; }
-.starmap-dust { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; fill: #cad4d9; }
+.starmap-haze { position: absolute; inset: -12%; pointer-events: none; background: radial-gradient(ellipse at 24% 32%,#1828335c,transparent 43%),radial-gradient(ellipse at 76% 76%,#30213346,transparent 43%); animation: starmap-nebula 48s ease-in-out infinite alternate; }
+.starmap-dust { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; fill: #cad4d9; animation: starmap-field-drift 84s linear infinite alternate; }
+@keyframes starmap-nebula { from { transform: translate3d(-3%,1%,0); opacity: .64; } to { transform: translate3d(3%,-2%,0); opacity: 1; } }
+@keyframes starmap-field-drift { from { transform: translate3d(-1%,-1%,0) scale(1.05); } to { transform: translate3d(1%,1%,0) scale(1.05); } }
 .starmap-dust circle { animation: starmap-dust 14s ease-in-out infinite; }
 .starmap-system[data-kind='cluster'] { --orbit-line: #171b20; }
 .starmap-system[data-dense='true'] { --orbit-line: #181818; }

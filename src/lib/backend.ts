@@ -1,4 +1,6 @@
 import type { ArticleStyle, ContentBlock } from '../data/posts'
+import type { Strength } from './gomoku/rules'
+import type { RankedGame, RankedLeaderboard } from './gomoku/ranked'
 
 export type UserRole = 'member' | 'admin'
 export type PostStatus = 'draft' | 'pending' | 'published' | 'rejected'
@@ -107,6 +109,17 @@ async function apiFetch<T>(path: string, init: RequestInit = {}): Promise<T> {
     )
   }
   return payload
+}
+
+export const gomokuRankedApi = {
+  leaderboard: (strength: Strength) => apiFetch<RankedLeaderboard>(`/api/gomoku/leaderboard?strength=${strength}`),
+  game: (strength: Strength) => apiFetch<{ game: RankedGame | null }>(`/api/gomoku/ranked?strength=${strength}`),
+  start: (strength: Strength, previousId?: string) => apiFetch<{ game: RankedGame | null }>('/api/gomoku/ranked', {
+    method: 'POST', body: JSON.stringify({ action: 'start', strength, previousId }),
+  }),
+  move: (strength: Strength, id: string, ply: number, move: number) => apiFetch<{ game: RankedGame | null }>('/api/gomoku/ranked', {
+    method: 'POST', body: JSON.stringify({ action: 'move', strength, id, ply, move }),
+  }),
 }
 
 export const authApi = {

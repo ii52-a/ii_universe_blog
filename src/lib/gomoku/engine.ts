@@ -3,7 +3,7 @@
  * 9 格方向棋形表 + 增量更新；Zobrist 双哈希置换表；迭代加深 PVS；
  * 强制防守、威胁延伸和连续冲四证明搜索（VCF）。不使用选择性减层。
  */
-import { CELLS, SIZE, directions, other, type Stone } from './rules'
+import { CELLS, SIZE, directions, other, winningLine, type Stone } from './rules'
 
 const FIVE = 10_000_000, OPEN_FOUR = 200_000, FOUR = 20_000, THREE = 4_000
 const MATE = 100_000_000, INF = 200_000_000
@@ -72,7 +72,7 @@ const TABLE_SIZE = 1 << 18
 const TIMEOUT = Symbol('search deadline')
 
 interface Candidate { move: number; own: number; opponent: number; rank: number }
-export interface SearchReport { move: number; depth: number; nodes: number; elapsed: number; score: number; pv: number[]; proven: boolean }
+export interface SearchReport { move: number; candidates: number[]; depth: number; nodes: number; elapsed: number; score: number; pv: number[]; proven: boolean }
 export interface SearchOptions { timeMs: number; maxDepth?: number; onProgress?: (result: SearchReport) => void }
 
 export class GomokuEngine {
@@ -103,6 +103,23 @@ export class GomokuEngine {
       }
     }
     for (let i = 0; i < CELLS; i++) this.refresh(i)
+  }
+
+  static advantageHistory(history: readonly number[]): number[] {
+    const engine = new GomokuEngine(new Int8Array(CELLS))
+    const scores = [0]
+    history.forEach((move, ply) => {
+      const stone = ply % 2 === 0 ? 1 : 2
+      engine.put(move, stone)
+      if (ply === history.length - 1) {
+        if (winningLine(engine.board, move).length) { scores.push(stone === 1 ? 1 : -1); return }
+        if (engine.count === CELLS) { scores.push(0); return }
+      }
+      // 同一棋形估值分别从黑白两侧计算，消除引擎对行棋方的进攻权重。
+      const balance = (engine.evaluate(1) - engine.evaluate(2)) / 2
+      scores.push(balance / (Math.abs(balance) + 12_000))
+    })
+    return scores
   }
 
   private point(index: number, stone: Stone): number {
@@ -278,17 +295,20 @@ export class GomokuEngine {
 
   choose(stone: Stone, options: SearchOptions): SearchReport {
     this.start = performance.now(); this.deadline = this.start + Math.max(20, options.timeMs); this.nodes = 0
+    const shortlist = this.count ? this.candidates(stone, 24) : []
     const report = (move: number, depth: number, score: number, pv = [move], proven = false): SearchReport => ({
-      move, depth, score, pv, proven, nodes: this.nodes, elapsed: Math.round(performance.now() - this.start),
+      move, candidates: move < 0 ? [] : [move, ...shortlist.filter(candidate => candidate.move !== move).slice(0, 2).map(candidate => candidate.move)],
+      depth, score, pv, proven, nodes: this.nodes, elapsed: Math.round(performance.now() - this.start),
     })
     if (!this.count) return report(112, 0, 0)
     if (this.count === CELLS) return report(-1, 0, 0, [])
-    const candidates = this.candidates(stone, 24)
+    const candidates = shortlist
     if (!candidates.length) return report(-1, 0, 0, [])
     const immediate = candidates.find((move) => move.own >= FIVE)
     if (immediate) return report(immediate.move, 1, MATE, [immediate.move], true)
     if (candidates.length === 1 && candidates[0].opponent >= FIVE) return report(candidates[0].move, 1, 0)
     let result = report(candidates[0].move, 0, this.evaluate(stone))
+    options.onProgress?.(result)
     try {
       const forced = this.vcf(stone, 18, this.start + Math.min(1200, options.timeMs * .22))
       if (forced) return report(forced[0], forced.length, MATE - forced.length, forced, true)

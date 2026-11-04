@@ -5,9 +5,9 @@ const bundle = await build({ stdin: { contents: "export * from './src/lib/gomoku
 const { GomokuEngine, winningLine, validHistory, undoCount, searchBudget, availableStrength, strengthLabels } = await import(`data:text/javascript;base64,${Buffer.from(bundle.outputFiles[0].contents).toString('base64')}`)
 assert.deepEqual(strengthLabels,{quick:'太阳系',deep:'古德尔带',maximum:'银河系'})
 for (const completed of [0,1,2,3,4,5,7,8,9,100]) {
-  assert.equal(searchBudget('quick',completed),1000)
-  assert.equal(searchBudget('deep',completed),completed<5?1000:3000)
-  assert.equal(searchBudget('maximum',completed),completed<3?2500:completed<8?4000:5000)
+  assert.equal(searchBudget('quick',completed),1200)
+  assert.equal(searchBudget('deep',completed),completed<5?1200:3000)
+  assert.equal(searchBudget('maximum',completed),completed<3?2500:completed<8?4000:6000)
   for(const strength of ['quick','deep','maximum']) {
     assert.equal(availableStrength(strength,false),'quick')
     assert.equal(availableStrength(strength,true),strength)
@@ -22,6 +22,9 @@ const check = (name, black, white, side, expected, timeMs = 200) => {
   const engine = new GomokuEngine(board)
   const before = Array.from(engine.board)
   const result = engine.choose(side, { timeMs })
+  assert.equal(result.candidates[0], result.move)
+  assert.ok(result.candidates.length <= 3 && new Set(result.candidates).size === result.candidates.length)
+  assert.ok(result.candidates.every(move => board[move] === 0))
   assert.ok(expected.map(([r, c]) => index(r, c)).includes(result.move), `${name}: selected ${result.move}, expected ${expected}`)
   assert.equal(board[result.move], 0)
   assert.deepEqual(Array.from(engine.board), before, 'Search must unwind every speculative move, including timeout')
@@ -55,6 +58,12 @@ for(let ply=0;ply<vcf.pv.length;ply++){
 assert.ok(winningLine(vcfBoard,vcf.pv.at(-1)).length>=5)
 const empty = new GomokuEngine(new Int8Array(225)).choose(1, { timeMs: 100 })
 assert.equal(empty.move,112)
+assert.deepEqual(GomokuEngine.advantageHistory([]),[0])
+const blackWin = [108,0,109,2,110,4,111,6,112]
+const whiteWin = [0,108,2,109,4,110,6,111,8,112]
+assert.equal(GomokuEngine.advantageHistory(blackWin).at(-1),1)
+assert.equal(GomokuEngine.advantageHistory(whiteWin).at(-1),-1)
+assert.deepEqual(GomokuEngine.advantageHistory(blackWin.slice(0,-1)),GomokuEngine.advantageHistory(blackWin).slice(0,-1))
 const line = new Int8Array(225); for(let c=0;c<6;c++)line[c]=1
 assert.equal(winningLine(line,3).length,6, 'Freestyle overline wins')
 assert.equal(winningLine(new Int8Array(225),0).length,0)

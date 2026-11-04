@@ -55,6 +55,8 @@ export function GithubLabPage() {
         </div>
 
         <nav className="lab-entries" aria-label="GitHub 研究所功能">
+          <Link to="/github-lab/guide">入门教程</Link>
+          <span aria-hidden="true">/</span>
           <Link to="/github-lab/top">top 排行榜</Link>
           <span aria-hidden="true">/</span>
           <Link to="/github-lab/favorites">收藏</Link>

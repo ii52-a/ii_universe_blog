@@ -142,4 +142,21 @@ export const schemaStatements = [
     created_at timestamptz NOT NULL DEFAULT now()
   )`,
   `CREATE INDEX IF NOT EXISTS version_releases_order_idx ON version_releases (released_at DESC, id DESC)`,
+  `CREATE TABLE IF NOT EXISTS gomoku_ranked_games (
+    id uuid UNIQUE NOT NULL,
+    user_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    strength text NOT NULL CHECK (strength IN ('quick', 'deep', 'maximum')),
+    history integer[] NOT NULL DEFAULT '{}',
+    outcome text NOT NULL DEFAULT 'playing' CHECK (outcome IN ('playing', 'won', 'lost', 'draw')),
+    hunt boolean NOT NULL DEFAULT false,
+    PRIMARY KEY (user_id, strength)
+  )`,
+  `CREATE TABLE IF NOT EXISTS gomoku_ranked_scores (
+    user_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    strength text NOT NULL CHECK (strength IN ('quick', 'deep', 'maximum')),
+    moves integer NOT NULL CHECK (moves BETWEEN 5 AND 113),
+    achieved_at timestamptz NOT NULL DEFAULT now(),
+    PRIMARY KEY (user_id, strength)
+  )`,
+  `CREATE INDEX IF NOT EXISTS gomoku_ranked_scores_order_idx ON gomoku_ranked_scores (strength, moves, achieved_at, user_id)`,
 ]

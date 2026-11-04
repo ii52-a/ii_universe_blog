@@ -6,7 +6,7 @@
 
 import { useDeferredValue, useEffect, useState, type FormEvent } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
-import { PenLine, Plus, Search, X } from 'lucide-react'
+import { ArrowUpRight, PenLine, Plus, Search, X } from 'lucide-react'
 import { categories as fallbackCategories } from '../data/posts'
 import type { Post } from '../data/posts'
 import site from '../content/site.json'
@@ -177,6 +177,7 @@ export function ArticlesPage() {
         )}
       </header>
 
+      <div className="archive-radio"><Link to="/radio" className="text-link">直通电台 <ArrowUpRight size={14} aria-hidden="true" /></Link></div>
       <section className="archive" aria-label="文章筛选">
         <div className="archive__toolbar">
           <div className="filter-chips" role="group" aria-label="按分类筛选">

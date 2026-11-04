@@ -58,7 +58,7 @@ export function LoginPage() {
   const [errors, setErrors] = useState<Errors>({})
 
   const fromParam = params.get('from')
-  const from = fromParam && fromParam.startsWith('/') ? fromParam : '/space'
+  const from = fromParam && /^\/(?![/\\])/.test(fromParam) && !/[\t\r\n]/.test(fromParam) ? fromParam : '/universe'
 
   const demoLogin = async () => {
     setMode('login')

@@ -1,0 +1,22 @@
+.github-guide__layout { display: grid; grid-template-columns: 224px minmax(0, 1fr); align-items: start; gap: clamp(24px,5vw,74px); padding-block: 20px 68px; }
+.github-guide__side { position: sticky; top: 22px; border: 1px solid var(--line-dark); }
+.github-guide__label { display: flex; align-items: center; gap: 9px; padding: 15px 14px; border-bottom: 1px solid var(--line-dark); font-size: 13px; }
+.github-guide__side nav { display: grid; padding: 6px; }
+.github-guide__side a { display: flex; align-items: center; gap: 10px; min-height: 38px; padding: 6px 8px; border-left: 2px solid transparent; font-size: 12px; }
+.github-guide__side a span,.github-guide__chapter header span { color: var(--muted); font: 11px var(--mono); }
+.github-guide__side a[aria-current='page'] { border-left-color: var(--ink); background: var(--paper-soft); color: var(--ink); }
+.github-guide__side a:hover,.github-guide__steps a:hover { text-decoration: underline; }
+.github-guide__chapter { width: min(100%,760px); min-width: 0; }
+.github-guide__chapter header { padding-bottom: 19px; margin-bottom: 22px; border-bottom: 1px solid var(--line-dark); }
+.github-guide__chapter h1 { margin-top: 7px; font: 500 clamp(28px,5vw,51px)/1.16 var(--serif); letter-spacing: -.045em; }
+.github-guide__chapter h1:focus { outline: none; }
+.github-guide__chapter .markdown-body { font-size: 15px; overflow-wrap: anywhere; }
+.github-guide__chapter .markdown-body a { text-decoration: underline; text-underline-offset: 3px; }
+.github-guide__steps { display: flex; align-items: center; justify-content: space-between; gap: 14px; margin-top: 32px; padding-top: 15px; border-top: 1px solid var(--line-dark); }
+.github-guide__steps a { display: flex; align-items: center; gap: 6px; font-size: 12px; }
+@media (max-width: 720px) {
+  .github-guide__layout { grid-template-columns: minmax(0,1fr); gap: 22px; padding-top: 0; }
+  .github-guide__side { position: static; }
+  .github-guide__side nav { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .github-guide__chapter .markdown-body { font-size: 14px; }
+}

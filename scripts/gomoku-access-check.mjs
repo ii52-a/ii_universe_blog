@@ -18,7 +18,7 @@ await page.addInitScript(()=>{
   window.searchRequests=[]
   const NativeWorker=window.Worker
   window.Worker=class extends NativeWorker {
-    postMessage(value,...rest){window.searchRequests.push(value);return super.postMessage(value,...rest)}
+    postMessage(value,...rest){if(value.type==='search')window.searchRequests.push(value);return super.postMessage(value,...rest)}
   }
 })
 const base='http://127.0.0.1:4173'
@@ -40,6 +40,8 @@ try{
   await page.goto(`${base}/starboard/gomoku`)
   await openSettings()
   await page.locator('[data-level="quick"]:not(:disabled)').waitFor()
+  await page.getByRole('link',{name:'登录查看',exact:true}).waitFor()
+  assert.equal(await page.locator('.gomoku-advantage svg[role="img"]').count(),0)
   for(const level of ['deep','maximum']){
     await page.locator(`[data-level="${level}"]`).click()
     await page.getByRole('dialog',{name:level==='deep'?'古德尔带':'银河系',exact:true}).waitFor()
@@ -53,6 +55,8 @@ try{
   await save('deep')
   await page.locator('[data-level="quick"][aria-pressed="true"]:not(:disabled)').waitFor()
   assert.equal(await page.locator('[data-level="deep"]').getAttribute('data-locked'),'true','Guest cannot unlock advanced opponents')
+  await page.getByRole('link',{name:'登录查看',exact:true}).waitFor()
+  assert.equal(await page.locator('.gomoku-advantage svg[role="img"]').count(),0,'Guest cannot view advantage chart')
 
   identity=user('signed-in-member')
   delay=true
@@ -62,14 +66,15 @@ try{
   assert.equal(await page.evaluate(()=>window.searchRequests.length),0,'No engine starts before session verification')
   release();delay=false
   await page.locator('[data-level="maximum"][aria-pressed="true"][data-locked="false"]').waitFor()
+  await page.locator('.gomoku-advantage polyline').waitFor()
   await page.waitForFunction(()=>window.searchRequests.length>0)
   assert.equal(await page.evaluate(()=>window.searchRequests.at(-1).timeMs),2500)
 
   const checks=[]
   for(const human of [1,2])for(const [strength,completed,expected] of [
-    ['quick',0,1000],['quick',11,1000],
-    ['deep',4,1000],['deep',5,3000],
-    ['maximum',2,2500],['maximum',3,4000],['maximum',7,4000],['maximum',8,5000]
+    ['quick',0,1200],['quick',11,1200],
+    ['deep',4,1200],['deep',5,3000],
+    ['maximum',2,2500],['maximum',3,4000],['maximum',7,4000],['maximum',8,6000]
   ]){
     const plies=completed*2+(human===1?1:0)
     await save(strength,human,history.slice(0,plies))

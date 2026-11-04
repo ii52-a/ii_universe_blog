@@ -5,6 +5,11 @@ const nextConfig: NextConfig = {
   serverExternalPackages: ['@electric-sql/pglite', 'pg'],
   outputFileTracingRoot: path.resolve('.'),
   poweredByHeader: false,
+  webpack(config, { isServer, nextRuntime }) {
+    // Node workers load their emitted chunk beside the server runtime.
+    if (isServer && nextRuntime === 'nodejs') config.output.workerPublicPath = './'
+    return config
+  },
 }
 
 export default nextConfig

@@ -10,9 +10,9 @@ export const defaultSettings: GameSettings = { mode: 'ai', human: 1, strength: '
 
 /** completedAiMoves 是本地对手已落子的次数；执黑、执白的阶段边界一致。 */
 export function searchBudget(strength: Strength, completedAiMoves: number): number {
-  if (strength === 'quick') return 1000
-  if (strength === 'deep') return completedAiMoves < 5 ? 1000 : 3000
-  return completedAiMoves < 3 ? 2500 : completedAiMoves < 8 ? 4000 : 5000
+  if (strength === 'quick') return 1200
+  if (strength === 'deep') return completedAiMoves < 5 ? 1200 : 3000
+  return completedAiMoves < 3 ? 2500 : completedAiMoves < 8 ? 4000 : 6000
 }
 
 export function availableStrength(strength: Strength, signedIn: boolean): Strength {

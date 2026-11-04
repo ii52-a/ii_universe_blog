@@ -38,6 +38,7 @@ try {
   await openSettings()
   const boardBounds=await page.locator('.gomoku-board-frame').boundingBox(),settingsBounds=await page.locator('.gomoku-settings-rail').boundingBox()
   assert.ok(settingsBounds.x+settingsBounds.width<boardBounds.x,'Settings stay to the left of the board')
+  assert.ok(Math.abs(settingsBounds.y-boardBounds.y)<1,'Settings align with the top of the board')
   assert.equal(await page.locator('.gomoku-settings-rail .gomoku-analysis').count(),0)
   assert.equal(await page.locator('.gomoku-analysis-rail .gomoku-settings').count(),0)
   assert.equal(await page.locator('[data-level="quick"]').count(),1)
@@ -45,6 +46,7 @@ try {
   assert.equal(await page.locator('[data-level="maximum"][data-locked="true"]').count(),1)
   await page.locator('[data-level="maximum"]').click()
   await page.getByRole('dialog',{name:'银河系',exact:true}).waitFor()
+  assert.equal(await page.locator('.gomoku-level-flare').count(),0,'Locked level does not trigger a switch effect')
   assert.equal(await page.getByRole('link',{name:'登录',exact:true}).getAttribute('href'),'/login?from=%2Fstarboard%2Fgomoku')
   await page.getByRole('button',{name:'继续对局',exact:true}).click()
   assert.equal(await page.locator('[data-level="quick"]').getAttribute('aria-pressed'),'true')
@@ -97,8 +99,13 @@ try {
   // Real Worker, UI stays responsive, no double move, paired undo.
   await save([])
   await cell('H8 空位').click()
+  const preview = page.locator('.gomoku-preview-moves circle')
+  await preview.first().waitFor()
+  assert.equal(await preview.count(),3,'Preview shows three legal engine candidates in the opening')
+  assert.ok(!(await preview.evaluateAll(rings=>rings.map(ring=>Number(ring.dataset.move)))).includes(112))
   await page.waitForFunction(()=>document.querySelectorAll('.gomoku-cell.has-stone').length===2,{},{timeout:10000})
   assert.equal(await count(),2)
+  assert.equal(await preview.count(),0,'Preview clears on placement')
   assert.ok(Number.parseInt(await page.locator('.gomoku-analysis dd').first().innerText(),10)>=1,'Search analysis displays the actual completed worker result')
   await pick('亮色')
   assert.equal(await count(),2,'Changing board appearance preserves the current game')
@@ -108,6 +115,12 @@ try {
   await page.setViewportSize({width:1280,height:720})
   const analysisBounds=await page.locator('.gomoku-analysis').boundingBox()
   assert.ok(analysisBounds.y>=56 && analysisBounds.y+analysisBounds.height<720,'AI settings and analysis fit a laptop screen')
+  const railBounds = await page.locator('.gomoku-analysis-rail').boundingBox()
+  const laptopBoard = await page.locator('.gomoku-board-frame').boundingBox()
+  const layoutBounds = await page.locator('.gomoku-layout').boundingBox()
+  assert.ok(Math.abs(railBounds.y-laptopBoard.y)<1,'Analysis aligns with the top of the board')
+  assert.ok(Math.abs(railBounds.x+railBounds.width-layoutBounds.x-layoutBounds.width)<1,'Analysis fills the right column')
+  assert.ok(railBounds.height<laptopBoard.height)
   await page.setViewportSize({width:1440,height:1000})
   const before = await page.evaluate(()=>JSON.parse(localStorage.getItem('ii-starboard-gomoku-v1')).history)
   await page.reload()
@@ -121,6 +134,17 @@ try {
   await page.getByRole('grid').waitFor()
   await openSettings()
   await page.locator('[data-level="maximum"][data-locked="false"]').waitFor()
+  const flare = page.locator('.gomoku-level-flare')
+  for (const [level, animation] of [['deep','sb-level-belt'],['maximum','sb-level-spiral'],['quick','sb-level-orbit']]) {
+    const option = page.locator(`.gomoku-strength [data-level="${level}"]`)
+    await option.click()
+    assert.equal(await option.getAttribute('aria-pressed'),'true')
+    assert.equal(await flare.getAttribute('data-level'),level)
+    assert.equal(await option.locator('svg.gomoku-level-ornament').evaluate(svg=>getComputedStyle(svg).animationName),animation)
+  }
+  await flare.waitFor({state:'detached'})
+  await page.locator('.gomoku-strength [data-level="quick"]').click()
+  assert.equal(await flare.count(),0,'Selecting the current level does not replay the animation')
   await pick(/银河系/)
   await cell('H8 空位').click()
   await page.waitForTimeout(180)
@@ -146,6 +170,24 @@ try {
   await page.waitForFunction(()=>document.querySelectorAll('.gomoku-cell.has-stone').length===8)
   await cell('F8 白棋 第 8 手').waitFor()
 
+  // A proven attack highlights the actual worker move and disappears on undo.
+  const attack = [110,109,111,32,113,33,82,0,97,14]
+  await save(attack,settings('ai',2))
+  const hunt = page.locator('.gomoku-hunt')
+  await hunt.waitFor()
+  assert.equal(await page.locator('.gomoku-resonance').count(),0,'Hunt effects stay inside the board')
+  await cell('H8 黑棋 第 11 手').waitFor()
+  assert.equal(await page.locator('.gomoku-page').getAttribute('data-state'),'active')
+  assert.equal(await hunt.getAttribute('data-move'),'112')
+  assert.equal(await hunt.evaluate(element=>getComputedStyle(element).pointerEvents),'none')
+  const wave = hunt.locator('.gomoku-hunt__wave').first()
+  assert.notEqual(await wave.evaluate(element=>getComputedStyle(element).animationName),'none')
+  await page.emulateMedia({reducedMotion:'reduce'})
+  assert.equal(await wave.evaluate(element=>getComputedStyle(element).animationName),'none')
+  await page.emulateMedia({reducedMotion:'no-preference'})
+  await page.getByRole('button',{name:'悔棋',exact:true}).click()
+  assert.equal(await hunt.count(),0)
+
   // Saved full draw and corrupted save are handled explicitly.
   const black=[],white=[]
   for(let r=0;r<15;r++)for(let c=0;c<15;c++)((r+2*c)%4<2?black:white).push(r*15+c)
@@ -153,10 +195,19 @@ try {
   while(black.length||white.length){if(black.length)draw.push(black.shift());if(white.length)draw.push(white.shift())}
   await save(draw,settings('local'))
   await page.getByRole('heading',{name:'棋盘已满，和棋',exact:true}).waitFor()
+  await page.locator('.gomoku-advantage__grade strong').filter({hasText:'和棋'}).waitFor()
   await save([112,112],settings('local'))
   assert.equal(await count(),0)
 
   await save([112,96,113,97,114,98],settings('local'))
+  const chart = page.locator('.gomoku-advantage polyline')
+  await chart.waitFor()
+  assert.match(await page.locator('.gomoku-advantage__grade').innerText(),/估值\s+[+-]?\d+/)
+  const pointCount = async () => (await chart.getAttribute('points')).trim().split(/\s+/).length
+  assert.equal(await pointCount(),7,'Trend reconstructs the saved board from opening through the last move')
+  await page.getByRole('button',{name:'悔棋',exact:true}).click()
+  await chart.waitFor()
+  assert.equal(await pointCount(),6,'Undo removes the last evaluation')
   await a11y()
   await screenshot('gomoku-desktop')
   for(const [width,height] of [[1280,720],[1024,768],[768,1024],[390,844],[360,740],[320,568],[844,390]]){
@@ -199,5 +250,5 @@ try {
   await a11y()
   assert.equal(await page.evaluate(()=>document.documentElement.scrollHeight),390)
   assert.deepEqual(errors,[])
-  console.log(JSON.stringify({ok:true,checks:['navigation','local win','draw','keyboard','confirm/cancel','persistence','invalid save','real AI','cancel worker','AI white','forced block','paired undo','board palette and persistence','live analysis','centered board','fixed viewport','mobile settings dialog','desktop/mobile a11y']}))
+  console.log(JSON.stringify({ok:true,checks:['navigation','local win','draw','keyboard','confirm/cancel','persistence','invalid save','real AI','cancel worker','AI white','forced block','hunt effect and reduced motion','paired undo','board palette and persistence','live analysis','centered board','fixed viewport','mobile settings dialog','desktop/mobile a11y']}))
 }finally{await browser.close()}

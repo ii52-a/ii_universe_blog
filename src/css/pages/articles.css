@@ -76,6 +76,7 @@
 .archive {
   margin-top: 28px
 }
+.archive-radio { display: flex; justify-content: flex-end; margin-bottom: 14px; }
 .archive__toolbar {
   display: flex;
   align-items: center;

@@ -3,12 +3,14 @@ import { ArrowLeft, ChartNoAxesCombined, Check, Eye, EyeOff, LockKeyhole, Rotate
 import { Link } from 'react-router-dom'
 import { StarboardHeader } from '../components/starboard/StarboardHeader'
 import { GomokuBoard } from '../components/starboard/GomokuBoard'
+import { GomokuAdvantage } from '../components/starboard/GomokuAdvantage'
 import { usePageTitle } from '../hooks/usePageTitle'
 import { useBoardTheme } from '../hooks/useBoardTheme'
 import { useAuth } from '../context/AuthContext'
 import { isGuest } from '../lib/account'
 import { availableStrength, boardFrom, coordinate, other, readSavedGame, searchBudget, strengthLabels, strengthSchedules, toPlay, undoCount, winningLine, type GameSettings, type Strength } from '../lib/gomoku/rules'
 import type { SearchReport } from '../lib/gomoku/engine'
+import type { GomokuRequest } from '../lib/gomoku/gomoku.worker'
 import '../css/pages/starboard.css'
 
 type Thinking = { status: 'idle' | 'thinking' | 'error'; result: SearchReport | null; error?: string }
@@ -25,6 +27,7 @@ export function GomokuPage() {
   const [retry, setRetry] = useState(0)
   const [pending, setPending] = useState<GameSettings | null>(null)
   const [lockedLevel, setLockedLevel] = useState<Strength | null>(null)
+  const [strengthEffect, setStrengthEffect] = useState<Strength | null>(null)
   const [elapsed, setElapsed] = useState(0)
   const [theme, setTheme] = useBoardTheme()
   const [compact, setCompact] = useState(() => window.matchMedia('(max-width: 1180px)').matches)
@@ -46,8 +49,13 @@ export function GomokuPage() {
   const aiTurn = settings.mode === 'ai' && turn !== settings.human && !ended
   const canUndo = history.length > (settings.mode === 'ai' && settings.human === 2 ? 1 : 0)
   const activeStrength = availableStrength(settings.strength, signedIn)
+  const switchingStrength = settings.mode === 'ai' && strengthEffect === activeStrength ? strengthEffect : null
   const aiMoves = settings.human === 1 ? Math.floor(history.length / 2) : Math.ceil(history.length / 2)
   const timeMs = searchBudget(activeStrength, aiMoves)
+  const huntMove = settings.mode === 'ai' && thinking.result?.proven && history.at(-1) === thinking.result.move
+    ? thinking.result.move : null
+  const previewMoves = aiTurn && thinking.status === 'thinking'
+    ? thinking.result?.candidates.filter(move => position.board[move] === 0) ?? [] : []
 
   // 等会话校验完成再处理旧存档，避免登录用户刷新时被降档。
   useEffect(() => {
@@ -111,7 +119,8 @@ export function GomokuPage() {
         setHistory((moves) => [...moves, result.move])
       }
       instance.onerror = () => fail('本地引擎暂时无法启动。请重试，或切换同屏双人。')
-      instance.postMessage({ board: Array.from(position.board), stone: turn, timeMs })
+      const message: GomokuRequest = { type: 'search', board: Array.from(position.board), stone: turn, timeMs }
+      instance.postMessage(message)
       watchdog = window.setTimeout(() => fail('本次计算超时，请重试。'), timeMs + 4000)
     } catch { fail('当前浏览器无法启动本地引擎，可切换同屏双人。') }
     return () => {
@@ -129,6 +138,14 @@ export function GomokuPage() {
     generation.current++
     worker.current?.terminate(); worker.current = null
     setHistory([]); setSettings(next); setThinking({ status: 'idle', result: null }); setPending(null)
+    setStrengthEffect(null)
+  }
+  const selectStrength = (level: Strength) => {
+    if (!ready) return
+    if (level !== 'quick' && !signedIn) { setLockedLevel(level); return }
+    if (level === activeStrength) return
+    setSettings(value => ({ ...value, strength: level }))
+    setStrengthEffect(level)
   }
   const requestReset = (next: GameSettings) => { if (history.length && !ended) setPending(next); else reset(next) }
   const undo = () => {
@@ -160,7 +177,12 @@ export function GomokuPage() {
           const locked = level !== 'quick' && !signedIn
           return <button key={level} data-level={level} data-locked={locked} disabled={!ready} aria-pressed={activeStrength===level}
             title={level==='quick'?'难度1':level==='deep'?'难度2':'难度3'}
-            onClick={()=>locked?setLockedLevel(level):setSettings(value=>({...value,strength:level}))}>
+            onClick={() => selectStrength(level)}>
+            {switchingStrength === level && <svg className="gomoku-level-ornament" viewBox="0 0 60 60" aria-hidden="true">
+              {level === 'quick' && <g transform="rotate(-26 30 30)"><ellipse cx="30" cy="30" rx="27" ry="14" /><circle cx="53" cy="37" r="2" /></g>}
+              {level === 'deep' && <path d="M3 43 50 17M8 49 56 23M14 53 58 29" />}
+              {level === 'maximum' && <path d="M30 30c5-3 10 2 6 7-6 7-20 3-21-8-1-16 26-22 36-5M30 30c-5 3-10-2-6-7 6-7 20-3 21 8 1 16-26 22-36 5" />}
+            </svg>}
             <span>{strengthLabels[level]}{locked && <LockKeyhole size={10} aria-hidden="true"/>}</span><small>{strengthSchedules[level]}</small>{locked && <span className="gomoku-strength__locked">需登录</span>}
           </button>
         })}</div>
@@ -176,12 +198,16 @@ export function GomokuPage() {
         <div><dt>深度</dt><dd>{thinking.result?`${thinking.result.depth} 层`:'—'}</dd></div>
         <div><dt>局面</dt><dd>{thinking.result?thinking.result.nodes.toLocaleString():'—'}</dd></div>
         <div><dt>用时</dt><dd>{thinking.status==='thinking'?`${elapsed.toFixed(1)}s`:thinking.result?`${(thinking.result.elapsed/1000).toFixed(2)}s`:'—'}</dd></div>
-        <div><dt>{thinking.status==='thinking'?'候选落点':'最近落点'}</dt><dd>{thinking.result?coordinate(thinking.result.move):'—'}</dd></div>
+        <div><dt>{thinking.status==='thinking'?'候选落点':'最近落点'}</dt><dd>{thinking.status === 'thinking' ? previewMoves.map(coordinate).join(' / ') || '—' : thinking.result ? coordinate(thinking.result.move) : '—'}</dd></div>
       </>:<>
         <div><dt>当前手数</dt><dd>{history.length}</dd></div><div><dt>最近落点</dt><dd>{history.length?coordinate(history.at(-1)!):'—'}</dd></div>
         <div><dt>黑棋</dt><dd>{Math.ceil(history.length/2)}</dd></div><div><dt>白棋</dt><dd>{Math.floor(history.length/2)}</dd></div>
       </>}</dl>
       {settings.mode==='ai' && thinking.result?.proven && <span className="gomoku-analysis__proof"><Check size={12}/> 狩猎模式</span>}
+      {signedIn ? analysisOpen && <GomokuAdvantage history={history} /> : <div className="gomoku-advantage gomoku-advantage--locked">
+        <span><LockKeyhole size={13} aria-hidden="true" />优势走势</span>
+        {ready ? <Link to="/login?from=%2Fstarboard%2Fgomoku">登录查看</Link> : <span>正在检查登录状态</span>}
+      </div>}
     </section>
 
   return <div className="starboard gomoku-page" data-board-theme={theme} data-analysis-open={!compact&&analysisOpen} data-state={ended?'ended':thinking.status==='error'?'error':'active'}>
@@ -190,7 +216,9 @@ export function GomokuPage() {
       {!compact && <aside className="gomoku-settings-rail" aria-label="左侧对局设置">{controls}</aside>}
       <section className="gomoku-table" aria-labelledby="gomoku-title">
         <div className="gomoku-heading"><div><Link to="/starboard" aria-label="返回星盘"><ArrowLeft size={15} /></Link><h1 id="gomoku-title">五子棋</h1><span>15 × 15</span></div>{gameStatus}<div className="gomoku-heading__actions"><button onClick={()=>setAnalysisOpen(value=>!value)} aria-label="对局分析" aria-expanded={analysisOpen} title="对局分析"><ChartNoAxesCombined size={17}/></button><button className="gomoku-open-settings" onClick={()=>setSettingsOpen(true)} aria-label="打开对局设置" title="对局设置"><SlidersHorizontal size={17}/></button></div></div>
-        <div className="gomoku-board-frame"><GomokuBoard history={history} board={position.board} turn={turn} winning={position.winning} locked={ended || aiTurn} numbers={numbers} onMove={move} /></div>
+        <div className="gomoku-board-frame"><GomokuBoard history={history} board={position.board} turn={turn} winning={position.winning} locked={ended || aiTurn} numbers={numbers} huntMove={huntMove} previewMoves={previewMoves} onMove={move} /></div>
+        {switchingStrength && <div className="gomoku-level-flare" key={switchingStrength} data-level={switchingStrength} aria-hidden="true"
+          onAnimationEnd={() => setStrengthEffect(value => value === switchingStrength ? null : value)} />}
         <div className="gomoku-table__bottom"><div className="gomoku-players"><span data-active={!ended&&turn===1}><i className="gomoku-turn-dot is-black"/>{blackName}</span><span data-active={!ended&&turn===2}><i className="gomoku-turn-dot is-white"/>{whiteName}</span></div><div className="gomoku-actions"><button onClick={undo} disabled={!canUndo} aria-label="悔棋" title="悔棋"><RotateCcw size={14}/><span>悔棋</span></button><button onClick={()=>ended?reset(settings):requestReset(settings)} title={ended?'再来一局':'重新开局'}><RotateCw size={14}/><span>{ended?'再来一局':'重新开局'}</span></button><button onClick={()=>setNumbers((value)=>!value)} aria-pressed={numbers} aria-label={numbers?'隐藏手数':'显示手数'} title={numbers?'隐藏手数':'显示手数'}>{numbers?<EyeOff size={14}/>:<Eye size={14}/>}</button></div></div>
       </section>
 
@@ -203,7 +231,7 @@ export function GomokuPage() {
       <h2 id="gomoku-login-title">{lockedLevel ? strengthLabels[lockedLevel] : ''}</h2><p>登录后可用</p><div><button onClick={()=>setLockedLevel(null)}>继续对局</button><Link to="/login?from=%2Fstarboard%2Fgomoku">登录 <ArrowLeft size={14}/></Link></div>
     </dialog>
     <dialog ref={dialog} className="gomoku-dialog" aria-labelledby="gomoku-dialog-title" onCancel={()=>setPending(null)} onClick={event=>{if(event.target===dialog.current)setPending(null)}}>
-      <button className="gomoku-dialog__close" onClick={()=>setPending(null)} aria-label="关闭确认窗口"><X size={18}/></button><span className="starboard-overline">NEW GAME</span><h2 id="gomoku-dialog-title">重新摆一盘？</h2><p>当前棋局会结束，按新的设置开局。</p><div><button onClick={()=>setPending(null)}>继续这局</button><button onClick={()=>pending && reset(pending)}>确认开局 <ArrowLeft size={14}/></button></div>
+      <button className="gomoku-dialog__close" onClick={()=>setPending(null)} aria-label="关闭确认窗口"><X size={18}/></button><span className="starboard-overline"></span><h2 id="gomoku-dialog-title">重新摆一盘？</h2><p>当前棋局会结束，按新的设置开局。</p><div><button onClick={()=>setPending(null)}>继续这局</button><button onClick={()=>pending && reset(pending)}>确认开局 <ArrowLeft size={14}/></button></div>
     </dialog>
   </div>
 }

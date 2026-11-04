@@ -24,7 +24,7 @@ export interface StarmapRegion {
 interface StarmapConfig {
   root: string
   motion: { blinkDelayMinMs: number; blinkDelayMaxMs: number; blinkDurationMs: number; orbitSpeedMultiplier: number; galaxySpinPeriodSeconds: number; planetMinDiameterPx: number }
-  interaction: { minZoom: number; maxZoom: number; enterZoom: number; exitZoom: number; zoomStep: number; wheelSensitivity: number; panLimitRatio: number; dragThresholdPx: number }
+  interaction: { initialScale: number; minZoom: number; maxZoom: number; enterZoom: number; exitZoom: number; zoomStep: number; wheelSensitivity: number; panLimitRatio: number; dragThresholdPx: number }
   subjects: Record<string, StarmapSubject>
   regions: Record<string, StarmapRegion>
 }

@@ -84,10 +84,12 @@ export function StarmapPage() {
   },[selectedKey,regionKey,parentKey])
 
   return <div className="starmap-page" ref={page} data-version={versions.starmap} data-selected={Boolean(selected)} data-transition={transition??'idle'} data-direction={direction} data-region={regionKey}>
+    <div className="starmap-haze" aria-hidden="true" />
     <svg className="starmap-dust" viewBox="0 0 1440 1000" preserveAspectRatio="xMidYMid slice" aria-hidden="true">{dust.map((point,i)=><circle key={i} cx={point.x} cy={point.y} r={point.r} opacity={point.opacity} style={{animationDelay:`${point.delay}s`}}/>)}</svg>
     <header className="starmap-top">
       {parentKey?<button onClick={()=>enterRegion(parentKey)} disabled={Boolean(transition)} aria-label="返回上层星系"><ArrowLeft size={14}/><span>{regions[parentKey].name}</span></button>:<Link to="/universe" aria-label="返回 ii universe"><ArrowLeft size={14}/><span>ii universe</span></Link>}
       <nav className="starmap-breadcrumbs" aria-label="星系路径">{path.map((key,index)=><span key={key} data-region-key={key}>{index>0 && <ChevronRight size={10}/>}{key===regionKey?<h1 ref={regionHeading} tabIndex={-1} title={regions[key].name}>{regions[key].name}</h1>:<button disabled={Boolean(transition)} onClick={()=>enterRegion(key)}>{regions[key].name}</button>}</span>)}</nav>
+      {!parentKey && <Link className="starmap-test-link" to="/startmap/test" aria-label="3D 轨道实验">3D <ArrowUpRight size={13} /></Link>}
     </header>
     <main className="starmap-stage" aria-label={`${region.name}星图`} aria-busy={Boolean(transition)}>
       <div className="starmap-view" ref={view}><StarmapScene key={regionKey} regionKey={regionKey} parentKey={parentKey} selectedKey={selectedKey} onSelect={select}/></div>

@@ -1,8 +1,9 @@
 import { useRef, useState, type KeyboardEvent } from 'react'
 import { coordinate, SIZE, type Stone } from '../../lib/gomoku/rules'
 
-export function GomokuBoard({ history, board, turn, winning, locked, numbers, onMove }: {
-  history: number[]; board: Int8Array; turn: Stone; winning: number[]; locked: boolean; numbers: boolean; onMove: (move: number) => void
+export function GomokuBoard({ history, board, turn, winning, locked, numbers, huntMove, previewMoves, onMove }: {
+  history: number[]; board: Int8Array; turn: Stone; winning: number[]; locked: boolean; numbers: boolean
+  huntMove: number | null; previewMoves: number[]; onMove: (move: number) => void
 }) {
   const [focus, setFocus] = useState(112)
   const cells = useRef<(HTMLButtonElement | null)[]>([])
@@ -20,6 +21,7 @@ export function GomokuBoard({ history, board, turn, winning, locked, numbers, on
     event.preventDefault(); setFocus(target); cells.current[target]?.focus()
   }
   const point = (index: number) => ({ x: 36 + index % SIZE * 528 / 14, y: 36 + Math.floor(index / SIZE) * 528 / 14 })
+  const hunt = huntMove === null ? null : point(huntMove)
   return <div className="gomoku-board" data-turn={turn} data-locked={locked}>
     <svg className="gomoku-board__lines" viewBox="0 0 600 600" aria-hidden="true">
       <defs><pattern id="starboard-grain" width="6" height="6" patternUnits="userSpaceOnUse"><path d="M0 0h6v6H0z" fill="transparent" /><path d="M0 2h6M0 5h6" className="gomoku-board__grain" strokeWidth=".3" opacity=".16" /></pattern></defs>
@@ -53,5 +55,20 @@ export function GomokuBoard({ history, board, turn, winning, locked, numbers, on
     {winning.length > 0 && <svg className="gomoku-board__win" viewBox="0 0 600 600" aria-hidden="true">
       <line x1={point(winning[0]).x} y1={point(winning[0]).y} x2={point(winning.at(-1)!).x} y2={point(winning.at(-1)!).y} />
     </svg>}
+    {previewMoves.length > 0 && <svg className="gomoku-preview-moves" viewBox="0 0 600 600" aria-hidden="true">
+      {previewMoves.map((move, index) => <circle key={move} data-move={move} data-primary={index === 0}
+        cx={point(move).x} cy={point(move).y} r={index === 0 ? 13 : 11} />)}
+    </svg>}
+    {hunt && <div className="gomoku-hunt" key={`${history.length}-${huntMove}`} data-move={huntMove}>
+      <svg viewBox="0 0 600 600" aria-hidden="true">
+        <line className="gomoku-hunt__scan" x1="0" x2="600" y1="0" y2="0" />
+        <g transform={`translate(${hunt.x} ${hunt.y})`}>
+          <circle className="gomoku-hunt__wave" r="20" />
+          <circle className="gomoku-hunt__wave gomoku-hunt__wave--echo" r="20" />
+          <path className="gomoku-hunt__reticle" d="M-15-23h-8v8M15-23h8v8M23 15v8h-8M-23 15v8h8" />
+        </g>
+      </svg>
+      <span className="sr-only" role="status">狩猎模式</span>
+    </div>}
   </div>
 }

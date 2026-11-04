@@ -1,5 +1,5 @@
 import { ArrowUpRight } from 'lucide-react'
-import { Link } from 'react-router-dom'
+import { Link, NavLink } from 'react-router-dom'
 import versions from '../../content/versions.json'
 
 export function StarboardHeader({ game = false }: { game?: boolean }) {
@@ -10,6 +10,7 @@ export function StarboardHeader({ game = false }: { game?: boolean }) {
     </Link>
     <nav aria-label="星盘导航"><Link className={!game ? 'is-current' : ''} to="/starboard">游戏室 <sup>01</sup></Link>
       {game && <span className="starboard-header__location">/ 五子棋</span>}
+      <NavLink to="/starboard/gomoku/leaderboard" className={({ isActive }) => isActive ? 'is-current' : ''}>排行</NavLink>
       <Link to="/universe">ii universe <ArrowUpRight size={13} /></Link>
     </nav>
   </header>

@@ -35,7 +35,7 @@ async function login(identifier, secret) {
   await page.locator('#auth-identifier').fill(identifier)
   await page.locator('#auth-password').fill(secret)
   await page.getByRole('button', { name: /进去坐坐/ }).click()
-  await page.waitForURL('**/space', { timeout: 15000 })
+  await page.waitForURL('**/universe', { timeout: 15000 })
 }
 
 async function approveFirst() {
@@ -58,7 +58,8 @@ assert.match(devCode, /^\d{6}$/)
 assert.equal(await page.locator('#auth-code').inputValue(), devCode)
 await page.locator('#auth-password').fill(password)
 await page.getByRole('button', { name: /建好账号/ }).click()
-await page.waitForURL('**/space', { timeout: 15000 })
+await page.waitForURL('**/universe', { timeout: 15000 })
+await page.goto(`${base}/space`, { waitUntil: 'networkidle' })
 assert.equal(
   await page.locator('.space-copy h1').innerText().then((text) => text.includes(username)),
   true,
@@ -74,7 +75,7 @@ assert.equal(await page.locator('.space-actions a[href="/write"]').count(), 1)
 await logout()
 await login('ii52A1', '0000')
 assert.equal(
-  await page.getByRole('button', { name: /ii52A1/ }).count() > 0,
+  await page.locator('.universe-top__account').innerText() === 'ii52A1',
   true,
   'admin should see their account menu',
 )
@@ -177,12 +178,11 @@ await mobile.goto(`${base}/login`, { waitUntil: 'networkidle' })
 await mobile.locator('#auth-identifier').fill('ii52A1')
 await mobile.locator('#auth-password').fill('0000')
 await mobile.getByRole('button', { name: /进去坐坐/ }).click()
-await mobile.waitForURL('**/space', { timeout: 15000 })
+await mobile.waitForURL('**/universe', { timeout: 15000 })
 
 await mobile.goto(`${base}/github-lab`, { waitUntil: 'networkidle' })
 await mobile.locator('.lab-entries').waitFor()
-assert.equal(await mobile.locator('.lab-version').innerText(), 'v0.2 alpha')
-assert.equal(await mobile.locator('.lab-entries a').count(), 3)
+assert.equal(await mobile.getByRole('link', { name: '入门教程', exact: true }).count(), 1)
 await mobile.getByRole('link', { name: 'top 排行榜' }).click()
 await mobile.waitForURL('**/github-lab/top', { timeout: 10000 })
 await mobile.locator('.lab-board .lab-repo').first().waitFor({ timeout: 20000 })
