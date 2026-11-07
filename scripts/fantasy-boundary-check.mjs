@@ -76,6 +76,25 @@ try {
    camera.position.set(x,y+1.55,z);w.setTestMode(test)
   }
   const move=(key,frames)=>{w.keys.add(key);for(let i=0;i<frames;i++)w.update(1/120);w.keys.clear()}
+  const {supportAt}=await import('/src/experiments/rainy-konbini/WalkingPhysics.ts')
+  const {NavigationWorld}=await import('/src/experiments/rainy-konbini/NavigationWorld.ts')
+  const {floorY,houseFlights,northHouse}=await import('/src/experiments/rainy-konbini/NorthTerrain.ts')
+  const nav=new NavigationWorld(w.getNavigationSnapshot())
+  for(const z of [-29.6,-28.4]){
+   const ghost={x:-8.4,y:5.77,z}
+   check(!w.navigationStep(ghost,ghost.x,z)&&!nav.step(ghost,ghost.x,z),`blocked inside right stair at ${z}`)
+  }
+  for(const [level,flight] of houseFlights.entries())for(let i=0;i<15;i++){
+   const x=northHouse.x+(flight.left+flight.right)/2
+   const z=northHouse.z+flight.lowZ-(i+.5)*(flight.lowZ-flight.highZ)/15
+   const y=floorY(level)+northHouse.rise*(i+1)/15
+   check(Math.abs(supportAt(w.space,x,z,y+.05)-y)<.003,`visible tread support ${level}/${i}`)
+  }
+  check(nav.layered.surfaces(-10.2,-29.05).every(s=>s.y<9), 'roof collision is not a flat support')
+  const rail={x:-10.2,y:8.77,z:-25.954,grounded:false,velocity:-1}
+  check(nav.layered.surfaces(rail.x,rail.z).every(s=>s.y<8.1),'balcony rail is not a landing')
+  for(let i=0;i<70;i++)w.advanceActor(rail,1/120,0,0)
+  check(rail.grounded&&Math.abs(rail.y-7.95)<.02&&rail.z<-26.1,'a jump onto the rail deflects onto the deck')
   const routes=[]
   for(const test of [false,true]){
    place(13.04,-25.86,3.59,test);move('KeyW',91)
@@ -84,7 +103,9 @@ try {
    place(-12.13,-27.4,3.59,test);move('KeyW',110)
    routes.push({name:'north stairs',test,z:camera.position.z,feet:w.feet})
    check(w.feet>5.73,`north stairs in mode ${test}: ${w.feet}`)
-   place(-8.25,-27.4,5.77,test);move('KeyW',110)
+   place(-8.27,-27.6,5.77,test);move('KeyW',1)
+   check(camera.position.z<-27.6&&Math.abs(w.feet-5.9153)<.003,`right stair first step in mode ${test}`)
+   move('KeyW',109)
    routes.push({name:'north upper stairs',test,z:camera.position.z,feet:w.feet})
    check(w.feet>7.92,`north upper stairs in mode ${test}: ${w.feet}`)
    move('KeyS',118)

@@ -1,5 +1,5 @@
 import {groundHeight,walkHeight,terrainSupport} from './Terrain';
-import {advanceWalker,BODY_RADIUS,JUMP_SPEED,supportAt,type WalkerState,type WalkingSpace} from './WalkingPhysics';
+import {advanceWalker,BODY_RADIUS,JUMP_SPEED,groundStepHeight,supportAt,type WalkerState,type WalkingBox,type WalkingSpace} from './WalkingPhysics';
 import {seatIcon,type SeatAnchor} from './Seats';
 import {SpatialGrid} from './SpatialGrid';
 import * as THREE from 'three';
@@ -32,10 +32,12 @@ export class WalkingController{
  private hadLock=false;
  private disposed=false;
  private cleanups:(()=>void)[]=[];
- private obstacles=new SpatialGrid<THREE.Box3>();
- private floors=new SpatialGrid<THREE.Box3>();
- private staticBoxes:THREE.Box3[]=[];
- private floorBoxes:THREE.Box3[]=[];
+ private obstacles=new SpatialGrid<WalkingBox>();
+ private floors=new SpatialGrid<WalkingBox>();
+ private staticBoxes:WalkingBox[]=[];
+ private floorBoxes:WalkingBox[]=[];
+ private stairBoxes:WalkingBox[]=[];
+ private collisionOnlyBoxes:WalkingBox[]=[];
  navigationRevision=0;
  private movingBounds:THREE.Box3[]=[];
  private registered=new WeakSet<THREE.Object3D>();
@@ -51,6 +53,7 @@ export class WalkingController{
  private space:WalkingSpace={
   ready:(x,z)=>this.regionReady(x,z),
   clear:(x,z,y)=>canWalk(x,z,[...this.obstacles.at(x,z),...this.floors.at(x,z)],y,this.movingBounds,.025),
+  groundClear:(x,z,y)=>this.groundClear(x,z,y),
   terrain:terrainSupport,ground:groundHeight,
   boxes:(x,z)=>[...this.obstacles.at(x,z),...this.floors.at(x,z),...this.movingBounds],
  };
@@ -147,12 +150,22 @@ export class WalkingController{
     const {x,z}=anchor.stand;
     this.seatsByPosition.add(anchor,x-1.45,z-1.45,x+1.45,z+1.45);
    }
-   if(o.userData.dynamicCollider){const bounds=new THREE.Box3().setFromObject(o);this.moving.push({object:o,bounds});this.movingBounds.push(bounds);}
+   if(o.userData.dynamicCollider){
+    const bounds:WalkingBox=new THREE.Box3().setFromObject(o);
+    bounds.standable=false;
+    this.moving.push({object:o,bounds});this.movingBounds.push(bounds);
+   }
    if(!(o instanceof THREE.Mesh))return;
    let parent:THREE.Object3D|null=o;while(parent){if(parent.userData.dynamicCollider||(parent.userData.walkThrough&&!o.userData.solidFloor))return;parent=parent.parent;}
-   const b=new THREE.Box3().setFromObject(o);
-   if(o.userData.solidFloor){this.floorBoxes.push(b);this.floors.add(b,b.min.x-RADIUS,b.min.z-RADIUS,b.max.x+RADIUS,b.max.z+RADIUS);return;}
-   if(b.max.y>.12){this.staticBoxes.push(b);this.obstacles.add(b,b.min.x-RADIUS,b.min.z-RADIUS,b.max.x+RADIUS,b.max.z+RADIUS);}
+   const b:WalkingBox=new THREE.Box3().setFromObject(o);
+   if(o.userData.solidFloor){
+    if(o.userData.stairTread){b.stairTread=true;this.stairBoxes.push(b);}else this.floorBoxes.push(b);
+    this.floors.add(b,b.min.x-RADIUS,b.min.z-RADIUS,b.max.x+RADIUS,b.max.z+RADIUS);return;
+   }
+   if(b.max.y>.12){
+    if(o.userData.collisionOnly){b.standable=false;this.collisionOnlyBoxes.push(b);}else this.staticBoxes.push(b);
+    this.obstacles.add(b,b.min.x-RADIUS,b.min.z-RADIUS,b.max.x+RADIUS,b.max.z+RADIUS);
+   }
   });
  }
  setTestMode(enabled:boolean){
@@ -168,7 +181,8 @@ export class WalkingController{
  get footPosition():NavPoint{return {x:this.camera.position.x,y:this.feet,z:this.camera.position.z};}
  getNavigationSnapshot():NavigationSnapshot{
   const pack=(boxes:THREE.Box3[])=>new Float32Array(boxes.flatMap(b=>[b.min.x,b.min.y,b.min.z,b.max.x,b.max.y,b.max.z]));
-  return {obstacles:pack(this.staticBoxes),floors:pack(this.floorBoxes),revision:this.navigationRevision};
+  return {obstacles:pack(this.staticBoxes),floors:pack(this.floorBoxes),stairs:pack(this.stairBoxes),
+   collisionOnly:pack(this.collisionOnlyBoxes),revision:this.navigationRevision};
  }
  /** Nearest intersection along a segment, including walls, floors, doors and terrain. */
  segmentHit(from:THREE.Vector3,to:THREE.Vector3,doors=true):number|undefined{
@@ -199,8 +213,18 @@ export class WalkingController{
   }
   return {...this.groundedTarget};
  }
+ private groundClear(x:number,z:number,y:number,doors=true){
+  return canWalk(x,z,[...this.obstacles.at(x,z),...this.floors.at(x,z)],y,doors?this.movingBounds:[],.025,1.6,true);
+ }
  navigationStep(from:NavPoint,x:number,z:number,doors=false){
-  return navigationStep(from,x,z,this.space,(px,pz,y)=>canWalk(px,pz,this.obstacles.at(px,pz),y,doors?this.movingBounds:[]));
+  return navigationStep(from,x,z,this.space,(px,pz,y)=>this.groundClear(px,pz,y,doors));
+ }
+ isAtAutoDoor(point:NavPoint){
+  return Math.abs(point.x+.25)<1.25&&Math.abs(point.z-1.54)<1.65;
+ }
+ doorBlocksStep(from:NavPoint,x:number,z:number){
+  return this.isAtAutoDoor(from)&&this.movingBounds.length>0&&
+   !this.navigationStep(from,x,z,true)&&!!this.navigationStep(from,x,z);
  }
  advanceActor(state:WalkerState,delta:number,vx:number,vz:number){
   return advanceWalker(state,this.space,delta,vx,vz);
@@ -391,11 +415,11 @@ export class WalkingController{
   const steps=Math.max(1,Math.ceil(Math.hypot(dx,dz)/.045)),p=this.camera.position;
   for(let i=0;i<steps&&(dx||dz);i++){
    const x=p.x+dx/steps;
-   const nextX=Math.max(walkHeight(x,p.z,this.feet),supportAt(this.space,x,p.z,this.feet+.28));
-   if(dx&&this.regionReady(x,p.z)&&Math.abs(nextX-this.feet)<.28&&this.isClear(x,p.z,nextX)){p.x=x;this.feet=nextX;}
+   const nextX=dx?groundStepHeight(this.space,this.feet,x,p.z):undefined;
+   if(nextX!==undefined){p.x=x;this.feet=nextX;}
    const z=p.z+dz/steps;
-   const nextZ=Math.max(walkHeight(p.x,z,this.feet),supportAt(this.space,p.x,z,this.feet+.28));
-   if(dz&&this.regionReady(p.x,z)&&Math.abs(nextZ-this.feet)<.28&&this.isClear(p.x,z,nextZ)){p.z=z;this.feet=nextZ;}
+   const nextZ=dz?groundStepHeight(this.space,this.feet,p.x,z):undefined;
+   if(nextZ!==undefined){p.z=z;this.feet=nextZ;}
   }
   p.y=THREE.MathUtils.damp(p.y,this.feet+1.55,16,Math.min(delta,.05));
   this.sprinting=sprint&&Math.hypot(p.x-oldX,p.z-oldZ)>.0001;

@@ -37,12 +37,18 @@ export class SceneAStar{
   const connects=(p:NavPoint)=>{const end=this.world.step(from,p.x,p.z);return end&&Math.abs(end.y-p.y)<.08;};
   if(Math.hypot(from.x-this.goal.x,from.z-this.goal.z)<.8&&connects(this.goal))edges.push(this.edge(from,this.goal)!);
   const cx=Math.round(from.x/CELL)*CELL,cz=Math.round(from.z/CELL)*CELL;
-  for(const [dx,dz] of directions){
-   const to=this.world.step(from,cx+dx*CELL,cz+dz*CELL);
-   if(to){const node=this.node(to);if(node.id!==id)edges.push(this.edge(from,node)!);}
-  }
   const coarse=Math.round(from.x/CELL)%2===0&&Math.round(from.z/CELL)%2===0;
-  if(coarse&&(edges.length<8||this.world.hasNearbyLedge(from))){
+  let walkEdges=0;
+  for(const [dx,dz] of directions){
+   for(const stride of coarse?[2,1]:[1]){
+    const to=this.world.step(from,cx+dx*CELL*stride,cz+dz*CELL*stride);
+    if(!to)continue;
+    const node=this.node(to);
+    if(node.id!==id){edges.push(this.edge(from,node));walkEdges++;}
+    break;
+   }
+  }
+  if(coarse&&(walkEdges<8||this.world.hasNearbyLedge(from))){
    for(const [dx,dz] of directions)for(const range of [.8,1.2,1.6,2.4,2.8]){
     const scale=range/Math.hypot(dx,dz),x=Math.round((from.x+dx*scale)/CELL)*CELL,z=Math.round((from.z+dz*scale)/CELL)*CELL;
     for(const surface of this.world.layered.surfaces(x,z)){

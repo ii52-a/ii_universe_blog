@@ -2,7 +2,7 @@ import {NavigationWorld,type NavigationSnapshot,type NavPoint,type NavWaypoint} 
 import {SceneAStar} from './SceneAStar';
 import {EdgeType,metric,type Arc} from './layered-navigation/types';
 export type CrowdRequest={id:number;start:NavPoint;target:NavPoint};
-export type CrowdResult={id:number;route:NavWaypoint[];unreachable?:true};
+export type CrowdResult={id:number;route:NavWaypoint[];unreachable?:true;status?:'pending'|'found'|'unreachable'|'invalid-target'|'budget'};
 export type CrowdReport={routes:CrowdResult[];expanded:number;fields:number;cached:number;ms:number;pending:number;revision?:number;astar?:number};
 export const MAX_CROWD_SIZE=60;
 type Node={point:NavPoint;key:string};
@@ -12,6 +12,26 @@ type Item={node:Node;cost:number};
 const CELL=.2;
 const nodeKey=(p:NavPoint)=>`${Math.round(p.x/CELL)},${Math.round(p.z/CELL)},${Math.round(p.y*10)}`;
 const directions=[[-1,-1],[-1,0],[-1,1],[0,-1],[0,1],[1,-1],[1,0],[1,1]];
+const ACTIVE_GOALS=4;
+/** Keep jobs for several request batches, then give waiting targets a turn. */
+class GoalSlots<Key>{
+ private batch=0;
+ private last=new Map<Key,number>();
+ select(keys:Key[],priority:Key[]=[]):Key[]{
+  const epoch=Math.floor(this.batch++/3);
+  const present=new Set(keys);
+  for(const key of this.last.keys())if(!present.has(key))this.last.delete(key);
+  const preferred=new Set(priority);
+  const order=keys.filter(key=>!preferred.has(key)).sort((a,b)=>{
+   const ageA=this.last.get(a)??-1,ageB=this.last.get(b)??-1;
+   if(ageA===epoch||ageB===epoch)return Number(ageB===epoch)-Number(ageA===epoch);
+   return ageA-ageB;
+  });
+  const selected=[...priority,...order].slice(0,ACTIVE_GOALS);
+  for(const key of selected)this.last.set(key,epoch);
+  return selected;
+ }
+}
 class Heap{
  items:Item[]=[];
  push(item:Item){let i=this.items.push(item)-1;while(i>0){const p=(i-1)>>1;if(this.items[p].cost<=item.cost)break;this.items[i]=this.items[p];i=p;}this.items[i]=item;}
@@ -32,11 +52,12 @@ class SharedCrowdSolver{
  private requestKeys=new Map<number,string>();
  private requests:CrowdRequest[]=[];
  private activeFields:Field[]=[];
+ private slots=new GoalSlots<string>();
  private cursor=0;
  totalExpanded=0;
  constructor(snapshot:NavigationSnapshot,world=new NavigationWorld(snapshot)){this.world=world;}
  private node(p:NavPoint){const key=nodeKey(p);let node=this.nodes.get(key);if(!node){node={point:p,key};this.nodes.set(key,node);}return node;}
- private seed(target:NavPoint){
+ seed(target:NavPoint){
   const key=`${target.x},${target.y},${target.z}`;
   if(this.seeds.has(key))return this.seeds.get(key);
   // Prefer the coarse grid where possible, then resolve tight or offset openings.
@@ -56,6 +77,11 @@ class SharedCrowdSolver{
    if(seed)break;
   }
   if(!seed){
+   for(const radius of [.6,1,1.4]){
+    for(const [dx,dz] of directions)nearby.push({
+     x:Math.round((target.x+dx*radius)/CELL)*CELL,y:target.y,z:Math.round((target.z+dz*radius)/CELL)*CELL,
+    });
+   }
    nearby.sort((a,b)=>Math.hypot(a.x-target.x,a.z-target.z)-Math.hypot(b.x-target.x,b.z-target.z));
    for(const candidate of nearby){
     const stand=this.world.projectGoal(target,candidate.x,candidate.z);
@@ -101,9 +127,12 @@ class SharedCrowdSolver{
    if(goal)goal.count++;
    else goals.set(seed.key,{seed,count:1});
   }
-  const selected=[...goals].sort((a,b)=>b[1].count-a[1].count).slice(0,4);
-  const keep=new Set(selected.map(([key])=>key));
-  this.activeFields=selected.map(([key,{seed}])=>{
+  const ranked=[...goals].sort((a,b)=>b[1].count-a[1].count);
+  const priority=ranked.filter(([,goal])=>goal.count>1).slice(0,2).map(([key])=>key);
+  const selected=this.slots.select(ranked.map(([key])=>key),priority);
+  const keep=new Set(selected);
+  this.activeFields=selected.map(key=>{
+   const {seed}=goals.get(key)!;
    const field=this.fields.get(key)??new Field(seed);
    this.fields.delete(key);
    this.fields.set(key,field);
@@ -161,7 +190,7 @@ class SharedCrowdSolver{
    const key=this.requestKeys.get(id);
    const field=key?this.fields.get(key):undefined;
    const route:NavWaypoint[]=[];
-   if(!field)return key?{id,route}:{id,route,unreachable:true};
+   if(!field)return key?{id,route,status:'pending'}:{id,route,status:'invalid-target'};
    const candidates:Node[]=[];
    const x=Math.round(start.x/CELL)*CELL,z=Math.round(start.z/CELL)*CELL;
    for(const dx of [-2,-1,0,1,2])for(const dz of [-2,-1,0,1,2])for(const dy of [-.3,-.2,-.1,0,.1,.2,.3]){
@@ -184,7 +213,9 @@ class SharedCrowdSolver{
     jump=next?.jump;
     type=next?.type;arc=next?.arc;
    }
-   return !route.length&&field.exhausted?{id,route,unreachable:true}:{id,route};
+   if(route.length)return {id,route,status:'found'};
+   if(field.exhausted)return {id,route,status:'unreachable',unreachable:true};
+   return {id,route,status:field.done?'budget':'pending'};
   });
   return {routes,expanded:this.totalExpanded,fields:this.activeFields.length,cached:this.edges.size,ms,pending:this.activeFields.filter(f=>!f.done).length};
  }
@@ -197,6 +228,7 @@ export class CrowdSolver{
  private world:NavigationWorld;
  private shared:SharedCrowdSolver;
  private searches=new Map<number,SceneAStar>();
+ private slots=new GoalSlots<number>();
  private cursor=0;
  private expanded=0;
  readonly revision:number;
@@ -207,16 +239,26 @@ export class CrowdSolver{
   const limited=requests.slice(0,MAX_CROWD_SIZE);this.shared.setRequests(limited);
   const key=(p:NavPoint)=>`${p.x},${p.y},${p.z}`;
   const counts=new Map<string,number>();for(const r of limited)counts.set(key(r.target),(counts.get(key(r.target))??0)+1);
-  const keep=new Set<number>();
-  for(const r of limited){
-   if(counts.get(key(r.target))!==1||keep.size>=4)continue;
-   const valid=this.world.step(r.target,r.target.x,r.target.z);
-   if(!valid||Math.abs(valid.y-r.target.y)>.08)continue;
-   keep.add(r.id);const old=this.searches.get(r.id);
-   if(!old||metric(old.target,r.target,.7)>.01||metric(old.start,r.start,.7)>1)
+  const independent=limited.filter(r=>counts.get(key(r.target))===1);
+  const keep=new Set(this.slots.select(independent.map(r=>r.id)));
+  for(const r of independent){
+   if(!keep.has(r.id))continue;
+   const exact=this.world.step(r.target,r.target.x,r.target.z);
+   const valid=exact&&Math.abs(exact.y-r.target.y)<=.08?exact:this.shared.seed(r.target)?.point;
+   if(!valid){keep.delete(r.id);continue;}
+   const old=this.searches.get(r.id);
+   const drift=old?metric(old.start,r.start,.7):Infinity;
+   if(!old||!this.canReuseGoal(old.target,valid)||drift>(old.search.status==='pending'?2.5:1))
     this.searches.set(r.id,new SceneAStar(this.world,r.start,valid));
   }
   for(const id of this.searches.keys())if(!keep.has(id))this.searches.delete(id);
+ }
+ private canReuseGoal(previous:NavPoint,current:NavPoint){
+  const gap=metric(previous,current,.7);
+  if(gap<.01)return true;
+  if(gap>.25||Math.abs(previous.y-current.y)>.08)return false;
+  const connected=this.world.step(previous,current.x,current.z);
+  return !!connected&&Math.abs(connected.y-current.y)<.08;
  }
  advance(maxMs=4,maxNodes=180){
   const began=performance.now(),searches=[...this.searches.values()].filter(s=>s.search.status==='pending');let expanded=0;
@@ -236,8 +278,8 @@ export class CrowdSolver{
   const report=this.shared.report(ms);
   for(const result of report.routes){
    const search=this.searches.get(result.id);
-   if(search?.search.status==='found'){result.route=search.route();delete result.unreachable;}
-   else if(search?.search.status==='pending')delete result.unreachable;
+   if(search?.search.status==='found'){result.route=search.route();result.status='found';delete result.unreachable;}
+   else if(!result.route.length&&search?.search.status==='pending'){result.status='pending';delete result.unreachable;}
   }
   return {...report,expanded:report.expanded+this.expanded,revision:this.revision,astar:this.searches.size,
    pending:report.pending+[...this.searches.values()].filter(s=>s.search.status==='pending').length};

@@ -85,6 +85,58 @@ try{
  })
  assert.ok(slope.every(r=>r.valid&&r.gap<1&&r.height<.2),JSON.stringify(slope))
  console.log('PASS full ramp in both directions:',JSON.stringify(slope))
+ const balcony=await page.evaluate(async()=>{
+  const {CrowdSolver}=await import('/src/experiments/rainy-konbini/CrowdNavigation.ts')
+  const {combat:c,walking:w,camera}=window.sceneQA
+  c.clear();c.vitals.reset();c.vitals.invulnerableUntil=1000;c.spawnTimer=Infinity
+  const start={x:-10.2,y:3.59,z:-26.2},target={x:-10.2,y:7.95,z:-26.3}
+  w.feet=target.y;w.motion=undefined;camera.position.set(target.x,target.y+1.55,target.z)
+  const actor=c.spawnAt(start)
+  if(!actor)throw new Error('balcony pursuit spawn')
+  c.shotAt=-Infinity;c.shoot()
+  c.fallback=new CrowdSolver(w.getNavigationSnapshot())
+  c.requestRoutes()
+  // Model an earlier exhausted graph while the actor is still near the house.
+  // The resulting local approach must leave the 3F request intact.
+  c.accept({routes:[{id:actor.id,route:[],unreachable:true}],fields:0,expanded:0,cached:0,ms:0,pending:0},c.sequence)
+  const startedApproach=!!actor.approach
+  let goalLost=false
+  for(let i=0;i<1500;i++){
+   if(i%20===0)c.requestRoutes()
+   c.fallback.advance(2,48)
+   if(i%6===0)c.accept(c.fallback.report(),c.sequence)
+   c.vitals.update(1/60,false,false);c.updateZombies(1/60,false)
+   goalLost||=actor.planTarget?.y!==target.y
+   const p=actor.model.root.position
+   if(Math.abs(p.y-target.y)<.12&&Math.hypot(p.x-target.x,p.z-target.z)<.9)break
+  }
+  const p=actor.model.root.position
+  return {startedApproach,goalLost,approachCleared:!actor.approach,y:p.y,gap:Math.hypot(p.x-target.x,p.z-target.z)}
+ })
+ assert.ok(balcony.startedApproach&&!balcony.goalLost&&balcony.approachCleared&&Math.abs(balcony.y-7.95)<.12&&balcony.gap<.9,JSON.stringify(balcony))
+ console.log('PASS budgeted fallback reaches 3F balcony while retaining the original target:',JSON.stringify(balcony))
+ const priorityJump=await page.evaluate(()=>{
+  const {combat:c,walking:w,camera,scene,THREE}=window.sceneQA
+  const target={x:4.3,y:.37,z:2.5},start={x:4.3,y:.08,z:4.12}
+  const platform=new THREE.Mesh(new THREE.BoxGeometry(1.6,.37,1.3),new THREE.MeshBasicMaterial())
+  platform.position.set(target.x,.185,2.4);scene.add(platform);w.registerWorld(platform)
+  c.clear();c.spawnTimer=Infinity;c.vitals.reset()
+  w.feet=target.y;w.motion=undefined;camera.position.set(target.x,target.y+1.55,target.z)
+  const actor=c.spawnAt(start)
+  if(!actor||!w.planZombieJump(start,target))throw new Error('priority jump fixture is not traversable')
+  c.setTarget(actor,target,'chase');actor.memory=1000
+  // A jump later in the old corridor should not prevent a safe shortcut now.
+  actor.route=[{...start,z:4.8},{...start,z:5.2},{...target,jump:true}]
+  c.vitals.update(1/60,false,false);c.updateZombies(1/60,true)
+  const landing=actor.flight?.arc.to
+  if(!landing)return false
+  for(let i=0;i<60&&actor.flight;i++){
+   c.vitals.update(1/60,false,false);c.updateZombies(1/60,true)
+  }
+  return Math.abs(landing.y-target.y)<.01&&Math.abs(actor.model.root.position.y-target.y)<.01
+ })
+ assert.equal(priorityJump,true,'use the immediate safe jump ahead of the old corridor')
+ console.log('PASS priority jump at a 0.29 rise and a 1.62 horizontal gap')
  const roofs=[]
  for(const [x,height] of [[6.45,.6],[8.6,1.4]]){
   const result=await page.evaluate(({x,height})=>{

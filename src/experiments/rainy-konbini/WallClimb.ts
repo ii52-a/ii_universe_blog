@@ -6,7 +6,7 @@ export const MAX_CLIMB_RISE=4.3;
 const gap=(a:NavPoint,b:NavPoint)=>Math.hypot(a.x-b.x,a.y-b.y,a.z-b.z);
 function surface(space:WalkingSpace,x:number,z:number,ceiling:number){
  let y=space.terrain(x,z,ceiling);
- for(const b of space.boxes(x,z))if(b.max.y<=ceiling+.002&&x>=b.min.x&&x<=b.max.x&&z>=b.min.z&&z<=b.max.z)y=Math.max(y,b.max.y);
+ for(const b of space.boxes(x,z))if(b.standable!==false&&b.max.y<=ceiling+.002&&x>=b.min.x&&x<=b.max.x&&z>=b.min.z&&z<=b.max.z)y=Math.max(y,b.max.y);
  return y;
 }
 export function climbSegmentClear(a:NavPoint,b:NavPoint,space:WalkingSpace){

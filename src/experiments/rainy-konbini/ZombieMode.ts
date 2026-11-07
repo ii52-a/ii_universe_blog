@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import type {SceneKit} from './SceneKit';
 import type {WalkingController} from './WalkingController';
-import {MAX_JUMP_RISE,type NavJump,type NavPoint,type NavWaypoint} from './NavigationWorld';
+import {MAX_JUMP_RANGE,MAX_JUMP_RISE,type NavJump,type NavPoint,type NavWaypoint} from './NavigationWorld';
 import {LocomotionFollower} from './layered-navigation/LocomotionFollower';
 import {EdgeType,type Node} from './layered-navigation/types';
 import {zombieNavigationConfig} from './SceneNavigationWorld';
@@ -11,13 +11,13 @@ import {zombieModel,ZOMBIE_HEIGHT,ZOMBIE_HALF_WIDTH,ZOMBIE_SCALE} from './Zombie
 import {SurvivalState} from './SurvivalState';
 import {CombatAudio} from './CombatAudio';
 import {CrowdSolver,MAX_CROWD_SIZE,type CrowdReport,type CrowdRequest} from './CrowdNavigation';
-import type {WalkerState} from './WalkingPhysics';
-import type {WallClimb} from './WallClimb';
+import {STEP_HEIGHT,type WalkerState} from './WalkingPhysics';
+import {MAX_CLIMB_RISE,type WallClimb} from './WallClimb';
 
 type ZombieState='wander'|'investigate'|'chase'|'attack'|'dead';
 type Zombie={
  id:number;model:ReturnType<typeof zombieModel>;hp:number;state:ZombieState;
- target?:NavPoint;approach?:NavPoint;planTarget?:NavPoint;lead?:NavPoint;route:NavWaypoint[];
+ target?:NavPoint;approach?:{point:NavPoint;until:number};nextApproach:number;planTarget?:NavPoint;lead?:NavPoint;route:NavWaypoint[];
  ramp?:NavPoint;rampDeadline:number;nextClimb:number;
  observed?:NavPoint;heading?:number;searchSteps:number;
  flight?:{arc:NavJump;elapsed:number};motion:WalkerState;vx:number;vz:number;
@@ -25,6 +25,8 @@ type Zombie={
  climb?:{plan:WallClimb;segment:number};climbPlan?:WallClimb;
  sense:number;memory:number;attack:number;cooldown:number;deadUntil:number;stride:number;hurtUntil:number;
  goalStamp:number;routeStamp:number;blocked:number;direct:boolean;nextProbe:number;nextPlan:number;gait:number;
+ progress?:{destination:NavPoint;elapsed:number;expected:number;advanced:number};
+ doorWaitSince?:number;
 };
 type RouteRequest={target:NavPoint;stamp:number};
 type Bullet={mesh:THREE.Mesh;velocity:THREE.Vector3;life:number};
@@ -33,7 +35,12 @@ export const emptySurvivalHUD:SurvivalHUD={health:100,stamina:100,count:0,kills:
 const vec=(p:NavPoint,y=0)=>new THREE.Vector3(p.x,p.y+y,p.z);
 const distance=(a:NavPoint,b:NavPoint)=>Math.hypot(a.x-b.x,a.z-b.z);
 const arrived=(a:NavPoint,b:NavPoint)=>distance(a,b)<.075&&Math.abs(a.y-b.y)<.13;
+const approachingJump=(route:NavWaypoint[])=>route[0]?.jump||route[1]?.jump;
 const SIGHT_DISTANCE=7*2;
+const ATTACK_REACH=.95*1.25;
+const JUMP_LANDING_OFFSET=.18;
+const canTryTargetJump=(rise:number,gap:number)=>
+ rise>STEP_HEIGHT&&rise<=MAX_JUMP_RISE&&gap<=MAX_JUMP_RANGE+JUMP_LANDING_OFFSET;
 const MOVE_SCALE=1.2*1.1;
 const RAMP_STATIONS=[-11,-14,-17,-20,-23,-24.8];
 
@@ -77,7 +84,8 @@ export class ZombieMode{
  private navigationRevision=-1;
  private requests=new Map<number,Map<number,RouteRequest>>();
  private navTimer=0;private spawnTimer=3;private uiTimer=0;
- private traversalBudget=1;
+ private traversalCandidate?:number;
+ private lastTraversalId=0;
  private previousPlayer?:NavPoint;
  private stepDistance=0;
  private footstep?:{point:NavPoint;until:number;range:number};
@@ -148,7 +156,10 @@ export class ZombieMode{
     this.accept(event.data,event.data.sequence);
    };
    this.worker.onerror=()=>{this.worker?.terminate();this.worker=undefined;this.fallback=new CrowdSolver(this.walking.getNavigationSnapshot());this.metrics.backend='main-budgeted';};
-   this.worker.postMessage({kind:'init',epoch:this.epoch,snapshot},[snapshot.obstacles.buffer,snapshot.floors.buffer]);
+   const transfer=[snapshot.obstacles.buffer,snapshot.floors.buffer];
+   if(snapshot.stairs)transfer.push(snapshot.stairs.buffer);
+   if(snapshot.collisionOnly)transfer.push(snapshot.collisionOnly.buffer);
+   this.worker.postMessage({kind:'init',epoch:this.epoch,snapshot},transfer);
    this.metrics.backend='worker';
   }catch{this.fallback=new CrowdSolver(this.walking.getNavigationSnapshot());this.metrics.backend='main-budgeted';}
   this.navigationReady=true;
@@ -167,23 +178,32 @@ export class ZombieMode{
    const latest=zombie.goalStamp===request.stamp;
    if(!latest&&(zombie.route.length||distance(request.target,zombie.target)>2.5||Math.abs(request.target.y-zombie.target.y)>.3))continue;
    const position=zombie.model.root.position;
-   if(latest&&result.unreachable&&!zombie.ramp&&!zombie.approach&&!zombie.route.length&&zombie.target.y-position.y>.3){
+   const now=this.vitals.time;
+   if(latest&&result.unreachable&&!zombie.ramp&&!zombie.approach&&!zombie.route.length&&
+    now>=zombie.nextApproach&&zombie.target.y-position.y>.3){
     const approach=this.walking.approachTarget(position,zombie.target);
-    if(approach){zombie.approach=approach;zombie.planTarget=undefined;zombie.nextProbe=0;}
+    zombie.nextApproach=now+5;
+    if(approach&&!arrived(position,approach)){
+     zombie.approach={point:approach,until:now+3};
+     zombie.nextProbe=0;
+    }
    }
    if(!result.route.length||(zombie.route.length&&zombie.routeStamp===request.stamp&&zombie.blocked<.45))continue;
    // Join a reachable prefix ahead of the actor, without snapping back to the old start.
    const firstJump=result.route.findIndex(point=>point.jump);
    const lastJoin=firstJump<0?result.route.length-1:firstJump-1;
-   for(let i=Math.min(5,lastJoin);i>=0;i--){
+   const recovering=zombie.blocked>=.45||!zombie.route.length;
+   const joinDistance=recovering?2.5:1.5;
+   for(let i=Math.min(recovering?15:5,lastJoin);i>=0;i--){
     const point=result.route[i];
-    if(distance(position,point)>1.5||!this.connects(position,point))continue;
+    if(distance(position,point)>joinDistance||!this.connects(position,point,true))continue;
     const ahead=(point.x-position.x)*zombie.vx+(point.z-position.z)*zombie.vz;
     if(zombie.route.length&&ahead<-.25&&zombie.blocked<.45)continue;
     if(zombie.blocked>=.45&&zombie.route[0]&&arrived(point,zombie.route[0]))continue;
     zombie.route=result.route.slice(i);
+    zombie.approach=undefined;
     zombie.routeStamp=request.stamp;
-    zombie.blocked=0;
+    zombie.blocked=0;zombie.progress=undefined;
     break;
    }
   }
@@ -199,7 +219,7 @@ export class ZombieMode{
   const zombie:Zombie={id,model,hp:50,state:'wander',route:[],motion:{...valid,grounded:true,velocity:0},vx:0,vz:0,
    follower:new LocomotionFollower(valid,this.walking.zombieWorld,zombieNavigationConfig),
    sense:(id%5)*.04,memory:0,attack:0,cooldown:0,deadUntil:0,stride:0,hurtUntil:0,goalStamp:0,routeStamp:-1,
-   blocked:0,direct:false,nextProbe:0,nextPlan:0,gait:0,searchSteps:0,rampDeadline:0,nextClimb:0};
+   blocked:0,direct:false,nextProbe:0,nextPlan:0,nextApproach:0,gait:0,searchSteps:0,rampDeadline:0,nextClimb:0};
   this.zombies.push(zombie);return zombie;
  }
  private spawnBatch(){
@@ -225,7 +245,7 @@ export class ZombieMode{
   const previous=zombie.target;
   if(!previous||distance(previous,target)>.6||Math.abs(previous.y-target.y)>.18){
    zombie.nextProbe=0;
-   if(zombie.approach){zombie.approach=undefined;zombie.planTarget=undefined;}
+   zombie.approach=undefined;zombie.nextApproach=0;
   }
   if(!previous||distance(previous,target)>.18||Math.abs(previous.y-target.y)>.12)zombie.target={...target};
   zombie.state=state;
@@ -272,7 +292,7 @@ export class ZombieMode{
    if(!ramp&&zombie.ramp)zombie.memory=Math.max(zombie.memory,now+5);
    if(!!ramp!==!!zombie.ramp||(ramp&&zombie.ramp&&distance(ramp,zombie.ramp)>.2))zombie.nextProbe=0;
    zombie.ramp=ramp;
-   const target=ramp??zombie.approach??zombie.target;
+   const target=ramp??zombie.target;
    const anchor=zombie.planTarget;
    if(!anchor||Math.abs(anchor.y-target.y)>.3||(now>=zombie.nextPlan&&distance(anchor,target)>.95)){
     zombie.planTarget=target;
@@ -346,27 +366,37 @@ export class ZombieMode{
   const reached=this.walking.navigationStep(from,to.x,to.z,doors);
   return reached&&Math.abs(reached.y-to.y)<.13;
  }
- private tryClimb(zombie:Zombie){
+ private canProbeTraversal(zombie:Zombie){
   const target=zombie.target,p=zombie.model.root.position,now=this.vitals.time;
-  if(!target||zombie.climbPlan||now<zombie.nextClimb||zombie.route.some(point=>point.jump)||!this.traversalBudget)return;
+  if(!target||zombie.state==='dead'||zombie.attack>0||!zombie.motion.grounded||zombie.flight||zombie.climb||
+   zombie.climbPlan||now<zombie.nextClimb||approachingJump(zombie.route))return false;
   const rise=target.y-p.y,gap=distance(p,target);
-  if(rise<.3||rise>4.3||gap>4||gap<.06)return;
-  this.traversalBudget--;
+  if(gap<.06)return false;
+  return canTryTargetJump(rise,gap)||
+   (rise>=.3&&rise<=MAX_CLIMB_RISE&&gap<=4&&!zombie.route.some(point=>point.jump));
+ }
+ private tryTraversal(zombie:Zombie){
+  if(zombie.id!==this.traversalCandidate||!this.canProbeTraversal(zombie))return;
+  const target=zombie.target!,p=zombie.model.root.position,now=this.vitals.time;
+  const rise=target.y-p.y,gap=distance(p,target);
+  this.lastTraversalId=zombie.id;
   zombie.nextClimb=now+.6+(zombie.id%4)*.04;
   const dx=(target.x-p.x)/gap,dz=(target.z-p.z)/gap;
-  for(const retreat of rise<=MAX_JUMP_RISE&&gap<1.6?[0,.38,.7]:[]){
+  const offset=JUMP_LANDING_OFFSET;
+  for(const retreat of canTryTargetJump(rise,gap)?[0,.38,.7]:[]){
    const launch=retreat?this.walking.navigationStep(p,p.x-dx*retreat,p.z-dz*retreat,true):p;
    if(!launch||Math.abs(launch.y-p.y)>.12)continue;
-   for(const [along,side] of [[0,0],[.18,0],[0,.18],[0,-.18]]){
+   for(const [along,side] of [[0,0],[-offset,0],[offset,0],[0,offset],[0,-offset]]){
     const landing={x:target.x+dx*along+dz*side,y:target.y,z:target.z+dz*along-dx*side};
     if(!this.walking.planZombieJump(launch,landing))continue;
     zombie.route=[{x:launch.x,y:launch.y,z:launch.z,type:EdgeType.WALK},{...landing,jump:true,type:EdgeType.JUMP_UP}];
     zombie.routeStamp=zombie.goalStamp;
-    zombie.direct=false;zombie.lead=undefined;zombie.blocked=0;
-    zombie.ramp=undefined;
+    zombie.direct=false;zombie.lead=undefined;zombie.blocked=0;zombie.progress=undefined;
+    zombie.ramp=undefined;zombie.approach=undefined;
     return;
    }
   }
+  if(rise<.3||zombie.route.some(point=>point.jump))return;
   const plan=this.walking.planZombieClimb(p,target);
   if(!plan)return;
   // Reserve a wall lane and its landing; other agents retain their walk route.
@@ -420,8 +450,11 @@ export class ZombieMode{
  }
  private moveZombie(zombie:Zombie,dt:number,buckets:Map<string,Zombie[]>){
   const root=zombie.model.root,p=root.position,now=this.vitals.time;
-  const target=zombie.ramp??zombie.approach??zombie.target;
-  this.tryClimb(zombie);
+  if(zombie.approach&&(now>=zombie.approach.until||arrived(p,zombie.approach.point))){
+   zombie.approach=undefined;zombie.direct=false;zombie.lead=undefined;zombie.nextProbe=0;
+  }
+  const target=zombie.ramp??zombie.target;
+  this.tryTraversal(zombie);
   if(zombie.climbPlan){
    const base=zombie.climbPlan.points[0];
    if(distance(p,base)<.075&&Math.abs(p.y-base.y)<.12){
@@ -433,7 +466,7 @@ export class ZombieMode{
     return 0;
    }
   }
-  if(!zombie.climbPlan&&now>=zombie.nextProbe){
+  if(!zombie.climbPlan&&now>=zombie.nextProbe&&(zombie.direct||!approachingJump(zombie.route))){
    const gap=target?distance(p,target):Infinity;
    zombie.direct=!!target&&gap<3&&!!this.connects(p,target,true);
    zombie.lead=undefined;
@@ -464,14 +497,14 @@ export class ZombieMode{
   }
   // Keep the corridor through corners, then advance past its short entrance nodes when possible.
   if(!zombie.direct&&zombie.route.length>1&&!zombie.route[1].jump&&distance(p,zombie.route[0])<.2&&this.connects(p,zombie.route[1],true))zombie.route.shift();
-  let destination=zombie.direct?target:zombie.route[0]??zombie.lead;
+  let destination=zombie.direct?target:zombie.route[0]??zombie.approach?.point??zombie.lead;
   if(!destination&&zombie.state==='wander'){
    const angle=zombie.id*2.39+Math.floor(now/5)*1.7;
    destination={x:p.x+Math.cos(angle),y:p.y,z:p.z+Math.sin(angle)};
   }
   const takeoff=!zombie.direct&&zombie.route[1]?.jump;
   if(!destination||(!takeoff&&arrived(p,destination))){
-   zombie.vx=zombie.vz=0;
+   zombie.vx=zombie.vz=0;zombie.progress=undefined;
    return 0;
   }
   const length=distance(p,destination);
@@ -481,12 +514,27 @@ export class ZombieMode{
   const door=Math.abs(p.x+.25)<1.22&&Math.abs(p.z-1.54)<.9;
   const stairs=Math.abs(destination.y-p.y)>.16&&length<2.7;
   const velocity=takeoff&&length<.2?{x:dx*speed,z:dz*speed}:this.steer(zombie,dx,dz,speed,buckets,door||stairs);
+  if(door&&this.walking.doorBlocksStep(p,p.x+dx*.15,p.z+dz*.15)){
+   zombie.doorWaitSince??=now;
+   if(now-zombie.doorWaitSince<1.25){
+    zombie.vx=zombie.vz=0;zombie.progress=undefined;
+    return 0;
+   }
+  }else zombie.doorWaitSince=undefined;
   const state=zombie.motion;
   zombie.follower.moveGround(state,dt,velocity.x,velocity.z,(s,t,x,z)=>this.walking.advanceActor(s,t,x,z));
   const moved=distance(p,state);
-  if(moved<.0001){
-   zombie.vx=zombie.vz=0;
-   zombie.blocked+=dt;
+  if(!zombie.progress||distance(zombie.progress.destination,destination)>.25||
+   Math.abs(zombie.progress.destination.y-destination.y)>.15)
+   zombie.progress={destination:{...destination},elapsed:0,expected:0,advanced:0};
+  const progress=zombie.progress;
+  progress.elapsed+=dt;
+  progress.expected+=Math.max(0,velocity.x*dx+velocity.z*dz)*dt;
+  progress.advanced+=length-distance(state,destination);
+  if(progress.elapsed>=.25){
+   if(progress.expected>=.04&&progress.advanced<progress.expected*.2)zombie.blocked+=progress.elapsed;
+   else zombie.blocked=0;
+   progress.elapsed=progress.expected=progress.advanced=0;
    if(zombie.blocked>.3){
     zombie.nextProbe=Math.min(zombie.nextProbe,now+.12);
     if(zombie.route.length)zombie.direct=false;
@@ -494,19 +542,17 @@ export class ZombieMode{
    }
    if(zombie.blocked>1.1){
     zombie.climbPlan=undefined;
+    zombie.route=[];zombie.direct=false;zombie.lead=undefined;zombie.nextProbe=0;
     // Break persistent contact with a corner without alternating directions each frame.
     const side=zombie.id%2?1:-1;
     for(const sign of [side,-side]){
      const escape=this.walking.navigationStep(p,p.x+dz*sign*.45-dx*.2,p.z-dx*sign*.45-dz*.2,true);
      if(!escape)continue;
-     zombie.route.unshift(escape);zombie.direct=false;zombie.nextProbe=now+.6;
+     zombie.route=[escape];zombie.nextProbe=now+.6;
      zombie.blocked=0;break;
     }
    }
-   p.y=state.y;
-   return 0;
   }
-  zombie.blocked=0;
   zombie.vx=(state.x-p.x)/dt;zombie.vz=(state.z-p.z)/dt;
   const direction=Math.atan2(zombie.vx,zombie.vz);
   const turn=Math.atan2(Math.sin(direction-root.rotation.y),Math.cos(direction-root.rotation.y));
@@ -516,7 +562,8 @@ export class ZombieMode{
  }
  private updateZombies(dt:number,reduced:boolean){
   const now=this.vitals.time,player=this.walking.footPosition;
-  this.traversalBudget=1;
+  const eligible=this.zombies.filter(zombie=>this.canProbeTraversal(zombie));
+  this.traversalCandidate=(eligible.find(zombie=>zombie.id>this.lastTraversalId)??eligible[0])?.id;
   if(this.previousPlayer){
    const moved=distance(player,this.previousPlayer);
    if(moved<1&&this.walking.grounded&&!this.walking.resting)this.stepDistance+=moved;
@@ -599,7 +646,7 @@ export class ZombieMode{
     }else this.searchBeyondLastSight(zombie);
    }
    const gap=Math.hypot(player.x-p.x,player.z-p.z),sameLevel=Math.abs(player.y-p.y)<.15;
-   const canAttack=gap<.95&&sameLevel&&this.walking.segmentHit(p.clone().add(new THREE.Vector3(0,.9,0)),vec(player,.9))===undefined;
+   const canAttack=gap<ATTACK_REACH&&sameLevel&&this.walking.segmentHit(p.clone().add(new THREE.Vector3(0,.9,0)),vec(player,.9))===undefined;
    if(zombie.attack>0){
     zombie.attack-=dt;attackers++;
     if(zombie.attack<=0){if(canAttack)this.vitals.damage(12);zombie.cooldown=.65;zombie.state='chase';}
@@ -611,7 +658,7 @@ export class ZombieMode{
     p.set(zombie.motion.x,zombie.motion.y,zombie.motion.z);
    }else if(zombie.attack<=0&&!(canAttack&&gap<.7)){
     moved=this.moveZombie(zombie,dt,buckets);
-   }else zombie.vx=zombie.vz=0;
+   }else {zombie.vx=zombie.vz=0;zombie.progress=undefined;}
    zombie.stride+=moved*8;
    zombie.gait=THREE.MathUtils.damp(zombie.gait,moved>.001?1:0,12,dt);
    const swing=reduced?0:Math.sin(zombie.stride)*.42*zombie.gait;
@@ -625,7 +672,7 @@ export class ZombieMode{
    root.userData.state=zombie.state;
   }
  }
- get doorNear(){return this.enabled&&this.zombies.some(z=>z.state!=='dead'&&Math.abs(z.model.root.position.x+.25)<1.25&&Math.abs(z.model.root.position.z-1.54)<1.65);}
+ get doorNear(){return this.enabled&&this.zombies.some(z=>z.state!=='dead'&&this.walking.isAtAutoDoor(z.model.root.position));}
  update(delta:number,reduced:boolean){
   if(!this.enabled)return;
   this.weapon.visible=this.walking.active&&!this.vitals.dead;

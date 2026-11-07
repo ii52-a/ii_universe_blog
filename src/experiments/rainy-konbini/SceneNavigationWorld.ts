@@ -28,7 +28,8 @@ export class SceneNavigationWorld implements World{
    ceiling=y-.004;
   }
   for(const box of this.space.boxes(x,z)){
-   if(x<box.min.x||x>box.max.x||z<box.min.z||z>box.max.z||result.some(s=>Math.abs(s.y-box.max.y)<.002))continue;
+   if(box.standable===false||x<box.min.x||x>box.max.x||z<box.min.z||z>box.max.z||
+    result.some(s=>Math.abs(s.y-box.max.y)<.002))continue;
    result.push({y:box.max.y,layer:`box-${box.min.x},${box.min.z},${box.max.y}`,normal:{x:0,y:1,z:0}});
   }
   return result;

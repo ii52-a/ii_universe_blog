@@ -5,7 +5,7 @@ export function optimizePart(root:THREE.Group){
  const inverse=root.matrixWorld.clone().invert();
  const groups=new Map<string,THREE.Mesh[]>();
  root.traverse(o=>{
-  if(!(o instanceof THREE.Mesh)||o instanceof THREE.InstancedMesh||Array.isArray(o.material)||o.material.transparent)return;
+  if(!o.visible||!(o instanceof THREE.Mesh)||o instanceof THREE.InstancedMesh||Array.isArray(o.material)||o.material.transparent)return;
   if(o.geometry.type!=='BoxGeometry'&&o.geometry.type!=='CylinderGeometry')return;
   let p:THREE.Object3D|null=o;while(p&&p!==root){if(p.userData.dynamicCollider||p.userData.animated)return;p=p.parent;}
   const key=o.geometry.uuid+o.material.uuid+o.castShadow+o.receiveShadow;const bucket=groups.get(key)||[];bucket.push(o);groups.set(key,bucket);

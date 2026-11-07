@@ -56,6 +56,17 @@ try{
   several.setRequests(Array.from({length:24},(_,id)=>({id,start:{x:6,y:.08,z:4},target:{x:5+(id%6)*1.3,y:.08,z:4}})))
   const budget=several.advance(1000,40)
   check(budget.expanded<=40&&several.report().fields<=4,'global work budget and goal cap')
+  const rotating=new CrowdSolver({revision:1,obstacles:new Float32Array(),floors:new Float32Array()})
+  const crowd=Array.from({length:60},(_,id)=>({
+   id,start:{x:5+(id%6)*.6,y:.08,z:4},target:{x:5+(id%6)*.6,y:.08,z:5.4},
+  }))
+  const served=new Set()
+  for(let batch=0;batch<9&&served.size<60;batch++){
+   rotating.setRequests(crowd)
+   for(let i=0;i<20;i++)rotating.advance(8,160)
+   for(const result of rotating.report().routes)if(result.route.length)served.add(result.id)
+  }
+  check(served.size===60,'all six goals receive search time under the four-field cap')
   const narrow=new CrowdSolver({
    revision:1,
    obstacles:new Float32Array([3,0,1.2,5.92,3,3.2,6.48,0,1.2,9,3,3.2]),
@@ -147,8 +158,10 @@ try{
   for(let i=0;i<15;i++){c.vitals.update(1/60,false,false);c.updateZombies(1/60,true)}
   check(c.vitals.health===100,'wall blocks melee damage')
   c.clear();c.vitals.reset();place(6,5.8)
-  const attacker=c.spawnAt({x:6,y:.08,z:5.05});check(!!attacker,'attack test spawn')
-  for(let i=0;i<45;i++){c.vitals.update(1/60,false,false);c.updateZombies(1/60,true)}
+  const attacker=c.spawnAt({x:6,y:.08,z:4.68});check(!!attacker,'attack test spawn')
+  c.vitals.update(1/60,false,false);c.updateZombies(1/60,true)
+  check(attacker.attack>0,'melee windup begins at a horizontal gap of 1.12')
+  for(let i=0;i<44;i++){c.vitals.update(1/60,false,false);c.updateZombies(1/60,true)}
   check(c.vitals.health===88,'telegraphed attack damage')
   c.vitals.reset();attacker.attack=.15;place(6,5.8,1.1)
   for(let i=0;i<15;i++){c.vitals.update(1/60,false,false);c.updateZombies(1/60,true)}
@@ -215,10 +228,13 @@ try{
   ['north down',[-12.1,5.77,-30.88],[-10.3,3.59,-27.5]],
   ['north third floor up',[-8.25,5.77,-27.4],[-9.4,7.95,-30.7]],
   ['north third floor down',[-8.25,7.95,-30.88],[-10.3,5.77,-27.4]],
+  ['street to 2F front window',[-10.2,3.59,-26.2],[-11.3,5.77,-27.15],750],
+  ['street to 3F interior',[-10.2,3.59,-26.2],[-9.8,7.95,-29.4],900],
+  ['street to 3F balcony',[-10.2,3.59,-26.2],[-10.2,7.95,-26.3],1000],
   ['villa up',[7.88,3.59,-34.94],[9.2,6.02,-38.45]],
   ['villa down',[7.88,6.02,-38.45],[9.4,3.59,-35.1]],
  ]
- for(const [name,start,target] of crossFloor){
+ for(const [name,start,target,frames=350] of crossFloor){
   await page.evaluate(({start,target,name})=>{
    const {combat:c,walking:w,camera}=window.sceneQA
    const [x,y,z]=start,[tx,ty,tz]=target
@@ -230,15 +246,20 @@ try{
    c.update(.016,true)
   },{start,target,name})
   await page.waitForFunction(()=>window.sceneQA.combat.zombies[0]?.route.length>0,undefined,{timeout:90000})
-  const reached=await page.evaluate(target=>{
+  const reached=await page.evaluate(({target,frames})=>{
    const {combat:c,walking:w}=window.sceneQA
-   for(let i=0;i<350;i++){c.vitals.update(1/60,false,false);c.updateZombies(1/60,true)}
-   const p=c.zombies[0].model.root.position
-   return {height:p.y,valid:w.canStand(p),gap:Math.hypot(p.x-target[0],p.z-target[2])}
-  },target)
+   const actor=c.zombies[0]
+   for(let i=0;i<frames;i++){
+    c.vitals.update(1/60,false,false);c.updateZombies(1/60,true)
+    const p=actor.model.root.position
+    if(Math.abs(p.y-target[1])<.15&&Math.hypot(p.x-target[0],p.z-target[2])<.9)break
+   }
+   const p=actor.model.root.position
+   return {height:p.y,valid:w.groundClear(p.x,p.z,p.y),gap:Math.hypot(p.x-target[0],p.z-target[2]),planTarget:actor.planTarget}
+  },{target,frames})
   assert.ok(reached.valid&&Math.abs(reached.height-target[1])<.17&&reached.gap<1.1,`${name}: ${JSON.stringify(reached)}`)
  }
- console.log('PASS all eight cross-floor routes via gunshot investigation')
+ console.log('PASS all eleven cross-floor routes, including 2F window and 3F interior/balcony')
  await page.evaluate(()=>{
   const {combat:c,walking:w,camera}=window.sceneQA
   c.clear();c.vitals.reset();c.vitals.invulnerableUntil=1000;c.spawnTimer=Infinity

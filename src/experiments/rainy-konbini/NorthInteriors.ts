@@ -24,7 +24,9 @@ function shell(kit:SceneKit){
    const pane=new THREE.Mesh(new THREE.PlaneGeometry(width,1.18),glass);
    pane.position.set(mid(a,b),y+1.15,front+.02);group.add(pane);
    for(const x of [a+.075,mid(a,b),b-.075])box(group,[x,y+1.15,front+.037],[.037,1.18,.061],'#657f76');
-   for(const yy of [.548,1.749])box(group,[mid(a,b),y+yy,front+.041],[width+.035,.046,.069],'#657f76');
+   for(const yy of [.548,1.749]){
+    box(group,[mid(a,b),y+yy,front+.041],[width+.035,.046,.069],'#657f76').userData.collisionOnly=true;
+   }
   }
   box(group,[0,y+1.972,front-.059],[w,.403,.118],level===1?'#879c95':'#8f9b8c',true);
   if(open)for(const x of [-.69,.69])box(group,[x,y+.93,front+.012],[.049,1.86,.104],'#6b8279');
@@ -38,12 +40,23 @@ function shell(kit:SceneKit){
  section.moveTo(-eave,h-.035);section.lineTo(eave,h-.035);
  section.lineTo(eave,h+.10);section.lineTo(0,h+.59);section.lineTo(-eave,h+.10);section.closePath();
  const roof=new THREE.Mesh(new THREE.ExtrudeGeometry(section,{depth:roofDepth,bevelEnabled:false}),mat('#566873'));
- roof.position.z=-roofDepth/2;roof.castShadow=true;roof.receiveShadow=true;group.add(roof);
+ roof.position.z=-roofDepth/2;roof.castShadow=true;roof.receiveShadow=true;
+ roof.userData.walkThrough=true;group.add(roof);
+ // Bound each strip by the high end of its roof facet. The ridge height no
+ // longer applies across the full eave, and the roof is not a landing surface.
+ const strips=12,stripWidth=eave/strips,roofBase=h-.035;
+ for(const side of [-1,1])for(let i=0;i<strips;i++){
+  const top=h+.59-.49*i/strips;
+  const collider=box(group,[side*(i+.5)*stripWidth,mid(roofBase,top),0],
+   [stripWidth,top-roofBase,roofDepth],'#566873');
+  collider.visible=false;
+  collider.userData.collisionOnly=true;
+ }
  const slope=Math.atan2(.49,eave),span=Math.hypot(.49,eave);
  for(let z=-roofDepth/2+.22;z<roofDepth/2-.1;z+=.37){
   for(const side of [-1,1]){
    const seam=box(group,[side*eave/2,h+.368,z],[span-.057,.026,.025],'#7f9193');
-   seam.rotation.z=-side*slope;seam.castShadow=false;
+   seam.rotation.z=-side*slope;seam.castShadow=false;seam.userData.walkThrough=true;
   }
  }
  for(let level=0;level<3;level++){
@@ -77,10 +90,9 @@ function stairwell(kit:SceneKit){
   for(let step=0;step<count;step++){
    const h=rise*(step+1)/count,z=lowZ-(step+.5)*depth;
    const tread=box(group,[mid(left,right),base+h/2,z],[right-left,h,depth],'#9f8d76');
-   if(i===1){
-    tread.name='north-upper-stair-tread';
-    tread.userData.solidFloor=true;
-   }else tread.userData.walkThrough=true;
+   tread.name=i===0?'north-lower-stair-tread':'north-upper-stair-tread';
+   tread.userData.solidFloor=true;
+   tread.userData.stairTread=true;
    box(group,[mid(left,right),base+h+.006,z+depth*.38],[right-left-.04,.013,.025],'#697d72').userData.walkThrough=true;
    if(step>0)for(const x of [left-.014,right+.014])box(group,[x,base+h/2,z],[.028,h,depth],'#93816c');
   }
@@ -89,9 +101,13 @@ function stairwell(kit:SceneKit){
   box(group,[railX,top+.74,mid(highZ+.32,lowZ)],[.06,.05,lowZ-highZ-.32],'#9baea0');
  }
  slab(-1.5,1.5,front-.12,front+.89,2*rise);
- for(const x of [-1.45,1.45])box(group,[x,2*rise+.38,front+.425],[.073,.76,.88],'#7f998f',true);
- for(let i=0;i<9;i++)box(group,[-1.37+i*.34,2*rise+.37,front+.826],[.04,.74,.046],'#6b8780');
- box(group,[0,2*rise+.76,front+.826],[2.99,.048,.083],'#9eafa3');
+ for(const x of [-1.45,1.45]){
+  box(group,[x,2*rise+.38,front+.425],[.073,.76,.88],'#7f998f',true).userData.collisionOnly=true;
+ }
+ for(let i=0;i<9;i++){
+  box(group,[-1.37+i*.34,2*rise+.37,front+.826],[.04,.74,.046],'#6b8780').userData.collisionOnly=true;
+ }
+ box(group,[0,2*rise+.76,front+.826],[2.99,.048,.083],'#9eafa3').userData.collisionOnly=true;
 }
 
 function furnish(kit:SceneKit,level:number){

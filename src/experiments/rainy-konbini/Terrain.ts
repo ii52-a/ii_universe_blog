@@ -1,7 +1,7 @@
 import {hillsideGround} from './HillTerrain';
 import {canalGround} from './CanalTerrain';
 import {summitGround,summitInteriorHeight,summit,summitHouse,summitStairs} from './SummitTerrain';
-import {onNorthDeck,northHouseGround,northY,northHouse,houseFlights,floorY} from './NorthTerrain';
+import {onNorthDeck,northHouseGround,northY,floorY} from './NorthTerrain';
 import {villaFloorAt,villa,villaStair,villaUpper} from './VillaLayout';
 import {railTrenchHeight} from './WestRailLayout';
 export function groundHeight(x:number,z:number){
@@ -38,10 +38,6 @@ export function terrainSupport(x:number,z:number,ceiling:number){
  const candidates=[groundHeight(x,z)];
  const add=(height:number|undefined)=>{if(height!==undefined)candidates.push(height);};
  for(const level of [1,2])add(northHouseGround(x,z,floorY(level)));
- for(const [i,flight] of houseFlights.entries()){
-  const y=floorY(i)+northHouse.rise*(flight.lowZ-(z-northHouse.z))/(flight.lowZ-flight.highZ);
-  add(northHouseGround(x,z,y));
- }
  add(summitInteriorHeight(x,z,summitHouse.upper));
  add(summitInteriorHeight(x,z,summit.y+(summitHouse.upper-summit.y)*(summitStairs.bottom-z)/(summitStairs.bottom-summitStairs.top)));
  add(villaFloorAt(x,z,villaUpper));

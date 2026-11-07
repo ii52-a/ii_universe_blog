@@ -26,12 +26,6 @@ export function northHouseGround(x:number,z:number,feet:number){
  const u=x-house.x,v=z-house.z;
  if(Math.abs(feet-floorY(2))<.28&&Math.abs(u)<=1.5&&v>=house.front&&v<=house.front+.89)return floorY(2);
  if(u<house.west||u>house.east||v<house.back||v>house.front)return;
- for(const [i,flight] of houseFlights.entries()){
-  if(u>=flight.left&&u<=flight.right&&v>=flight.highZ&&v<=flight.lowZ){
-   const slope=floorY(i)+house.rise*(flight.lowZ-v)/(flight.lowZ-flight.highZ);
-   if(Math.abs(feet-slope)<.28)return slope;
-  }
- }
  for(let i=1;i<=2;i++){
   const level=floorY(i),flight=houseFlights[i-1];
   if(Math.abs(feet-level)<.28&&!(u>flight.left&&u<flight.right&&v>flight.highZ&&v<flight.lowZ))return level;
