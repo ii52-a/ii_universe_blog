@@ -9,7 +9,9 @@
     "start": "next start -p 3001",
     "db:init": "tsx scripts/init-db.ts",
     "db:seed": "tsx scripts/seed.ts",
+    "db:tutorials": "tsx scripts/sync-tutorials.ts",
     "test:api": "tsx scripts/api-test.ts",
+    "test:encyclopedia": "tsx scripts/encyclopedia-test.ts",
     "db:releases": "tsx scripts/sync-releases.ts"
   },
   "dependencies": {

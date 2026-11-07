@@ -28,6 +28,12 @@ npm run dev
 
 ## 表
 
+星科全书初始化时将 `db/tutorials/*.md` 导入关系表。基础教材用 `encyclopedia_seed_v1` 标记。「艾宇宙技术栈全析」扩写版用 `encyclopedia_iiuniverse_v2` 一次性更新同 slug 的内置章和小节，新条目按顺序追加，原有引言、独立条目、课程资料和现有排序保留。前端按需请求数据库中的教材，版本导入完成后的普通重启保留后台编辑。
+
+维护内置教材时，在 `server` 目录执行 `npm run db:tutorials`，会在事务内更新同名内置课程、章节和小节，不删除其他课程。此命令会覆盖对应内置条目的数据库正文，应在确认要同步教材时使用。使用本地 PGlite 时先停止 API，再同步并重启；PostgreSQL 使用已配置的连接。生产构建会追踪这些初始化文件，以便新数据库可以正常初始化。
+
+在项目根目录运行 `npm run test:encyclopedia --prefix server` 验证数据库逻辑，运行 `node scripts/encyclopedia-check.mjs` 验证前端交互及教材完整示例。后者需要前后端开发服务已启动。
+
 - `users`：邮箱、用户名、handle、bcrypt 密码、`role`（member / admin）、`permissions`（五项高级权限）、简介、地点、GitHub、头像
 - `verification_codes`：注册 / 重置验证码，SHA-256 摘要、10 分钟过期、尝试次数
 - `posts`：标题、摘要、正文、JSON 内容块、分类、标签、封面（可为 `none`）、排版样式、`kind`（post / essay）、状态、审核原因、作者、时间
@@ -40,6 +46,9 @@ npm run dev
 - `version_releases`：全部版本更新记录，最新一条的内容由 `versions.json` 的 `latest` 覆盖
 - `site_visits`：按 Asia/Shanghai 日期汇总的网站访问量
 - `app_meta`：一次性初始化标记，避免删除分类后重启被 seed 补回
+- `tutorial_courses`：星科全书课程分类、名称、简介、顺序与所属目录（academic / fun）
+- `tutorial_chapters`：课程章节、导读和顺序
+- `tutorial_sections`：小节标题、Markdown 正文和顺序；通过外键关联课程章节
 
 账号：
 
@@ -51,6 +60,16 @@ npm run dev
 | 方法 | 路径 | 认证 | 说明 |
 | --- | --- | --- | --- |
 | GET | `/api/health` | - | 数据库类型与时间 |
+| GET | `/api/encyclopedia/courses` | - | 星科全书课程目录与章节、小节数量 |
+| GET | `/api/encyclopedia/courses/:course` | - | 一门课程的章节与小节目录，不附带全部正文 |
+| GET | `/api/encyclopedia/courses/:course/:chapter` | - | 单章导读与小节正文 |
+| GET | `/api/encyclopedia/search?q=` | - | 数据库搜索标题与正文，最多 30 项，搜索词最多 100 字符 |
+| POST | `/api/encyclopedia/courses` | ii52A1 | 新增教程，collection 为 academic（星科教程）或 fun（站内趣味教程） |
+| PATCH / DELETE | `/api/encyclopedia/courses/:course` | ii52A1 | 编辑 / 删除教程，删除会级联清理其章节、小节 |
+| POST | `/api/encyclopedia/courses/:course` | ii52A1 | 新增章节 |
+| PATCH / DELETE | `/api/encyclopedia/courses/:course/:chapter` | ii52A1 | 编辑 / 删除章节 |
+| POST | `/api/encyclopedia/courses/:course/:chapter/sections` | ii52A1 | 新增小节 |
+| PATCH / DELETE | `/api/encyclopedia/courses/:course/:chapter/sections/:section` | ii52A1 | 编辑 / 删除小节 |
 | POST | `/api/auth/code` | - | `register` / `reset` 验证码 |
 | POST | `/api/auth/register` | - | 邮箱 + 验证码注册，自动登录 |
 | POST | `/api/auth/login` | - | 只发 JWT Cookie，支持 `remember` |

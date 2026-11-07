@@ -15,6 +15,7 @@
     />
     <meta property="og:type" content="website" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="stylesheet" href="/src/css/components/loading.css" />
     <link
       rel="preload"
       href="/fonts/noto-serif-sc.woff2"
@@ -38,7 +39,7 @@
     </script>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root"><div class="app-loading app-loading--page" role="status"><span class="app-loading__mark" aria-hidden="true"><i></i><i></i><b></b></span><span>加载中</span></div></div>
     <noscript>半日需要 JavaScript 才能翻开。请在浏览器设置里打开它。</noscript>
     <script type="module" src="/src/main.tsx"></script>
   </body>

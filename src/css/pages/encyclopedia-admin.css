@@ -1,0 +1,57 @@
+.encyclopedia-admin-layout { display: grid; grid-template-columns: 280px minmax(0,900px); gap: clamp(24px,4vw,60px); padding: 28px 24px 80px 12px; }
+.encyclopedia-admin-tree { position: sticky; top: 100px; max-height: calc(100dvh - 125px); padding: 14px; overflow-y: auto; border: 1px solid var(--line-dark); background: var(--paper); }
+.encyclopedia-admin-tree label { display: block; margin: 14px 0 6px; color: var(--muted); font-size: 11px; }
+.encyclopedia-admin-tree :is(input,select) { width: 100%; min-width: 0; padding: 8px; border: 1px solid var(--line-dark); background: var(--paper); color: var(--ink); font-size: 12px; }
+.encyclopedia-admin-course-picker { display: flex; gap: 7px; }
+.encyclopedia-admin-course-picker > button { padding: 8px; }
+.encyclopedia-admin-tree__actions button,.encyclopedia-admin-add { display: flex; align-items: center; gap: 7px; padding: 8px 10px; border: 1px solid var(--line-dark); font-size: 12px; }
+.encyclopedia-admin-add { margin-top: 18px; }
+.encyclopedia-admin-tree :is(ol,ul) { list-style: none; margin: 10px 0 0; padding: 0; }
+.encyclopedia-admin-tree ul { margin: 0 0 6px 14px; border-left: 1px solid var(--line); }
+.encyclopedia-admin-tree nav button { display: flex; gap: 8px; width: 100%; padding: 8px; border-left: 2px solid transparent; text-align: left; font-size: 12px; line-height: 1.6; }
+.encyclopedia-admin-tree nav button span { color: var(--muted); font: 10px var(--mono); padding-top: 4px; }
+.encyclopedia-admin-tree nav button[aria-pressed='true'] { border-left-color: var(--blue); background: var(--paper-soft); }
+.encyclopedia-admin-tree nav button:hover { color: var(--blue); }
+.encyclopedia-admin-tree-row { display: flex; align-items: center; gap: 2px; }
+.encyclopedia-admin-tree-row > button { flex: 1; min-width: 0; }
+.encyclopedia-admin-order { display: inline-flex; flex-shrink: 0; align-items: center; gap: 2px; }
+.encyclopedia-admin-tree .encyclopedia-admin-order button { display: grid; place-items: center; width: 24px; height: 27px; padding: 0; border: 1px solid transparent; color: var(--muted); }
+.encyclopedia-admin-tree .encyclopedia-admin-order button:hover:not(:disabled) { border-color: var(--line-dark); color: var(--ink); }
+.encyclopedia-admin-course-order { display: flex; justify-content: end; margin-top: 7px; }
+.encyclopedia-admin-add-section { margin-block: 5px 9px; }
+.encyclopedia-admin-tree nav .encyclopedia-admin-add-section > button { width: auto; margin-left: 6px; padding: 6px 9px; border: 1px solid var(--line-dark); font-size: 11px; }
+.encyclopedia-admin-editor { min-width: 0; }
+.encyclopedia-admin-editor > header { display: flex; align-items: center; justify-content: space-between; gap: 15px; margin-bottom: 24px; padding-bottom: 18px; border-bottom: 1px solid var(--line-dark); }
+.encyclopedia-admin-editor h1 { font: 600 28px/1.4 var(--sans); }
+.encyclopedia-admin-editor > header a { display: flex; align-items: center; gap: 6px; font-size: 12px; }
+.encyclopedia-admin-editor fieldset { min-width: 0; padding: 0; border: 0; }
+.encyclopedia-admin-editor label { display: grid; align-content: start; gap: 8px; margin-bottom: 20px; font-size: 12px; }
+.encyclopedia-admin-editor label small { color: var(--muted); font-size: 11px; }
+.encyclopedia-admin-editor :is(input,select,textarea) { width: 100%; min-width: 0; padding: 11px; border: 1px solid var(--line-dark); border-radius: 3px; background: var(--paper); color: var(--ink); font: 13px/1.7 var(--sans); }
+.encyclopedia-admin-editor input:disabled { color: var(--muted); background: var(--paper-soft); }
+.encyclopedia-admin-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.encyclopedia-admin-editor .encyclopedia-admin-body { min-height: 440px; resize: vertical; font: 13px/1.8 var(--mono); }
+.encyclopedia-admin-editor .encyclopedia-admin-color { width: 150px; }
+.encyclopedia-admin-color input { height: 42px; padding: 4px; }
+.encyclopedia-admin-tabs { display: flex; gap: 4px; margin-bottom: 16px; }
+.encyclopedia-admin-tabs button { padding: 7px 16px; border: 1px solid var(--line-dark); font-size: 12px; }
+.encyclopedia-admin-tabs button[aria-pressed='true'] { background: var(--paper-soft); color: var(--blue); }
+.encyclopedia-admin-preview { min-height: 440px; margin-bottom: 20px; padding: 24px; border: 1px solid var(--line-dark); background: var(--paper); overflow-wrap: anywhere; }
+.encyclopedia-admin-preview .markdown-body { font-size: 14px; line-height: 1.9; }
+.encyclopedia-admin-preview pre { max-width: 100%; overflow: auto; }
+.encyclopedia-admin-preview pre:focus-visible { outline: 2px solid var(--blue); }
+.encyclopedia-admin-editor form footer { display: flex; gap: 15px; align-items: center; padding-top: 15px; }
+.encyclopedia-admin-editor form footer button { display: flex; align-items: center; gap: 7px; padding: 10px 18px; border: 1px solid var(--line-dark); font-size: 12px; }
+.encyclopedia-admin-editor .encyclopedia-admin-save { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+.encyclopedia-admin-editor .encyclopedia-admin-delete { color: #ad4136; margin-left: auto; }
+.encyclopedia-admin-layout button:disabled { opacity: .45; cursor: wait; }
+.encyclopedia-admin-error,.encyclopedia-admin-message { margin-bottom: 18px; padding: 12px; border: 1px solid var(--line-dark); font-size: 13px; line-height: 1.7; }
+.encyclopedia-admin-error { color: #ad4136; }
+.encyclopedia-admin-access { width: min(100% - 40px,700px); margin: 60px auto; display: grid; gap: 20px; font-size: 15px; }
+.encyclopedia-admin-access a { text-decoration: underline; }
+@media(max-width:760px) {
+  .encyclopedia-admin-layout { grid-template-columns: minmax(0,1fr); padding: 24px 20px 60px; gap: 30px; }
+  .encyclopedia-admin-tree { position: static; max-height: 45dvh; }
+  .encyclopedia-admin-fields { grid-template-columns: minmax(0,1fr); gap: 0; }
+  .encyclopedia-admin-editor h1 { font-size: 24px; }
+}

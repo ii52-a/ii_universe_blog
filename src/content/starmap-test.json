@@ -1,0 +1,50 @@
+{
+  "interaction": {
+    "_comment": "速度为场景单位/秒；进入距离为星系半径的倍数；层级距离为目标层在视线前方的距离；时间单位为毫秒。",
+    "movementSpeed": 16.5,
+    "sprintSpeed": 37.5,
+    "enterDistanceRatio": 1.4,
+    "layerDistance": 40,
+    "transitionDurationMs": 1850
+  },
+  "galaxies": [
+    {
+      "id": "algorithms",
+      "name": "算法",
+      "center": [-23, 0, 2],
+      "inclination": [0.12, 0, -0.12],
+      "radius": 15,
+      "seed": 157,
+      "color": "#e5b982",
+      "arms": "#9dbce0",
+      "star": { "name": "算法", "color": "#ffcf8d", "radius": 1.28 },
+      "planets": [
+        { "id": "structures", "name": "数据结构", "orbit": 3.4, "radius": 0.47, "period": 38, "phase": 1.9, "color": "#598d9b", "detail": "#b8dcdf", "ring": false },
+        { "id": "design", "name": "算法设计", "orbit": 5.0, "radius": 0.63, "period": 52, "phase": 4.8, "color": "#bd8656", "detail": "#e1bd8a", "ring": false },
+        { "id": "discrete", "name": "离散数学", "orbit": 6.8, "radius": 0.55, "period": 67, "phase": 0.5, "color": "#899077", "detail": "#d4d3a7", "ring": false },
+        { "id": "numbers", "name": "数论", "orbit": 8.6, "radius": 0.76, "period": 81, "phase": 3.3, "color": "#8d708e", "detail": "#c8b1cd", "ring": true },
+        { "id": "geometry", "name": "计算几何", "orbit": 10.8, "radius": 0.64, "period": 98, "phase": 5.7, "color": "#547f9d", "detail": "#a1c5dd", "ring": false },
+        { "id": "complexity", "name": "复杂性理论", "orbit": 13.1, "radius": 0.7, "period": 120, "phase": 2.1, "color": "#778798", "detail": "#ccd2db", "ring": false }
+      ]
+    },
+    {
+      "id": "ai",
+      "name": "人工智能",
+      "center": [23, 5, -7],
+      "inclination": [-0.22, 0, 0.32],
+      "radius": 16,
+      "seed": 853,
+      "color": "#b5d6ef",
+      "arms": "#b1a9dc",
+      "star": { "name": "人工智能", "color": "#c1e4ff", "radius": 1.45 },
+      "planets": [
+        { "id": "probability", "name": "概率统计", "orbit": 3.6, "radius": 0.48, "period": 41, "phase": 2.3, "color": "#a29a7b", "detail": "#d8d1b4", "ring": false },
+        { "id": "learning", "name": "机器学习", "orbit": 5.4, "radius": 0.7, "period": 56, "phase": 5.5, "color": "#3c8c9e", "detail": "#99d4dd", "ring": false },
+        { "id": "optimization", "name": "优化理论", "orbit": 7.3, "radius": 0.58, "period": 73, "phase": 0.9, "color": "#977d99", "detail": "#d0bdcf", "ring": true },
+        { "id": "deep", "name": "深度学习", "orbit": 9.3, "radius": 0.86, "period": 88, "phase": 3.4, "color": "#4f749b", "detail": "#9dbdd9", "ring": false },
+        { "id": "vision", "name": "计算机视觉", "orbit": 11.6, "radius": 0.65, "period": 106, "phase": 5.8, "color": "#6d9b89", "detail": "#b7d9c4", "ring": false },
+        { "id": "language", "name": "自然语言处理", "orbit": 14.0, "radius": 0.72, "period": 128, "phase": 2.0, "color": "#8a7caa", "detail": "#cac3e4", "ring": false }
+      ]
+    }
+  ]
+}

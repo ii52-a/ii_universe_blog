@@ -1,0 +1,105 @@
+.fantasy-boundary {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  background: radial-gradient(ellipse at 50% 43%, #29394b 0%, #172334 47%, #0c1421 100%);
+  color: #f3f7fb;
+}
+
+.fantasy-boundary__header {
+  position: absolute;
+  z-index: 1;
+  top: max(16px, env(safe-area-inset-top));
+  left: max(16px, env(safe-area-inset-left));
+  display: grid;
+  gap: 9px;
+  padding: 8px 14px 12px;
+  border: 1px solid #70839a;
+  border-radius: 10px;
+  background: #111b2a;
+}
+
+.fantasy-boundary__header a {
+  display: flex;
+  min-height: 28px;
+  align-items: center;
+  gap: 7px;
+  font-size: 12px;
+  color: #c3d8e8;
+}
+
+.fantasy-boundary__header h1 {
+  font: 600 18px/1.3 var(--sans);
+  letter-spacing: .08em;
+}
+
+.fantasy-boundary__scene {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+}
+
+.fantasy-boundary__scene p { padding: 16px; }
+
+.fantasy-boundary__scene canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  touch-action: none;
+  cursor: grab;
+}
+
+.fantasy-boundary__scene canvas:active { cursor: grabbing; }
+.fantasy-boundary :focus-visible { outline: 2px solid #9ed7d8; }
+.fantasy-boundary__scene canvas:focus-visible { outline-offset: -3px; }
+
+.fantasy-boundary__test {
+  position: absolute;
+  z-index: 2;
+  right: max(16px, env(safe-area-inset-right));
+  bottom: max(16px, env(safe-area-inset-bottom));
+  max-width: min(300px, calc(100vw - 32px));
+  display: grid;
+  gap: 9px;
+  padding: 12px;
+  border: 1px solid #70839a;
+  border-radius: 12px;
+  background: #111b2af2;
+  font: 13px/1.6 var(--sans);
+}
+.fantasy-boundary__test button {
+  min-height: 44px;
+  padding: 7px 14px;
+  border: 1px solid #7e9d9e;
+  border-radius: 7px;
+  background: #243c46;
+  color: #f3f7fb;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.fantasy-boundary__test button[aria-pressed='true'] { background: #345b58; }
+.fantasy-boundary__test p { padding: 0; margin: 0; }
+.fantasy-boundary__test small { color: #c3d8e8; }
+.fantasy-boundary__actions { display:grid; grid-template-columns:1fr 1fr; gap:7px; }
+.fantasy-boundary__sound { display:flex; align-items:center; gap:8px; }
+.fantasy-boundary__vitals {
+ position:absolute; z-index:2; left:max(16px,env(safe-area-inset-left)); bottom:max(16px,env(safe-area-inset-bottom));
+ width:210px; display:grid; gap:8px; padding:13px; border:1px solid #9e5a69; border-radius:12px; background:#20101bec; font:13px/1.5 var(--sans); pointer-events:none;
+}
+.fantasy-boundary__vitals label { display:grid; grid-template-columns:1fr auto; gap:3px; }
+.fantasy-boundary__vitals progress { grid-column:1/-1; width:100%; height:10px; border:0; border-radius:5px; overflow:hidden; background:#442a36; }
+.fantasy-boundary__vitals progress::-webkit-progress-bar { background:#442a36; }
+.fantasy-boundary__vitals progress::-webkit-progress-value { background:#f07c87; }
+.fantasy-boundary__vitals label:nth-child(2) progress::-webkit-progress-value { background:#a5d2b0; }
+.fantasy-boundary__vitals progress::-moz-progress-bar { background:#f07c87; }
+.fantasy-boundary__vitals label:nth-child(2) progress::-moz-progress-bar { background:#a5d2b0; }
+.fantasy-boundary__damage { position:absolute; z-index:1; inset:0; pointer-events:none; box-shadow:inset 0 0 100px #f32c4600; }
+.fantasy-boundary__damage.is-hurt { box-shadow:inset 0 0 100px #f32c4677; }
+.fantasy-boundary__crosshair { position:absolute; z-index:1; left:50%; top:50%; transform:translate(-50%,-50%); color:#f8e8cd; font:24px/1 monospace; pointer-events:none; }
+.fantasy-boundary__crosshair.is-hit { color:#ff8181; }
+@media(max-width:600px){
+ .fantasy-boundary__vitals { top:112px; bottom:auto; width:164px; padding:10px; font-size:12px; }
+ .fantasy-boundary__test { max-width:250px; gap:6px; padding:10px; font-size:12px; }
+ .fantasy-boundary__test button { padding:5px 9px; }
+}

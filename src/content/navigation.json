@@ -18,6 +18,12 @@
           "desc": "还在探索中..."
         },
         {
+          "label": "星科全书",
+          "href": "/encyclopedia",
+          "icon": "book-open",
+          "desc": "GitHub 与 Web 入门教程"
+        },
+        {
           "label": "星盘",
           "href": "/starboard",
           "icon": "gamepad",
@@ -34,6 +40,12 @@
           "href": "/radio",
           "icon": "radio",
           "desc": "自己的知识学习思考，疑问自答。"
+        },
+        {
+          "label": "幻想边界",
+          "href": "/fantasy-boundary",
+          "icon": "cloud-rain",
+          "desc": "雨の街角 · 漫步日式雨夜街区"
         },
         {
           "label": "旧物仓",
@@ -58,6 +70,18 @@
           "icon": "radio",
           "url": "https://radio.garden",
           "desc": "听一听世界的频率"
+        },
+        {
+          "label": "toolonline.net",
+          "icon": "cloud-sun",
+          "url": "https://toolonline.net/number-sequence-memory",
+          "desc": "动动生锈的脑壳"
+        },
+        {
+          "label": "pcjs.org",
+          "icon": "cloud-sun",
+          "url": "https://www.pcjs.org/",
+          "desc": "古早PC操作系统网站"
         }
       ]
     }

@@ -181,7 +181,7 @@ await mobile.getByRole('button', { name: /进去坐坐/ }).click()
 await mobile.waitForURL('**/universe', { timeout: 15000 })
 
 await mobile.goto(`${base}/github-lab`, { waitUntil: 'networkidle' })
-await mobile.locator('.lab-entries').waitFor()
+await mobile.getByRole('navigation', { name: 'GitHub 研究所功能' }).waitFor()
 assert.equal(await mobile.getByRole('link', { name: '入门教程', exact: true }).count(), 1)
 await mobile.getByRole('link', { name: 'top 排行榜' }).click()
 await mobile.waitForURL('**/github-lab/top', { timeout: 10000 })

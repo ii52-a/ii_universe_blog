@@ -15,10 +15,9 @@ export function StarboardPage() {
     <main className="starboard-lobby">
       <section className="starboard-feature" aria-labelledby="starboard-title">
         <div className="starboard-feature__copy">
-          <span className="starboard-overline"><i /> 01 / GOMOKU</span>
-          <h1 id="starboard-title">五子<span>棋。</span></h1>
+          <span className="starboard-overline"> ii universe</span>
+          <h1 id="starboard-title">五子<span>棋</span></h1>
           <Link to="/starboard/gomoku" className="starboard-enter">开始对局 <ArrowUpRight size={21} /></Link>
-          <div className="starboard-feature__tags"><span>本地人机</span><span>同屏双人</span></div>
         </div>
         <Link className="starboard-preview" to="/starboard/gomoku" aria-label="进入五子棋">
           <div className="starboard-preview__top"><span>15 × 15</span><ArrowUpRight size={18} /></div>

@@ -1,6 +1,7 @@
 import type { ArticleStyle, ContentBlock } from '../data/posts'
 import type { Strength } from './gomoku/rules'
 import type { RankedGame, RankedLeaderboard } from './gomoku/ranked'
+import type { TutorialCourse, TutorialCourseDetail, TutorialChapter, TutorialSearchResult, TutorialOrder } from './encyclopedia'
 
 export type UserRole = 'member' | 'admin'
 export type PostStatus = 'draft' | 'pending' | 'published' | 'rejected'
@@ -109,6 +110,23 @@ async function apiFetch<T>(path: string, init: RequestInit = {}): Promise<T> {
     )
   }
   return payload
+}
+
+export const encyclopediaApi = {
+  reorder: (input: TutorialOrder) => apiFetch<{ saved: boolean }>('/api/encyclopedia/order', { method: 'PATCH', body: JSON.stringify(input) }),
+  courses: (signal?: AbortSignal) => apiFetch<{ courses: TutorialCourse[] }>('/api/encyclopedia/courses', { signal }),
+  course: (slug: string, signal?: AbortSignal) => apiFetch<{ course: TutorialCourseDetail }>(`/api/encyclopedia/courses/${encodeURIComponent(slug)}`, { signal }),
+  chapter: (course: string, chapter: string, signal?: AbortSignal) => apiFetch<{ chapter: TutorialChapter }>(`/api/encyclopedia/courses/${encodeURIComponent(course)}/${encodeURIComponent(chapter)}`, { signal }),
+  search: (query: string, signal?: AbortSignal, collection?: string) => apiFetch<{ results: TutorialSearchResult[] }>(`/api/encyclopedia/search?q=${encodeURIComponent(query)}${collection ? `&collection=${encodeURIComponent(collection)}` : ''}`, { signal }),
+  createCourse: (input: { slug: string; title: string; description: string; category: string; color: string; collection: string }) => apiFetch<{ slug: string }>('/api/encyclopedia/courses', { method: 'POST', body: JSON.stringify(input) }),
+  updateCourse: (course: string, input: { title: string; description: string; category: string; color: string; collection: string }) => apiFetch<{ slug: string }>(`/api/encyclopedia/courses/${encodeURIComponent(course)}`, { method: 'PATCH', body: JSON.stringify(input) }),
+  deleteCourse: (course: string) => apiFetch(`/api/encyclopedia/courses/${encodeURIComponent(course)}`, { method: 'DELETE' }),
+  createChapter: (course: string, input: { slug: string; title: string; body: string }) => apiFetch<{ slug: string }>(`/api/encyclopedia/courses/${encodeURIComponent(course)}`, { method: 'POST', body: JSON.stringify(input) }),
+  updateChapter: (course: string, chapter: string, input: { title: string; body: string }) => apiFetch<{ slug: string }>(`/api/encyclopedia/courses/${encodeURIComponent(course)}/${encodeURIComponent(chapter)}`, { method: 'PATCH', body: JSON.stringify(input) }),
+  deleteChapter: (course: string, chapter: string) => apiFetch(`/api/encyclopedia/courses/${encodeURIComponent(course)}/${encodeURIComponent(chapter)}`, { method: 'DELETE' }),
+  createSection: (course: string, chapter: string, input: { slug: string; title: string; body: string }) => apiFetch<{ slug: string }>(`/api/encyclopedia/courses/${encodeURIComponent(course)}/${encodeURIComponent(chapter)}/sections`, { method: 'POST', body: JSON.stringify(input) }),
+  updateSection: (course: string, chapter: string, section: string, input: { title: string; body: string }) => apiFetch<{ slug: string }>(`/api/encyclopedia/courses/${encodeURIComponent(course)}/${encodeURIComponent(chapter)}/sections/${encodeURIComponent(section)}`, { method: 'PATCH', body: JSON.stringify(input) }),
+  deleteSection: (course: string, chapter: string, section: string) => apiFetch(`/api/encyclopedia/courses/${encodeURIComponent(course)}/${encodeURIComponent(chapter)}/sections/${encodeURIComponent(section)}`, { method: 'DELETE' }),
 }
 
 export const gomokuRankedApi = {

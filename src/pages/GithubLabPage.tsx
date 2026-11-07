@@ -13,6 +13,13 @@ import versions from '../content/versions.json'
 import content from '../content/github-lab.json'
 import { githubSearchPath } from '../lib/github'
 
+const entries = [
+  { label: '入门教程', to: '/encyclopedia/github' },
+  { label: 'top 排行榜', to: '/github-lab/top' },
+  { label: '收藏', to: '/github-lab/favorites' },
+  { label: 'ii tool', to: '/github-lab/tools' },
+]
+
 export function GithubLabPage() {
   usePageTitle('GitHub 研究所', 'ii universe')
   const navigate = useNavigate()
@@ -50,18 +57,8 @@ export function GithubLabPage() {
           </form>
         </section>
 
-        <div className="lab-quick-searches" aria-label="按用途探索">
-          {content.searches.map((item) => <Link key={item.label} to={githubSearchPath(item.query)}>{item.label} <span aria-hidden="true">↗</span></Link>)}
-        </div>
-
-        <nav className="lab-entries" aria-label="GitHub 研究所功能">
-          <Link to="/github-lab/guide">入门教程</Link>
-          <span aria-hidden="true">/</span>
-          <Link to="/github-lab/top">top 排行榜</Link>
-          <span aria-hidden="true">/</span>
-          <Link to="/github-lab/favorites">收藏</Link>
-          <span aria-hidden="true">/</span>
-          <Link to="/github-lab/tools">ii tool</Link>
+        <nav className="lab-quick-searches" aria-label="GitHub 研究所功能">
+          {entries.map(({ to, label }) => <Link key={to} to={to}>{label} <span aria-hidden="true">↗</span></Link>)}
         </nav>
 
         <section className="lab-start" aria-labelledby="lab-start-title">

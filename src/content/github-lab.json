@@ -1,10 +1,4 @@
 {
-  "searches": [
-    { "label": "学习 Python", "query": "topic:python topic:tutorial archived:false" },
-    { "label": "前端学习", "query": "topic:javascript topic:tutorial archived:false" },
-    { "label": "实用工具", "query": "topic:productivity archived:false" },
-    { "label": "自托管应用", "query": "topic:self-hosted archived:false" }
-  ],
   "guides": [
     { "step": "01", "title": "我想直接用", "text": "先看项目官网或 Releases，寻找适合自己系统的安装包。源码 ZIP 通常不是可直接运行的软件。", "label": "了解如何下载", "url": "https://docs.github.com/en/repositories/working-with-files/using-files/downloading-files-from-github" },
     { "step": "02", "title": "我想学习源码", "text": "先读 README 的安装说明，再克隆项目到本地。仓库详情页可以复制 HTTPS、SSH 或 GitHub CLI 命令。", "label": "了解如何克隆", "url": "https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository" },

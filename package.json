@@ -15,6 +15,8 @@
     "preview": "vite preview --host 127.0.0.1",
     "check": "tsc -b",
     "test:ui": "node scripts/interaction-check.mjs",
+    "test:fantasy": "node scripts/fantasy-boundary-check.mjs",
+    "test:zombie": "node scripts/zombie-mode-check.mjs",
     "test:api": "node scripts/backend-test.mjs",
     "test:a11y": "node scripts/a11y-check.mjs",
     "shots": "node scripts/visual-check.mjs",

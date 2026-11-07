@@ -7,6 +7,8 @@
 import { Link } from 'react-router-dom'
 import {
   Archive,
+  BookOpen,
+  CloudRain,
   CloudSun,
   FileText,
   FlaskConical,
@@ -35,6 +37,7 @@ const icons: Record<string, LucideIcon> = {
   user: User,
   github: Github,
   instagram: Instagram,
+  'cloud-rain': CloudRain,
   'cloud-sun': CloudSun,
   'file-text': FileText,
   flask: FlaskConical,
@@ -42,6 +45,7 @@ const icons: Record<string, LucideIcon> = {
   radio: Radio,
   archive: Archive,
   gamepad: Gamepad2,
+  'book-open': BookOpen,
 }
 
 export function UniversePage() {

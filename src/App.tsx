@@ -1,4 +1,5 @@
 import { lazy, Suspense } from 'react'
+import { LoadingIndicator } from './components/LoadingIndicator'
 /**
  * 应用入口
  * 职责：组装路由、全局 Provider、外链守卫与访问统计。
@@ -30,6 +31,7 @@ const ReviewPage = lazy(() => import('./pages/ReviewPage').then((module) => ({ d
 const PermissionsPage = lazy(() => import('./pages/PermissionsPage').then((module) => ({ default: module.PermissionsPage })))
 const UniversePage = lazy(() => import('./pages/UniversePage').then((module) => ({ default: module.UniversePage })))
 const UnformPage = lazy(() => import('./pages/UnformPage').then((module) => ({ default: module.UnformPage })))
+const FantasyBoundaryPage = lazy(() => import('./pages/FantasyBoundaryPage').then((module) => ({ default: module.FantasyBoundaryPage })))
 const StarboardPage = lazy(() => import('./pages/StarboardPage').then((module) => ({ default: module.StarboardPage })))
 const StarboardTestPage = lazy(() => import('./pages/StarboardTestPage').then((module) => ({ default: module.StarboardTestPage })))
 const GomokuPage = lazy(() => import('./pages/GomokuPage').then((module) => ({ default: module.GomokuPage })))
@@ -42,6 +44,9 @@ const RadioEntryPage = lazy(() => import('./pages/RadioEntryPage').then((module)
 const RadioWritePage = lazy(() => import('./pages/RadioWritePage').then((module) => ({ default: module.RadioWritePage })))
 const GithubLabPage = lazy(() => import('./pages/GithubLabPage').then((module) => ({ default: module.GithubLabPage })))
 const GithubGuidePage = lazy(() => import('./pages/GithubGuidePage').then((module) => ({ default: module.GithubGuidePage })))
+const EncyclopediaPage = lazy(() => import('./pages/EncyclopediaPage').then((module) => ({ default: module.EncyclopediaPage })))
+const EncyclopediaCoursePage = lazy(() => import('./pages/EncyclopediaCoursePage').then((module) => ({ default: module.EncyclopediaCoursePage })))
+const EncyclopediaManagePage = lazy(() => import('./pages/EncyclopediaManagePage').then((module) => ({ default: module.EncyclopediaManagePage })))
 const GithubTopPage = lazy(() => import('./pages/GithubTopPage').then((module) => ({ default: module.GithubTopPage })))
 const GithubFavoritesPage = lazy(() => import('./pages/GithubFavoritesPage').then((module) => ({ default: module.GithubFavoritesPage })))
 const GithubToolsPage = lazy(() => import('./pages/GithubToolsPage').then((module) => ({ default: module.GithubToolsPage })))
@@ -58,10 +63,11 @@ export default function App() {
         <WidgetsProvider>
           <AuthProvider>
             <ToastProvider>
-              <Suspense fallback={<div role="status">正在加载…</div>}>
+              <Suspense fallback={<LoadingIndicator fullPage />}>
               <Routes>
                 <Route path="/universe" element={<UniversePage />} />
                 <Route path="/universe/test" element={<UnformPage />} />
+                <Route path="/fantasy-boundary" element={<FantasyBoundaryPage />} />
                 <Route path="/starboard" element={<StarboardPage />} />
                 <Route path="/starboard/test" element={<StarboardTestPage />} />
                 <Route path="/starboard/gomoku" element={<GomokuPage />} />
@@ -76,6 +82,10 @@ export default function App() {
                 <Route path="/radio/:id" element={<RadioEntryPage />} />
                 <Route path="/github-lab" element={<GithubLabPage />} />
                 <Route path="/github-lab/guide" element={<GithubGuidePage />} />
+                <Route path="/encyclopedia" element={<EncyclopediaPage />} />
+                <Route path="/encyclopedia/manage" element={<EncyclopediaManagePage />} />
+                <Route path="/encyclopedia/:course" element={<EncyclopediaCoursePage />} />
+                <Route path="/encyclopedia/:course/:chapter" element={<EncyclopediaCoursePage />} />
                 <Route path="/github-lab/top" element={<GithubTopPage />} />
                 <Route path="/github-lab/favorites" element={<GithubFavoritesPage />} />
                 <Route path="/github-lab/tools" element={<GithubToolsPage />} />

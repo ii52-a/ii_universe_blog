@@ -4,6 +4,7 @@ import type { NextConfig } from 'next'
 const nextConfig: NextConfig = {
   serverExternalPackages: ['@electric-sql/pglite', 'pg'],
   outputFileTracingRoot: path.resolve('.'),
+  outputFileTracingIncludes: { '/*': ['./db/tutorials/*.md'] },
   poweredByHeader: false,
   webpack(config, { isServer, nextRuntime }) {
     // Node workers load their emitted chunk beside the server runtime.

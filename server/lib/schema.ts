@@ -1,4 +1,7 @@
+import { encyclopediaSchemaStatements } from './encyclopedia'
+
 export const schemaStatements = [
+  ...encyclopediaSchemaStatements,
   `CREATE TABLE IF NOT EXISTS users (
     id uuid PRIMARY KEY,
     email text NOT NULL,

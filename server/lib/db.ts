@@ -3,6 +3,7 @@ import { mkdirSync } from 'node:fs'
 import { dirname } from 'node:path'
 import { schemaStatements } from './schema'
 import { seedDatabase } from './seed'
+import { seedEncyclopedia } from './encyclopediaSeed'
 
 export interface DbClient {
   kind: 'pglite' | 'postgres'
@@ -112,6 +113,7 @@ export function ensureDatabase(): Promise<void> {
         await db.exec(statement)
       }
       await seedDatabase(db)
+      await seedEncyclopedia(db)
     })()
   }
   return globalDb.__halfdayReady
